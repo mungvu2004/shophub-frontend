@@ -1,0 +1,142 @@
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Core semantic tokens (ShopHub light mode) */
+    --background: 210 40% 98%;
+    --foreground: 222 47% 17%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 17%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 17%;
+    --primary: 239 84% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 17%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 25% 27%;
+    --accent: 24 95% 53%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 239 84% 67%;
+
+    /* Platform colors */
+    --lazada: 24 91% 55%;
+    --lazada-foreground: 0 0% 100%;
+    --shopee: 10 85% 55%;
+    --shopee-foreground: 0 0% 100%;
+    --tiktok: 349 99% 58%;
+    --tiktok-foreground: 0 0% 100%;
+
+    /* Order status colors */
+    --status-pending: 217 91% 60%;
+    --status-confirmed: 239 84% 67%;
+    --status-shipping: 239 84% 67%;
+    --status-delivered: 142 71% 45%;
+    --status-cancelled: 215 16% 47%;
+    --status-returning: 38 92% 50%;
+    --status-urgent: 0 84% 60%;
+
+    /* Charts + layout */
+    --radius: 0.75rem;
+    --chart-1: 239 84% 67%;
+    --chart-2: 217 91% 60%;
+    --chart-3: 142 71% 45%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 0 84% 60%;
+    --sidebar: 222 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 239 84% 67%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 239 84% 67%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 215 28% 17%;
+    --sidebar-ring: 239 84% 67%;
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 96%;
+    --card: 217 33% 17%;
+    --card-foreground: 210 40% 96%;
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 234 89% 74%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 217 19% 65%;
+    --accent: 24 95% 53%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 93% 72%;
+    --destructive-foreground: 222 47% 11%;
+    --border: 215 28% 26%;
+    --input: 215 28% 26%;
+    --ring: 234 89% 74%;
+    --chart-1: 234 89% 74%;
+    --chart-2: 213 94% 68%;
+    --chart-3: 142 69% 58%;
+    --chart-4: 48 96% 70%;
+    --chart-5: 0 93% 72%;
+    --sidebar: 222 47% 11%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 234 89% 74%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 24 95% 53%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 215 28% 26%;
+    --sidebar-ring: 234 89% 74%;
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+  .theme {
+    --font-heading: var(--font-sans);
+    --font-sans: 'Be Vietnam Pro', 'Noto Sans', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+@layer utilities {
+  /* Custom scrollbar styling for notifications */
+  .scrollbar-thin-custom {
+    scrollbar-width: thin;
+    scrollbar-color: #a5b4fc #f8fafc;
+  }
+
+  .scrollbar-thin-custom::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin-custom::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin-custom::-webkit-scrollbar-thumb {
+    background: #a5b4fc;
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin-custom::-webkit-scrollbar-thumb:hover {
+    background: #818cf8;
+  }
+}
