@@ -1,12 +1,9 @@
-import { SectionPagePlaceholder } from '@/pages/shared/SectionPagePlaceholder'
+import { buildProductsListViewModel, ProductsListView } from '../../features/products'
 
 export function ProductsListPage() {
-  return (
-    <SectionPagePlaceholder
-      title="Danh sách sản phẩm"
-      description="Quản lý danh mục và tình trạng sản phẩm."
-    />
-  )
+  const model = buildProductsListViewModel()
+
+  return <ProductsListView model={model} />
 }
 
 

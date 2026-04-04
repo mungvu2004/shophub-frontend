@@ -5,6 +5,9 @@ import { inventoryHandlers } from "./inventory.handlers";
 import { platformHandlers } from "./platforms.handlers";
 import { notificationsHandlers } from "./notifications.handlers";
 import { dashboardHandlers } from "./dashboard.handlers";
+import { revenueHandlers } from "./revenue.handlers";
+import { assetsHandlers } from "./assets.handlers";
+import { crmHandlers } from "./crm.handlers";
 
 export const handlers = [
   ...authHandlers,
@@ -14,4 +17,7 @@ export const handlers = [
   ...platformHandlers,
   ...notificationsHandlers,
   ...dashboardHandlers,
+  ...revenueHandlers,
+  ...assetsHandlers,
+  ...crmHandlers,
 ];

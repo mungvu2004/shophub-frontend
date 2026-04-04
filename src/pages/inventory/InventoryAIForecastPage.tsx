@@ -1,12 +1,7 @@
-import { SectionPagePlaceholder } from '@/pages/shared/SectionPagePlaceholder'
+import { InventoryAIForecast } from '@/features/inventory/components/inventory-ai-forecast/InventoryAIForecast'
 
 export function InventoryAIForecastPage() {
-  return (
-    <SectionPagePlaceholder
-      title="Dự báo AI"
-      description="Dự báo nhu cầu tồn kho bằng mô hình AI."
-    />
-  )
+  return <InventoryAIForecast />
 }
 
 

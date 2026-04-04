@@ -11,7 +11,12 @@ async function enableMocking() {
 
   const { worker } = await import('@/mocks/browser')
   await worker.start({
-    onUnhandledRequest: 'bypass',
+    onUnhandledRequest: (request, print) => {
+      const url = new URL(request.url)
+      if (url.pathname.startsWith('/api/')) {
+        print.warning()
+      }
+    },
   })
 }
 

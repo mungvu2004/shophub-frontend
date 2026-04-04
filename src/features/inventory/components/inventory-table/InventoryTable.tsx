@@ -1,0 +1,200 @@
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Pagination } from '@/components/ui/pagination'
+import type { InventoryTableViewModel } from '@/features/inventory/logic/inventoryTable.types'
+import { ChevronRight, Edit2 } from 'lucide-react'
+
+type InventoryTableProps = {
+  model: InventoryTableViewModel
+}
+
+const statusConfig = {
+  normal: { label: 'Bình thường', bgColor: 'bg-emerald-50', textColor: 'text-emerald-700', dotColor: 'bg-emerald-500' },
+  warning: { label: 'Thấp ⚠', bgColor: 'bg-amber-50', textColor: 'text-amber-700', dotColor: 'bg-amber-500' },
+  critical: { label: 'Hết hàng', bgColor: 'bg-red-50', textColor: 'text-red-700', dotColor: 'bg-red-500' },
+}
+
+export function InventoryTable({ model }: InventoryTableProps) {
+  const isAllSelected = model.selectedRows.length === model.rows.length && model.rows.length > 0
+
+  return (
+    <div className="rounded-xl bg-white shadow-sm overflow-hidden flex flex-col">
+      <div className="overflow-auto flex-1">
+        <Table>
+        <TableHeader className="bg-indigo-50/50">
+          <TableRow className="border-b border-slate-200 hover:bg-transparent">
+            <TableHead className="w-12">
+              <input
+                type="checkbox"
+                checked={isAllSelected}
+                onChange={(e) => model.onSelectAll(e.target.checked)}
+                className="w-4 h-4 cursor-pointer"
+              />
+            </TableHead>
+            {model.columns.map((col) => (
+              <TableHead
+                key={col.id}
+                className={`text-xs font-bold uppercase text-slate-600 tracking-wide ${
+                  col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''
+                }`}
+              >
+                {col.label}
+              </TableHead>
+            ))}
+            <TableHead className="text-right text-xs font-bold uppercase text-slate-600">Hành động</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {model.rows.map((row) => {
+            const isSelected = model.selectedRows.includes(row.id)
+            const statusInfo = statusConfig[row.status]
+
+            return (
+              <TableRow
+                key={row.id}
+                className={`group border-b border-slate-100 hover:bg-slate-50/50 transition-colors ${
+                  row.status === 'warning'
+                    ? 'bg-amber-50/30'
+                    : row.status === 'critical'
+                      ? 'bg-red-50/30'
+                      : ''
+                }`}
+              >
+                <TableCell>
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => model.onSelectRow(row.id)}
+                    className="w-4 h-4 cursor-pointer"
+                  />
+                </TableCell>
+                {/* Render dynamic columns */}
+                {model.columns.map((col) => {
+                  if (col.id === 'image') {
+                    return (
+                      <TableCell key={col.id} className="text-center py-3">
+                        {row.image ? (
+                          <img
+                            src={row.image}
+                            alt={row.sku}
+                            className="w-8 h-8 rounded object-cover"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded bg-slate-100" />
+                        )}
+                      </TableCell>
+                    )
+                  } else if (col.id === 'sku') {
+                    return (
+                      <TableCell key={col.id} className="font-mono font-medium text-indigo-600 text-sm">
+                        {row.sku}
+                      </TableCell>
+                    )
+                  } else if (col.id === 'productName') {
+                    return (
+                      <TableCell key={col.id} className="max-w-xs">
+                        <p className="text-sm font-medium text-slate-900 break-words whitespace-normal">{row.productName}</p>
+                      </TableCell>
+                    )
+                  } else if (col.id === 'category') {
+                    return (
+                      <TableCell key={col.id} className="text-slate-600 text-sm">
+                        {row.category}
+                      </TableCell>
+                    )
+                  } else if (col.id === 'shopee') {
+                    return (
+                      <TableCell key={col.id} className="text-right font-mono text-sm text-slate-900">
+                        {row.shopeeStock}
+                      </TableCell>
+                    )
+                  } else if (col.id === 'tiktok') {
+                    return (
+                      <TableCell key={col.id} className="text-right font-mono text-sm text-slate-900">
+                        {row.tiktokStock}
+                      </TableCell>
+                    )
+                  } else if (col.id === 'lazada') {
+                    return (
+                      <TableCell key={col.id} className="text-right font-mono text-sm text-slate-900">
+                        {row.lazadaStock}
+                      </TableCell>
+                    )
+                  } else if (col.id === 'actualStock') {
+                    return (
+                      <TableCell key={col.id}>
+                        <div className="text-right">
+                          <p className="font-mono font-medium text-sm text-slate-900">{row.actualStock}</p>
+                          <div className="w-12 h-1 bg-slate-200 rounded-full overflow-hidden mt-1 ml-auto">
+                            <div
+                              className={`h-full ${
+                                row.status === 'normal'
+                                  ? 'bg-emerald-500'
+                                  : row.status === 'warning'
+                                    ? 'bg-amber-500'
+                                    : 'bg-red-500'
+                              }`}
+                              style={{ width: `${Math.min((row.actualStock / 100) * 100, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      </TableCell>
+                    )
+                  } else if (col.id === 'onOrder') {
+                    return (
+                      <TableCell key={col.id} className="text-right font-mono text-slate-500 text-sm">
+                        {row.onOrder}
+                      </TableCell>
+                    )
+                  } else if (col.id === 'available') {
+                    return (
+                      <TableCell key={col.id} className="text-right font-mono text-sm text-slate-900">
+                        {row.available}
+                      </TableCell>
+                    )
+                  } else if (col.id === 'status') {
+                    return (
+                      <TableCell key={col.id}>
+                        <div className="flex items-center gap-1.5">
+                          <div className={`w-1.5 h-1.5 rounded-full ${statusInfo.dotColor}`} />
+                          <span className={`text-xs font-medium ${statusInfo.textColor}`}>{statusInfo.label}</span>
+                        </div>
+                      </TableCell>
+                    )
+                  } else if (col.id === 'forecast') {
+                    return (
+                      <TableCell key={col.id} className="text-sm font-medium text-slate-600">
+                        {row.restockDays || '-'}
+                      </TableCell>
+                    )
+                  }
+                  return null
+                })}
+                {/* Actions */}
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button type="button" className="p-1 hover:bg-slate-100 rounded">
+                      <Edit2 className="w-4 h-4 text-slate-600" />
+                    </button>
+                    <button type="button" className="p-1 hover:bg-slate-100 rounded">
+                      <ChevronRight className="w-4 h-4 text-slate-600" />
+                    </button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
+      </div>
+      {/* Pagination */}
+      <Pagination
+        currentPage={model.currentPage}
+        totalCount={model.totalCount}
+        pageSize={model.pageSize}
+        onPageChange={model.onPageChange}
+        onPageSizeChange={model.onPageSizeChange}
+        pageSizeOptions={model.pageSizeOptions}
+      />
+    </div>
+  )
+}

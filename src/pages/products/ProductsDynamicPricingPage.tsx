@@ -1,12 +1,10 @@
-import { SectionPagePlaceholder } from '@/pages/shared/SectionPagePlaceholder'
+import { ProductsDynamicPricingView } from '../../features/products/components/ProductsDynamicPricingView'
+import { useProductsDynamicPricingPageLogic } from '../../features/products/logic/productsDynamicPricing.logic'
 
 export function ProductsDynamicPricingPage() {
-  return (
-    <SectionPagePlaceholder
-      title="Định giá động"
-      description="Thiết lập và theo dõi chiến lược định giá tự động."
-    />
-  )
+  const model = useProductsDynamicPricingPageLogic()
+
+  return <ProductsDynamicPricingView model={model} />
 }
 
 

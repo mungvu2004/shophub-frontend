@@ -33,26 +33,28 @@ export function DashboardKPIOverviewView({ model }: DashboardKPIOverviewViewProp
         })}
       </nav>
 
-      <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm font-semibold text-slate-500">{model.monthlyGoal.label}</p>
-          <p className="text-sm text-slate-600">
-            <span className={model.monthlyGoal.isPlaceholder ? 'font-bold text-slate-400' : 'font-bold text-slate-900'}>
-              {model.monthlyGoal.currentValue}
-            </span>
-            <span className="px-1.5 text-slate-400">/</span>
-            <span>{model.monthlyGoal.targetValue}</span>
-            <span className="pl-1.5 font-bold text-emerald-600">({model.monthlyGoal.safeProgressPercent}%)</span>
-          </p>
-        </div>
+      {model.showMonthlyGoal ? (
+        <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm font-semibold text-slate-500">{model.monthlyGoal.label}</p>
+            <p className="text-sm text-slate-600">
+              <span className={model.monthlyGoal.isPlaceholder ? 'font-bold text-slate-400' : 'font-bold text-slate-900'}>
+                {model.monthlyGoal.currentValue}
+              </span>
+              <span className="px-1.5 text-slate-400">/</span>
+              <span>{model.monthlyGoal.targetValue}</span>
+              <span className="pl-1.5 font-bold text-emerald-600">({model.monthlyGoal.safeProgressPercent}%)</span>
+            </p>
+          </div>
 
-        <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
-          <div
-            className="h-full rounded-full bg-emerald-500 transition-[width] duration-300"
-            style={{ width: `${model.monthlyGoal.safeProgressPercent}%` }}
-          />
-        </div>
-      </section>
+          <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+            <div
+              className="h-full rounded-full bg-emerald-500 transition-[width] duration-300"
+              style={{ width: `${model.monthlyGoal.safeProgressPercent}%` }}
+            />
+          </div>
+        </section>
+      ) : null}
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         {model.metrics.map((metric) => (
@@ -60,7 +62,7 @@ export function DashboardKPIOverviewView({ model }: DashboardKPIOverviewViewProp
         ))}
       </div>
 
-      {!model.hasRealMetrics ? <p className="text-sm text-slate-500">{model.noDataHint}</p> : null}
+      {!model.hasRealMetrics && model.noDataHint.trim() ? <p className="text-sm text-slate-500">{model.noDataHint}</p> : null}
     </section>
   )
 }

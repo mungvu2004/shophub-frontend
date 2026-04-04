@@ -2,6 +2,10 @@ import { apiClient } from '@/services/apiClient'
 
 export type InventoryAlertItem = {
   id: string
+  productName?: string
+  alertType?: string
+  severity?: string
+  currentAvailableQty?: number
   isResolved?: boolean
   [key: string]: unknown
 }
@@ -17,9 +21,16 @@ export type PlatformConnectionItem = {
 export type RevenueOrderItem = {
   id: string
   platform?: string
+  status?: string
   totalAmount?: number
   createdAt?: string
   createdAt_platform?: string
+  items?: Array<{
+    productName?: string
+    qty?: number
+    itemPrice?: number
+    paidPrice?: number
+  }>
   [key: string]: unknown
 }
 

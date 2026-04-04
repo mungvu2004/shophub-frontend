@@ -4,6 +4,13 @@ import {
   dashboardRevenue30d,
   dashboardRevenueByPlatform,
 } from "@/mocks/data/dashboard";
+import { dashboardAlertsNotificationsMock } from "@/mocks/data/dashboardAlertsNotifications";
+import {
+  getDashboardTopProductsPayload,
+  type DashboardTopProductsMetric,
+  type DashboardTopProductsPlatform,
+  type DashboardTopProductsRange,
+} from "@/mocks/data/dashboardTopProducts";
 
 export const dashboardHandlers = [
   http.get("/api/dashboard/kpi-overview", () => {
@@ -45,6 +52,66 @@ export const dashboardHandlers = [
       {
         items: points,
         totalCount: points.length,
+      },
+      { status: 200 },
+    );
+  }),
+
+  http.get("/api/dashboard/top-products", ({ request }) => {
+    const url = new URL(request.url);
+
+    const metric = (url.searchParams.get("metric") ?? "revenue") as DashboardTopProductsMetric;
+    const rangeParam = Number(url.searchParams.get("range") ?? 30);
+    const platform = (url.searchParams.get("platform") ?? "all") as DashboardTopProductsPlatform;
+
+    const rangeDays: DashboardTopProductsRange =
+      rangeParam === 7 || rangeParam === 90
+        ? rangeParam
+        : 30;
+
+    const safeMetric: DashboardTopProductsMetric =
+      metric === "quantity" || metric === "returnRate"
+        ? metric
+        : "revenue";
+
+    const safePlatform: DashboardTopProductsPlatform =
+      platform === "shopee" || platform === "lazada" || platform === "tiktok_shop"
+        ? platform
+        : "all";
+
+    return HttpResponse.json(
+      {
+        success: true,
+        data: getDashboardTopProductsPayload({
+          metric: safeMetric,
+          rangeDays,
+          platform: safePlatform,
+        }),
+      },
+      { status: 200 },
+    );
+  }),
+
+  http.get("/api/dashboard/alerts-notifications", () => {
+    return HttpResponse.json(
+      {
+        success: true,
+        data: dashboardAlertsNotificationsMock,
+      },
+      { status: 200 },
+    );
+  }),
+
+  http.post("/api/dashboard/alerts-notifications/read-all", () => {
+    dashboardAlertsNotificationsMock.alerts = dashboardAlertsNotificationsMock.alerts.map((item) => ({
+      ...item,
+      isRead: true,
+    }));
+
+    return HttpResponse.json(
+      {
+        success: true,
+        message: "All alerts marked as read",
       },
       { status: 200 },
     );

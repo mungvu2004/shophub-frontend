@@ -1,12 +1,7 @@
-import { SectionPagePlaceholder } from '@/pages/shared/SectionPagePlaceholder'
+import { RevenueMlForecast } from '@/features/revenue/components/revenue-ml-forecast/RevenueMlForecast'
 
 export function RevenueMLForecastPage() {
-  return (
-    <SectionPagePlaceholder
-      title="Dự báo ML"
-      description="Dự báo xu hướng doanh thu bằng machine learning."
-    />
-  )
+  return <RevenueMlForecast />
 }
 
 

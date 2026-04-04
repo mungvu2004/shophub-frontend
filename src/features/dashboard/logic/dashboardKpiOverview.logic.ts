@@ -70,6 +70,7 @@ export function buildDashboardKPIOverviewViewModel({
   monthlyGoal,
   metrics = [],
   noDataHint = DEFAULT_NO_DATA_HINT,
+  showMonthlyGoal = true,
 }: DashboardKPIOverviewPageProps): DashboardKPIOverviewViewModel {
   const resolvedTabs = tabs.length ? tabs : PLACEHOLDER_TABS
   const resolvedSelectedTabId = selectedTabId ?? resolvedTabs[0]?.id ?? 'all'
@@ -87,6 +88,7 @@ export function buildDashboardKPIOverviewViewModel({
       safeProgressPercent: clampPercent(resolvedMonthlyGoal.progressPercent),
       isPlaceholder: !monthlyGoal,
     },
+    showMonthlyGoal,
     metrics: resolvedMetrics.map((metric) => normalizeMetric(metric, !metrics.length)),
     noDataHint,
     hasRealMetrics: metrics.length > 0,

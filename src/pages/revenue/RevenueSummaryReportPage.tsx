@@ -1,12 +1,7 @@
-import { SectionPagePlaceholder } from '@/pages/shared/SectionPagePlaceholder'
+import { RevenueSummaryReport } from '@/features/revenue/components/revenue-summary-report/RevenueSummaryReport'
 
 export function RevenueSummaryReportPage() {
-  return (
-    <SectionPagePlaceholder
-      title="Báo cáo tổng hợp"
-      description="Tổng quan doanh thu theo nhiều chỉ số kinh doanh."
-    />
-  )
+  return <RevenueSummaryReport />
 }
 
 

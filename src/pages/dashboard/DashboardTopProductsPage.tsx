@@ -1,12 +1,7 @@
-import { SectionPagePlaceholder } from '@/pages/shared/SectionPagePlaceholder'
+import { DashboardTopProducts } from '@/features/dashboard/components/dashboard-top-products/DashboardTopProducts'
 
 export function DashboardTopProductsPage() {
-  return (
-    <SectionPagePlaceholder
-      title="Top Products"
-      description="Danh sách sản phẩm nổi bật theo hiệu suất bán hàng."
-    />
-  )
+  return <DashboardTopProducts />
 }
 
 

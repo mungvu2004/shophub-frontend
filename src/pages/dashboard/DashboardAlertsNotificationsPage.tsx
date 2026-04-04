@@ -1,12 +1,7 @@
-import { SectionPagePlaceholder } from '@/pages/shared/SectionPagePlaceholder'
+import { DashboardAlertsNotifications } from '@/features/dashboard/components/dashboard-alerts-notifications/DashboardAlertsNotifications'
 
 export function DashboardAlertsNotificationsPage() {
-  return (
-    <SectionPagePlaceholder
-      title="Alerts & Notifications"
-      description="Cảnh báo vận hành và thông báo quan trọng."
-    />
-  )
+  return <DashboardAlertsNotifications />
 }
 
 

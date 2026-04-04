@@ -1,12 +1,7 @@
-import { SectionPagePlaceholder } from '@/pages/shared/SectionPagePlaceholder'
+import { CRMReviewInboxScreen } from '@/features/crm/components/review-inbox/CRMReviewInboxScreen'
 
 export function CRMReviewInboxPage() {
-  return (
-    <SectionPagePlaceholder
-      title="Hộp thư review"
-      description="Tổng hợp và xử lý review từ nhiều nguồn."
-    />
-  )
+  return <CRMReviewInboxScreen />
 }
 
 

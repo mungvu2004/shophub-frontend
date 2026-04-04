@@ -49,6 +49,7 @@ export type DashboardKPIOverviewPageProps = {
   monthlyGoal?: MonthlyGoalData
   metrics?: MetricCardData[]
   noDataHint?: string
+  showMonthlyGoal?: boolean
 }
 
 export type DashboardKPIOverviewViewModel = {
@@ -58,6 +59,7 @@ export type DashboardKPIOverviewViewModel = {
   selectedTabId: string
   onTabChange?: (tabId: string) => void
   monthlyGoal: MonthlyGoalData & { safeProgressPercent: number; isPlaceholder?: boolean }
+  showMonthlyGoal: boolean
   metrics: Array<MetricCardData & { isPlaceholder?: boolean }>
   noDataHint: string
   hasRealMetrics: boolean

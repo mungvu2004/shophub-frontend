@@ -1,3 +1,7 @@
+import { ProductDetailView, buildProductDetailViewModel } from '@/features/products'
+
 export function ProductDetailPage() {
-  return <div />
+  const model = buildProductDetailViewModel()
+
+  return <ProductDetailView model={model} />
 }

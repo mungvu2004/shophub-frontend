@@ -1,6 +1,6 @@
 import type { MetricCardData, MonthlyGoalData, PlatformTab } from '@/features/dashboard/logic/dashboardKpiOverview.types'
 
-export const DEFAULT_NO_DATA_HINT = 'Đang chờ dữ liệu KPI từ hệ thống.'
+export const DEFAULT_NO_DATA_HINT = ''
 
 export const PLACEHOLDER_TABS: PlatformTab[] = [
   { id: 'all', label: 'Tất cả', count: '(--)' },

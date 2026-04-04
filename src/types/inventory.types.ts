@@ -12,12 +12,23 @@ export interface Warehouse {
 
 export interface StockLevel {
   id: string; // Source: StockLevels.Id | nullable: no
+  sku: string; // Product SKU code
   variantId: string; // Source: StockLevels.VariantId | nullable: no
+  variantName?: string; // Product variant name
+  productName?: string; // Product name
+  category?: string; // Product category
+  productImage?: string; // Product image URL
   warehouseId: string; // Source: StockLevels.WarehouseId | nullable: no
   warehouseName: string; // Source: Joined Warehouses.Name | nullable: no
-  physicalQty: number; // Source: StockLevels.PhysicalQty | nullable: no
+  physicalQty: number; // Physical stock quantity (alias: physicalStock)
   reservedQty: number; // Source: StockLevels.ReservedQty | nullable: no
-  availableQty: number; // Source: StockLevels.AvailableQty (computed) | nullable: no
+  availableQty: number; // Available quantity after reservation (alias: availableStock)
+  onOrder?: number; // Quantity on pending order
+  channelStock?: {
+    shopee?: number;
+    tiktok?: number;
+    lazada?: number;
+  }; // Stock by sales channel
   minThreshold: number; // Source: StockLevels.MinThreshold | nullable: no
   maxThreshold?: number; // Source: StockLevels.MaxThreshold | nullable: yes
   updatedAt: string; // Source: StockLevels.UpdatedAt | nullable: no

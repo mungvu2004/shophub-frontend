@@ -1,5 +1,7 @@
 import { http, HttpResponse } from "msw";
 import {
+  mockInventoryAIForecast,
+  mockInventoryAIForecastDetails,
   mockInventoryAlerts,
   mockStockLevels,
   mockStockMovements,
@@ -7,6 +9,38 @@ import {
 } from "@/mocks/data/inventory";
 
 export const inventoryHandlers = [
+  http.get('/inventory/ai-forecast/detail/:sku', ({ params }) => {
+    const sku = String(params.sku ?? '').toUpperCase();
+    const detail = mockInventoryAIForecastDetails[sku as keyof typeof mockInventoryAIForecastDetails];
+    const fallback = {
+      ...mockInventoryAIForecastDetails['AT-WHT-XL'],
+      sku,
+      productName: `Chi tiết dự báo ${sku}`,
+    };
+
+    return HttpResponse.json(detail ?? fallback, { status: 200 });
+  }),
+
+  http.get('/api/inventory/ai-forecast/detail/:sku', ({ params }) => {
+    const sku = String(params.sku ?? '').toUpperCase();
+    const detail = mockInventoryAIForecastDetails[sku as keyof typeof mockInventoryAIForecastDetails];
+    const fallback = {
+      ...mockInventoryAIForecastDetails['AT-WHT-XL'],
+      sku,
+      productName: `Chi tiết dự báo ${sku}`,
+    };
+
+    return HttpResponse.json(detail ?? fallback, { status: 200 });
+  }),
+
+  http.get('/inventory/ai-forecast', () => {
+    return HttpResponse.json(mockInventoryAIForecast, { status: 200 });
+  }),
+
+  http.get('/api/inventory/ai-forecast', () => {
+    return HttpResponse.json(mockInventoryAIForecast, { status: 200 });
+  }),
+
   http.get("/api/inventory", ({ request }) => {
     const url = new URL(request.url);
     const search = (url.searchParams.get("search") ?? "").trim().toLowerCase();

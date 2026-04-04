@@ -1,12 +1,10 @@
-import { SectionPagePlaceholder } from '@/pages/shared/SectionPagePlaceholder'
+import { ProductsCompetitorTrackingView } from '@/features/products/components/ProductsCompetitorTrackingView'
+import { useProductsCompetitorTrackingPageLogic } from '@/features/products/logic/productsCompetitorTracking.logic'
 
 export function ProductsCompetitorTrackingPage() {
-  return (
-    <SectionPagePlaceholder
-      title="Theo dõi đối thủ"
-      description="Theo dõi giá và hoạt động cạnh tranh trên thị trường."
-    />
-  )
+  const model = useProductsCompetitorTrackingPageLogic()
+
+  return <ProductsCompetitorTrackingView model={model} />
 }
 
 
