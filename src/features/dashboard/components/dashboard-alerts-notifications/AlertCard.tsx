@@ -1,4 +1,4 @@
-import { Clock3, MessageSquareQuote } from 'lucide-react'
+import { MessageSquareQuote } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -10,20 +10,21 @@ import type {
 
 type AlertCardProps = {
   card: DashboardAlertCardModel
+  compact?: boolean
 }
 
 const frameClass: Record<DashboardAlertCardModel['severity'], string> = {
-  critical: 'border-l-4 border-l-rose-600 bg-rose-50/40',
-  action: 'border-l-4 border-l-orange-500 bg-white',
-  info: 'border-l-4 border-l-blue-500 bg-white',
-  resolved: 'border-l-4 border-l-emerald-500 bg-emerald-50/40',
+  critical: 'border border-rose-200 bg-gradient-to-br from-rose-50/70 via-white to-white',
+  action: 'border border-orange-200 bg-gradient-to-br from-orange-50/80 via-white to-white',
+  info: 'border border-blue-200 bg-gradient-to-br from-blue-50/70 via-white to-white',
+  resolved: 'border border-emerald-200 bg-gradient-to-br from-emerald-50/75 via-white to-white',
 }
 
 const statusClass: Record<DashboardAlertCardModel['severity'], string> = {
   critical: 'bg-rose-600 text-white',
-  action: 'bg-orange-100 text-orange-700',
-  info: 'bg-blue-100 text-blue-700',
-  resolved: 'bg-emerald-100 text-emerald-700',
+  action: 'bg-orange-100 text-orange-800',
+  info: 'bg-blue-100 text-blue-800',
+  resolved: 'bg-emerald-100 text-emerald-800',
 }
 
 const platformClass: Record<DashboardAlertCardModel['platform'], string> = {
@@ -39,10 +40,14 @@ const actionVariantClass: Record<AlertsActionVariant, string> = {
   ghost: 'bg-transparent text-slate-400 hover:text-slate-700',
 }
 
-export function AlertCard({ card }: AlertCardProps) {
+export function AlertCard({ card, compact = false }: AlertCardProps) {
   return (
-    <article className={cn('rounded-xl px-6 py-5 shadow-sm', frameClass[card.severity])}>
-      <div className="flex flex-col gap-4 lg:flex-row lg:justify-between">
+    <article className={cn('relative overflow-hidden rounded-2xl px-5 py-5 shadow-[0_18px_40px_-28px_rgba(15,23,42,0.35)]', frameClass[card.severity])}>
+      <div className="absolute right-4 top-4 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold text-slate-600">
+        {card.priorityLabel}
+      </div>
+
+      <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:gap-6">
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className={cn('rounded-md px-2 py-1 font-bold uppercase tracking-wide', statusClass[card.severity])}>
@@ -50,11 +55,14 @@ export function AlertCard({ card }: AlertCardProps) {
             </span>
             <span className="text-slate-400">{card.timeAgo}</span>
             <span className={cn('rounded-full px-2 py-1 font-semibold', platformClass[card.platform])}>{card.platformLabel}</span>
-            <span className="rounded-full bg-slate-100 px-2 py-1 font-semibold text-slate-600">{card.priorityLabel}</span>
           </div>
 
-          <h3 className="text-[28px] font-bold leading-tight text-slate-900">{card.title}</h3>
-          <p className="max-w-4xl text-sm leading-6 text-slate-600">{card.description}</p>
+          <h3 className={cn('max-w-4xl font-semibold text-slate-900', compact ? 'text-[16px] leading-6' : 'text-[19px] leading-7')}>
+            {card.title}
+          </h3>
+          <p className={cn('max-w-4xl text-slate-600', compact ? 'text-[13px] leading-6' : 'text-sm leading-[22px]')}>
+            {card.description}
+          </p>
 
           {card.quote ? (
             <div className="inline-flex items-center gap-2 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-600">
@@ -68,7 +76,7 @@ export function AlertCard({ card }: AlertCardProps) {
               <Button
                 key={action.id}
                 type="button"
-                className={cn('h-9 rounded-lg px-4 text-xs font-semibold', actionVariantClass[action.variant])}
+                className={cn('h-9 rounded-xl px-4 text-xs font-semibold', actionVariantClass[action.variant])}
               >
                 {action.label}
               </Button>
@@ -77,10 +85,9 @@ export function AlertCard({ card }: AlertCardProps) {
         </div>
 
         {card.countdownLabel ? (
-          <aside className="min-w-[132px] self-stretch rounded-xl border border-rose-100 bg-white px-4 py-3 text-center">
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-rose-600">Đếm ngược</p>
-            <div className="mt-2 inline-flex items-center gap-2 text-3xl font-bold text-slate-900">
-              <Clock3 className="size-5 text-rose-500" />
+          <aside className="min-w-[140px] self-stretch rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center shadow-[0_8px_20px_-16px_rgba(15,23,42,0.45)]">
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">Đếm ngược</p>
+            <div className="mt-2 text-3xl font-bold text-slate-900">
               <span>{card.countdownLabel}</span>
             </div>
           </aside>

@@ -33,7 +33,13 @@ export function InventoryGrid({ model }: InventoryGridProps) {
 
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
                 {normalRows.map((row) => (
-                  <InventoryGridCard key={row.id} row={row} variant="normal" onAction={model.onCardAction} />
+                  <InventoryGridCard
+                    key={row.id}
+                    row={row}
+                    variant="normal"
+                    onAction={model.onCardAction}
+                    onOpenProductDetail={model.onOpenProductDetail}
+                  />
                 ))}
               </div>
             </section>
@@ -51,7 +57,13 @@ export function InventoryGrid({ model }: InventoryGridProps) {
 
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
                 {lowRows.map((row) => (
-                  <InventoryGridCard key={row.id} row={row} variant="low" onAction={model.onCardAction} />
+                  <InventoryGridCard
+                    key={row.id}
+                    row={row}
+                    variant="low"
+                    onAction={model.onCardAction}
+                    onOpenProductDetail={model.onOpenProductDetail}
+                  />
                 ))}
               </div>
             </section>

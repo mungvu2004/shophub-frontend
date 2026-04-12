@@ -1,12 +1,7 @@
-import { SectionPagePlaceholder } from '@/pages/shared/SectionPagePlaceholder'
+import { OrdersReturns } from '@/features/orders/components/orders-returns/OrdersReturns'
 
 export function OrdersReturnsPage() {
-  return (
-    <SectionPagePlaceholder
-      title="Hoàn/Huỷ"
-      description="Theo dõi và xử lý đơn hoàn, đơn huỷ."
-    />
-  )
+  return <OrdersReturns />
 }
 
 

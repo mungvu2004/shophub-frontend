@@ -46,14 +46,14 @@ export function NavbarAccountMenu({ displayName, onOpenSettings, onLogout }: Nav
         </div>
         <DropdownMenuSeparator className="m-0" />
         <DropdownMenuItem
-          onSelect={onOpenSettings}
+          onClick={onOpenSettings}
           className="cursor-pointer gap-2 rounded-none px-4 py-2"
         >
           <Settings className="size-4" />
           <span className="text-sm">Cài đặt tài khoản</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator className="m-0" />
-        <DropdownMenuItem onSelect={onLogout} variant="destructive" className="cursor-pointer rounded-none px-4 py-2">
+        <DropdownMenuItem onClick={onLogout} variant="destructive" className="cursor-pointer rounded-none px-4 py-2">
           Đăng xuất
         </DropdownMenuItem>
       </DropdownMenuContent>

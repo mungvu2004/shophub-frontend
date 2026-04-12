@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { InventoryTable } from '@/features/inventory/components/inventory-table/InventoryTable'
 import { useInventorySKUs } from '@/features/inventory/hooks/useInventoryData'
 import type { InventoryTableViewModel, InventoryTableRow } from '@/features/inventory/logic/inventoryTable.types'
@@ -15,8 +16,12 @@ type InventoryTableViewProps = {
 }
 
 function mapStockLevelToTableRow(stockLevel: StockLevel): InventoryTableRow {
+  const matched = stockLevel.variantId.match(/^var-(\d+)-/)
+  const productId = matched ? `prod-${matched[1]}` : undefined
+
   return {
     id: stockLevel.id,
+    productId,
     sku: stockLevel.sku,
     productName: stockLevel.productName || stockLevel.variantName || 'Unknown',
     category: stockLevel.category || 'Uncategorized',
@@ -44,6 +49,8 @@ function getRestockDays(stock: number): string {
 }
 
 export function InventoryTableView({ filters }: InventoryTableViewProps) {
+  const navigate = useNavigate()
+  const location = useLocation()
   const [selectedRows, setSelectedRows] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
@@ -106,8 +113,19 @@ export function InventoryTableView({ filters }: InventoryTableViewProps) {
         setCurrentPage(1)
       },
       pageSizeOptions: [10, 20, 50, 100],
+      onOpenProductDetail: (_rowId, productId) => {
+        if (!productId) {
+          return
+        }
+
+        navigate(`/products/${productId}`, {
+          state: {
+            from: `${location.pathname}${location.search}`,
+          },
+        })
+      },
     }
-  }, [rows, selectedRows, isLoading, currentPage, pageSize, data?.totalCount])
+  }, [rows, selectedRows, isLoading, currentPage, pageSize, data?.totalCount, navigate, location.pathname, location.search])
 
   return <InventoryTable model={model} />
 }

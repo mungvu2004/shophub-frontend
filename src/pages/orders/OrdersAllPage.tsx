@@ -1,12 +1,7 @@
-import { SectionPagePlaceholder } from '@/pages/shared/SectionPagePlaceholder'
+import { OrdersAll } from '@/features/orders/components/orders-all/OrdersAll'
 
 export function OrdersAllPage() {
-  return (
-    <SectionPagePlaceholder
-      title="Danh sách đơn"
-      description="Quản lý toàn bộ đơn hàng từ tất cả kênh bán."
-    />
-  )
+  return <OrdersAll />
 }
 
 

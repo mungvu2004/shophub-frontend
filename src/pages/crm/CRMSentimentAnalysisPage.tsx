@@ -1,12 +1,7 @@
-import { SectionPagePlaceholder } from '@/pages/shared/SectionPagePlaceholder'
+import { CRMSentimentAnalysis } from '@/features/crm/components/sentiment-analysis/CRMSentimentAnalysis'
 
 export function CRMSentimentAnalysisPage() {
-  return (
-    <SectionPagePlaceholder
-      title="Phân tích sentiment"
-      description="Phân tích cảm xúc phản hồi khách hàng."
-    />
-  )
+  return <CRMSentimentAnalysis />
 }
 
 

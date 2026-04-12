@@ -20,6 +20,7 @@ export function resolvePageTitle(pathname: string) {
     '/crm/sentiment-analysis': 'Phân tích sentiment',
     '/crm/review-inbox': 'Hộp thư review',
     '/crm/customer-profiles': 'Hồ sơ khách hàng',
+    '/settings/profile': 'Profile settings',
     '/settings/platform-connections': 'Kết nối sàn',
     '/settings/staff-permissions': 'Phân quyền nhân viên',
     '/settings/automation': 'Tự động hóa',

@@ -24,7 +24,9 @@ import { RevenueMLForecastPage } from '@/pages/revenue/RevenueMLForecastPage'
 import { RevenuePlatformComparisonPage } from '@/pages/revenue/RevenuePlatformComparisonPage'
 import { RevenueSummaryReportPage } from '@/pages/revenue/RevenueSummaryReportPage'
 import { SettingsAutomationPage } from '@/pages/settings/SettingsAutomationPage'
+import { SettingsAutomationBuilderPage } from '@/pages/settings/SettingsAutomationBuilderPage'
 import { SettingsPlatformConnectionsPage } from '@/pages/settings/SettingsPlatformConnectionsPage'
+import { SettingsProfilePage } from '@/pages/settings/SettingsProfilePage'
 import { SettingsStaffPermissionsPage } from '@/pages/settings/SettingsStaffPermissionsPage'
 
 const ProductDetailPage = lazy(() =>
@@ -226,6 +228,14 @@ export function AppShellRoutes() {
         />
         <Route path="settings" element={<Navigate to="/settings/platform-connections" replace />} />
         <Route
+          path="settings/profile"
+          element={
+            <PageLoader>
+              <SettingsProfilePage />
+            </PageLoader>
+          }
+        />
+        <Route
           path="settings/platform-connections"
           element={
             <PageLoader>
@@ -246,6 +256,14 @@ export function AppShellRoutes() {
           element={
             <PageLoader>
               <SettingsAutomationPage />
+            </PageLoader>
+          }
+        />
+        <Route
+          path="settings/automation/new-rule"
+          element={
+            <PageLoader>
+              <SettingsAutomationBuilderPage />
             </PageLoader>
           }
         />

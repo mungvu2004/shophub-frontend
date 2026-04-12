@@ -6,7 +6,15 @@ import {
   crmReviewInboxMock,
   crmWeeklyInsightMock,
 } from '@/mocks/data/crm'
-import type { CRMReviewFilterStatus, CRMReviewSort } from '@/types/crm.types'
+import { buildCRMCustomerProfilesResponse } from '@/mocks/data/crmCustomerProfiles'
+import { crmSentimentAnalysisMock } from '@/mocks/data/crmSentimentAnalysis'
+import type {
+  CRMCustomerProfilesResponse,
+  CRMSentimentAnalysisResponse,
+  CRMSentimentPlatformFilter,
+  CRMReviewFilterStatus,
+  CRMReviewSort,
+} from '@/types/crm.types'
 
 function applyStatusFilter(status: CRMReviewFilterStatus, items = crmReviewInboxMock) {
   if (status === 'unreplied') return items.filter((item) => !item.isReplied)
@@ -26,6 +34,94 @@ function applySort(sort: CRMReviewSort, items: typeof crmReviewInboxMock) {
 }
 
 export const crmHandlers = [
+  http.get('/api/crm/sentiment-analysis', ({ request }) => {
+    const url = new URL(request.url)
+    const weekFilter = url.searchParams.get('week')
+    const platformFilterParam = (url.searchParams.get('platform') ?? 'all') as CRMSentimentPlatformFilter
+    const platformFilter: CRMSentimentPlatformFilter = ['all', 'shopee', 'lazada', 'tiktok'].includes(platformFilterParam)
+      ? platformFilterParam
+      : 'all'
+
+    const filteredReviews = crmSentimentAnalysisMock.reviews.filter((review) => {
+      const isWeekMatched = !weekFilter || review.weekLabel === weekFilter
+      const isPlatformMatched = platformFilter === 'all' || review.platform === platformFilter
+      return isWeekMatched && isPlatformMatched
+    })
+
+    const platformBreakdown = ['all', 'shopee', 'lazada', 'tiktok'].map((id) => {
+      if (id === 'all') {
+        return {
+          id,
+          label: 'Tất cả',
+          value: filteredReviews.length,
+        }
+      }
+
+      const value = filteredReviews.filter((review) => review.platform === id).length
+      const label = id === 'shopee' ? 'Shopee' : id === 'lazada' ? 'Lazada' : 'TikTok'
+
+      return {
+        id,
+        label,
+        value,
+      }
+    }) as CRMSentimentAnalysisResponse['platformBreakdown']
+
+    return HttpResponse.json({
+      success: true,
+      data: {
+        ...crmSentimentAnalysisMock,
+        totalReviews: filteredReviews.length,
+        reviews: filteredReviews,
+        platformBreakdown,
+      },
+    })
+  }),
+
+  http.post('/api/crm/sentiment-analysis/reviews/:id/reply', async ({ params, request }) => {
+    const review = crmSentimentAnalysisMock.reviews.find((item) => item.id === params.id)
+
+    if (!review) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: 'Review not found',
+        },
+        { status: 404 },
+      )
+    }
+
+    const payload = (await request.json()) as {
+      content?: string
+      tone?: 'important' | 'friendly'
+      isDraft?: boolean
+    }
+
+    if (!payload?.content?.trim()) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: 'Content is required',
+        },
+        { status: 400 },
+      )
+    }
+
+    review.reply = {
+      id: `reply-${review.id}-${Date.now()}`,
+      content: payload.content.trim(),
+      tone: payload.tone ?? 'important',
+      isDraft: Boolean(payload.isDraft),
+      createdAt: new Date().toISOString(),
+    }
+    review.isReplied = !review.reply.isDraft
+
+    return HttpResponse.json({
+      success: true,
+      data: review,
+    })
+  }),
+
   http.get('/api/crm/reviews/summary', () => {
     return HttpResponse.json({
       success: true,
@@ -33,6 +129,22 @@ export const crmHandlers = [
         summary: buildCRMReviewSummary(crmReviewInboxMock),
         weeklyInsight: crmWeeklyInsightMock,
       },
+    })
+  }),
+
+  http.get('/api/crm/customer-profiles', ({ request }) => {
+    const url = new URL(request.url)
+    const search = url.searchParams.get('search') ?? ''
+    const customerId = url.searchParams.get('customerId') ?? undefined
+
+    const payload: CRMCustomerProfilesResponse = buildCRMCustomerProfilesResponse({
+      search,
+      customerId,
+    })
+
+    return HttpResponse.json({
+      success: true,
+      data: payload,
     })
   }),
 

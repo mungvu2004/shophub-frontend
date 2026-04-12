@@ -1,12 +1,7 @@
-import { SectionPagePlaceholder } from '@/pages/shared/SectionPagePlaceholder'
+import { InventoryStockMovements } from '@/features/inventory/components/inventory-stock-movements/InventoryStockMovements'
 
 export function InventoryStockMovementsPage() {
-  return (
-    <SectionPagePlaceholder
-      title="Nhập/Xuất kho"
-      description="Theo dõi biến động kho theo nghiệp vụ nhập xuất."
-    />
-  )
+  return <InventoryStockMovements />
 }
 
 

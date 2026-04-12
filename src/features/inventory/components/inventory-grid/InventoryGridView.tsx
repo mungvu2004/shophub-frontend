@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { InventoryGrid } from '@/features/inventory/components/inventory-grid/InventoryGrid'
 import { useInventorySKUs } from '@/features/inventory/hooks/useInventoryData'
 import type { InventoryGridViewModel } from '@/features/inventory/logic/inventoryGrid.types'
@@ -16,8 +17,12 @@ type InventoryGridViewProps = {
 }
 
 function mapStockLevelToTableRow(stockLevel: StockLevel): InventoryTableRow {
+  const matched = stockLevel.variantId.match(/^var-(\d+)-/)
+  const productId = matched ? `prod-${matched[1]}` : undefined
+
   return {
     id: stockLevel.id,
+    productId,
     sku: stockLevel.sku,
     productName: stockLevel.productName || stockLevel.variantName || 'Unknown',
     category: stockLevel.category || 'Uncategorized',
@@ -46,6 +51,8 @@ function getRestockDays(stock: number): string {
 }
 
 export function InventoryGridView({ filters }: InventoryGridViewProps) {
+  const navigate = useNavigate()
+  const location = useLocation()
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(12)
 
@@ -87,9 +94,20 @@ export function InventoryGridView({ filters }: InventoryGridViewProps) {
         console.log(`Card action: ${action} on row ${rowId}`)
         // Handle card actions here (quick purchase, view details, etc.)
       },
+      onOpenProductDetail: (_rowId, productId) => {
+        if (!productId) {
+          return
+        }
+
+        navigate(`/products/${productId}`, {
+          state: {
+            from: `${location.pathname}${location.search}`,
+          },
+        })
+      },
       pageSizeOptions: [12, 24, 36, 48],
     }
-  }, [rows, isLoading, currentPage, pageSize, data?.totalCount])
+  }, [rows, isLoading, currentPage, pageSize, data?.totalCount, navigate, location.pathname, location.search])
 
   return <InventoryGrid model={model} />
 }

@@ -9,6 +9,7 @@ export interface InventoryTableColumn {
 
 export interface InventoryTableRow {
   id: string
+  productId?: string
   image?: string
   sku: string
   productName: string
@@ -39,4 +40,5 @@ export interface InventoryTableViewModel {
   onPageChange: (page: number) => void
   onPageSizeChange: (pageSize: number) => void
   pageSizeOptions?: number[]
+  onOpenProductDetail?: (rowId: string, productId?: string) => void
 }

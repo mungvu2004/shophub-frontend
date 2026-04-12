@@ -107,13 +107,14 @@ export function Sidebar() {
           </nav>
 
           <div className="border-t border-slate-800/80 px-3 py-4">
-            <button
-              type="button"
+            <Link
+              to="/settings/profile"
+              onClick={closeSidebarOnMobile}
               className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm text-slate-400 transition-colors hover:bg-slate-900/80 hover:text-slate-200"
             >
               <UserCircle2 className="size-[18px]" />
               Profile Settings
-            </button>
+            </Link>
           </div>
         </div>
       </aside>

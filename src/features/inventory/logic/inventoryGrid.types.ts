@@ -9,5 +9,6 @@ export interface InventoryGridViewModel {
   onPageChange: (page: number) => void
   onPageSizeChange: (pageSize: number) => void
   onCardAction?: (action: string, rowId: string) => void
+  onOpenProductDetail?: (rowId: string, productId?: string) => void
   pageSizeOptions?: number[]
 }

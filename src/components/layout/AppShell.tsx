@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
 
+import { AppFooter } from '@/features/footer/components/AppFooter'
 import { PageSkeleton } from '@/components/ui/PageSkeleton'
 
 import { Navbar } from './Navbar'
@@ -10,13 +11,14 @@ export function AppShell() {
   return (
     <div className="min-h-screen bg-[#f8f9ff] text-foreground lg:pl-60">
       <Sidebar />
-      <div className="min-h-screen">
+      <div className="flex min-h-screen flex-col">
         <Navbar />
-        <main className="p-8">
+        <main className="flex-1 p-8">
           <Suspense fallback={<PageSkeleton />}>
             <Outlet />
           </Suspense>
         </main>
+        <AppFooter />
       </div>
     </div>
   )

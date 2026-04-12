@@ -1,12 +1,7 @@
-import { SectionPagePlaceholder } from '@/pages/shared/SectionPagePlaceholder'
+import { SettingsPlatformConnections } from '@/features/settings/components/platform-connections/SettingsPlatformConnections'
 
 export function SettingsPlatformConnectionsPage() {
-  return (
-    <SectionPagePlaceholder
-      title="Kết nối sàn"
-      description="Cấu hình kết nối và đồng bộ dữ liệu sàn."
-    />
-  )
+  return <SettingsPlatformConnections />
 }
 
 

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useProductById, useProducts } from '@/features/products/hooks/useProducts'
+import { useProductAutomationTriggers, useProductById, useProducts, useUpdateProduct } from '@/features/products/hooks/useProducts'
+import { useInventorySKUs } from '@/features/inventory/hooks/useInventoryData'
 import type { ProductDetailViewModel } from './productDetailPage.types'
 
 const EMPTY_STATS = {
@@ -13,6 +14,20 @@ const EMPTY_STATS = {
   avgPrice: 0,
 }
 
+const EMPTY_INVENTORY_SUMMARY = {
+  totalPhysicalQty: 0,
+  totalReservedQty: 0,
+  totalAvailableQty: 0,
+  warehouseCount: 0,
+  variantCount: 0,
+  channelStock: {
+    shopee: 0,
+    tiktok: 0,
+    lazada: 0,
+  },
+  items: [],
+}
+
 export function buildProductDetailViewModel(): ProductDetailViewModel {
   const navigate = useNavigate()
   const location = useLocation()
@@ -23,6 +38,16 @@ export function buildProductDetailViewModel(): ProductDetailViewModel {
 
   const { product, isLoading, isError, error } = useProductById(productId || undefined)
   const { products, isLoading: isListLoading } = useProducts({ limit: 1000 })
+  const {
+    triggers,
+    lastUpdatedAt: triggersUpdatedAt,
+    isLoading: isTriggersLoading,
+  } = useProductAutomationTriggers(productId || undefined)
+  const {
+    data: inventoryData,
+    isLoading: isInventoryLoading,
+  } = useInventorySKUs({ limit: 1000 }, Boolean(productId))
+  const { updateProduct, isUpdating } = useUpdateProduct()
 
   const fallbackProduct = useMemo(() => {
     if (!productId) return undefined
@@ -53,14 +78,61 @@ export function buildProductDetailViewModel(): ProductDetailViewModel {
     }
   }, [resolvedProduct])
 
+  const inventorySummary = useMemo(() => {
+    if (!resolvedProduct) {
+      return EMPTY_INVENTORY_SUMMARY
+    }
+
+    const variantIds = new Set(resolvedProduct.variants.map((variant) => variant.id))
+    const inventoryItems = (inventoryData?.items ?? []).filter((item) => variantIds.has(item.variantId))
+
+    const warehouseSet = new Set(inventoryItems.map((item) => item.warehouseId))
+
+    const channelStock = inventoryItems.reduce(
+      (acc, item) => {
+        acc.shopee += item.channelStock?.shopee ?? 0
+        acc.tiktok += item.channelStock?.tiktok ?? 0
+        acc.lazada += item.channelStock?.lazada ?? 0
+        return acc
+      },
+      { shopee: 0, tiktok: 0, lazada: 0 },
+    )
+
+    return {
+      totalPhysicalQty: inventoryItems.reduce((sum, item) => sum + item.physicalQty, 0),
+      totalReservedQty: inventoryItems.reduce((sum, item) => sum + item.reservedQty, 0),
+      totalAvailableQty: inventoryItems.reduce((sum, item) => sum + item.availableQty, 0),
+      warehouseCount: warehouseSet.size,
+      variantCount: variantIds.size,
+      channelStock,
+      items: inventoryItems.map((item) => ({
+        id: item.id,
+        variantId: item.variantId,
+        sku: item.sku,
+        warehouseName: item.warehouseName,
+        physicalQty: item.physicalQty,
+        reservedQty: item.reservedQty,
+        availableQty: item.availableQty,
+      })),
+    }
+  }, [inventoryData?.items, resolvedProduct])
+
+  const fromPath = (location.state as { from?: string } | null)?.from
+  const backPath = typeof fromPath === 'string' && fromPath.startsWith('/') ? fromPath : '/products/list'
+
   const isNotFound = !productId || (!isLoading && !isListLoading && !resolvedProduct)
 
   return {
     productId,
     product: resolvedProduct,
     stats,
-    isLoading: isLoading || isListLoading,
+    appliedTriggers: triggers,
+    triggersUpdatedAt,
+    isLoading: isLoading || isListLoading || isTriggersLoading,
+    isInventoryLoading,
+    inventorySummary,
     isError: isNotFound || isError,
+    isUpdating,
     errorMessage: !productId
       ? 'Không tìm thấy mã sản phẩm.'
       : isNotFound
@@ -68,6 +140,43 @@ export function buildProductDetailViewModel(): ProductDetailViewModel {
         : error instanceof Error
           ? error.message
           : undefined,
-    onBack: () => navigate('/products/list'),
+    onBack: () => navigate(backPath),
+    onSaveEdit: async (input) => {
+      if (!resolvedProduct) {
+        return false
+      }
+
+      const nextVariants = resolvedProduct.variants.length > 0
+        ? resolvedProduct.variants.map((variant, index) => {
+            if (index !== 0) {
+              return variant
+            }
+
+            return {
+              ...variant,
+              mainImageUrl: input.mainImageUrl || undefined,
+              imagesJson: input.galleryImageUrls,
+              updatedAt: new Date().toISOString(),
+            }
+          })
+        : resolvedProduct.variants
+
+      await updateProduct({
+        id: resolvedProduct.id,
+        data: {
+          name: input.name,
+          brand: input.brand || undefined,
+          shortDescription: input.shortDescription || undefined,
+          description: input.description || undefined,
+          model: input.model || undefined,
+          warrantyInfo: input.warrantyInfo || undefined,
+          status: input.status,
+          variants: nextVariants,
+          updatedAt: new Date().toISOString(),
+        },
+      })
+
+      return true
+    },
   }
 }

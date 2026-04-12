@@ -1,12 +1,5 @@
-import { SectionPagePlaceholder } from '@/pages/shared/SectionPagePlaceholder'
+import { SettingsStaffPermissions } from '@/features/settings/components/staff-permissions/SettingsStaffPermissions'
 
 export function SettingsStaffPermissionsPage() {
-  return (
-    <SectionPagePlaceholder
-      title="Phân quyền nhân viên"
-      description="Phân quyền truy cập theo vai trò nhân sự."
-    />
-  )
+  return <SettingsStaffPermissions />
 }
-
-

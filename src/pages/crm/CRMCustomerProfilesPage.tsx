@@ -1,12 +1,7 @@
-import { SectionPagePlaceholder } from '@/pages/shared/SectionPagePlaceholder'
+import { CRMCustomerProfilesScreen } from '@/features/crm/components/customer-profiles/CRMCustomerProfilesScreen'
 
 export function CRMCustomerProfilesPage() {
-  return (
-    <SectionPagePlaceholder
-      title="Hồ sơ khách hàng"
-      description="Quản lý hồ sơ và lịch sử tương tác khách hàng."
-    />
-  )
+  return <CRMCustomerProfilesScreen />
 }
 
 

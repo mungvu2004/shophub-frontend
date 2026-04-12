@@ -1,12 +1,7 @@
-import { SectionPagePlaceholder } from '@/pages/shared/SectionPagePlaceholder'
+import { OrdersPendingActions } from '@/features/orders/components/orders-pending-actions/OrdersPendingActions'
 
 export function OrdersPendingActionsPage() {
-  return (
-    <SectionPagePlaceholder
-      title="Cần xử lý"
-      description="Tập trung vào các đơn cần thao tác ngay."
-    />
-  )
+  return <OrdersPendingActions />
 }
 
 

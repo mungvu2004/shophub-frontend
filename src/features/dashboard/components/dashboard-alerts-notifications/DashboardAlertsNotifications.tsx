@@ -66,6 +66,7 @@ export function DashboardAlertsNotifications() {
   return (
     <DashboardAlertsNotificationsView
       model={model}
+      selectedTab={selectedTab}
       isRefreshing={isFetching}
       isMarkingAllRead={isMarkingAllRead}
       selectedSeverities={selectedSeverities}

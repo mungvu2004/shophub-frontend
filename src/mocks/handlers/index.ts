@@ -8,6 +8,9 @@ import { dashboardHandlers } from "./dashboard.handlers";
 import { revenueHandlers } from "./revenue.handlers";
 import { assetsHandlers } from "./assets.handlers";
 import { crmHandlers } from "./crm.handlers";
+import { settingsHandlers } from "./settings.handlers";
+import { inventoryStockMovementsHandlers } from "./inventoryStockMovements.handlers";
+import { footerHandlers } from './footer.handlers'
 
 export const handlers = [
   ...authHandlers,
@@ -20,4 +23,7 @@ export const handlers = [
   ...revenueHandlers,
   ...assetsHandlers,
   ...crmHandlers,
+  ...settingsHandlers,
+  ...inventoryStockMovementsHandlers,
+  ...footerHandlers,
 ];

@@ -5,9 +5,10 @@ type InventoryGridCardProps = {
   row: InventoryTableRow
   variant?: 'normal' | 'low'
   onAction?: (action: string, rowId: string) => void
+  onOpenProductDetail?: (rowId: string, productId?: string) => void
 }
 
-export function InventoryGridCard({ row, variant = 'normal', onAction }: InventoryGridCardProps) {
+export function InventoryGridCard({ row, variant = 'normal', onAction, onOpenProductDetail }: InventoryGridCardProps) {
   const displayId = row.id.slice(-4).toUpperCase()
   const isLow = variant === 'low'
 
@@ -16,6 +17,7 @@ export function InventoryGridCard({ row, variant = 'normal', onAction }: Invento
       className={`relative overflow-hidden rounded-xl bg-white shadow-[0px_4px_20px_0px_rgba(0,0,0,0.05)] ${
         isLow ? 'h-[328.5px] border-2 border-amber-100' : 'h-[345px] border border-slate-100'
       }`}
+      onClick={() => onOpenProductDetail?.(row.id, row.productId)}
     >
       <div className={`relative h-40 overflow-hidden ${isLow ? 'bg-amber-50' : 'bg-slate-50'}`}>
         {row.image ? (

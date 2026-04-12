@@ -16,6 +16,20 @@ export interface GetProductsResponse {
   hasMore: boolean
 }
 
+export interface ProductAutomationTrigger {
+  id: string
+  name: string
+  status: 'active' | 'paused'
+  scopeLabel: string
+  description: string
+}
+
+export interface GetProductAutomationTriggersResponse {
+  productId: string
+  lastUpdatedAt: string
+  items: ProductAutomationTrigger[]
+}
+
 export const productsService = {
   async getProducts(params: GetProductsParams = {}): Promise<GetProductsResponse> {
     const queryParams = new URLSearchParams()
@@ -36,6 +50,11 @@ export const productsService = {
 
   async getProductById(id: string): Promise<Product> {
     const response = await apiClient.get<Product>(`/products/${id}`)
+    return response.data
+  },
+
+  async getProductAutomationTriggers(id: string): Promise<GetProductAutomationTriggersResponse> {
+    const response = await apiClient.get<GetProductAutomationTriggersResponse>(`/products/${id}/automation-triggers`)
     return response.data
   },
 

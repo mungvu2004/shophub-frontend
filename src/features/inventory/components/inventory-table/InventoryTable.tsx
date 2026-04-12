@@ -92,7 +92,16 @@ export function InventoryTable({ model }: InventoryTableProps) {
                   } else if (col.id === 'productName') {
                     return (
                       <TableCell key={col.id} className="max-w-xs">
-                        <p className="text-sm font-medium text-slate-900 break-words whitespace-normal">{row.productName}</p>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            model.onOpenProductDetail?.(row.id, row.productId)
+                          }}
+                          className="text-left text-sm font-medium text-slate-900 break-words whitespace-normal hover:text-indigo-700"
+                        >
+                          {row.productName}
+                        </button>
                       </TableCell>
                     )
                   } else if (col.id === 'category') {
@@ -175,7 +184,14 @@ export function InventoryTable({ model }: InventoryTableProps) {
                     <button type="button" className="p-1 hover:bg-slate-100 rounded">
                       <Edit2 className="w-4 h-4 text-slate-600" />
                     </button>
-                    <button type="button" className="p-1 hover:bg-slate-100 rounded">
+                    <button
+                      type="button"
+                      className="p-1 hover:bg-slate-100 rounded"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        model.onOpenProductDetail?.(row.id, row.productId)
+                      }}
+                    >
                       <ChevronRight className="w-4 h-4 text-slate-600" />
                     </button>
                   </div>

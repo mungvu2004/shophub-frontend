@@ -11,6 +11,11 @@ import {
   type DashboardTopProductsPlatform,
   type DashboardTopProductsRange,
 } from "@/mocks/data/dashboardTopProducts";
+import {
+  getDashboardRevenueChartsPayload,
+  type RevenueChartsPlatform,
+  type RevenueChartsRange,
+} from "@/mocks/data/dashboardRevenueCharts";
 
 export const dashboardHandlers = [
   http.get("/api/dashboard/kpi-overview", () => {
@@ -86,6 +91,31 @@ export const dashboardHandlers = [
           metric: safeMetric,
           rangeDays,
           platform: safePlatform,
+        }),
+      },
+      { status: 200 },
+    );
+  }),
+
+  http.get("/api/dashboard/revenue-charts", ({ request }) => {
+    const url = new URL(request.url);
+
+    const platform = (url.searchParams.get("platform") ?? "all") as RevenueChartsPlatform;
+    const rangeParam = Number(url.searchParams.get("range") ?? 30);
+
+    const safePlatform: RevenueChartsPlatform =
+      platform === "shopee" || platform === "lazada" || platform === "tiktok_shop"
+        ? platform
+        : "all";
+
+    const safeRange: RevenueChartsRange = rangeParam === 7 ? 7 : 30;
+
+    return HttpResponse.json(
+      {
+        success: true,
+        data: getDashboardRevenueChartsPayload({
+          platform: safePlatform,
+          rangeDays: safeRange,
         }),
       },
       { status: 200 },

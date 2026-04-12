@@ -65,7 +65,7 @@ export function Navbar() {
 
           <NavbarAccountMenu
             displayName={displayName}
-            onOpenSettings={() => navigate('/settings')}
+            onOpenSettings={() => navigate('/settings/profile')}
             onLogout={handleLogout}
           />
         </div>
