@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { toast } from '@/components/ui/toast'
 import { SettingsAutomationBuilderView } from '@/features/settings/components/automation-builder/SettingsAutomationBuilderView'
 import { useSettingsAutomationBuilder } from '@/features/settings/hooks/useSettingsAutomationBuilder'
@@ -92,18 +93,7 @@ export function SettingsAutomationBuilder() {
   }
 
   if (isError || !model) {
-    return (
-      <div className="space-y-4 rounded-2xl border border-rose-200 bg-rose-50 p-8">
-        <p className="text-sm font-semibold text-rose-700">Không tải được dữ liệu Automation Rule Builder.</p>
-        <button
-          type="button"
-          onClick={() => refetch()}
-          className="inline-flex items-center rounded-md bg-rose-600 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-700"
-        >
-          Thử lại
-        </button>
-      </div>
-    )
+    return <DataLoadErrorState title="Không tải được dữ liệu Automation Rule Builder." onRetry={() => refetch()} />
   }
 
   return (

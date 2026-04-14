@@ -26,6 +26,7 @@ export type RevenueOrderItem = {
   createdAt?: string
   createdAt_platform?: string
   items?: Array<{
+    productId?: string
     productName?: string
     qty?: number
     itemPrice?: number

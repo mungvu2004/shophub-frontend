@@ -60,8 +60,10 @@ export function buildTopProductsFromOrders({ orders = [] }: BuildTopProductsFrom
               : 0
 
       const key = name.toLowerCase()
+      const existingId = Array.from(aggregate.values()).find((v) => v.name === name)?.id
+      
       const current = aggregate.get(key) ?? {
-        id: `top-${aggregate.size + 1}`,
+        id: item.productId || existingId || `top-${aggregate.size + 1}`,
         name,
         soldInMonth: 0,
         revenue: 0,

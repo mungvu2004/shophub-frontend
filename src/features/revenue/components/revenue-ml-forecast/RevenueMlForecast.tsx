@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { RevenueMlForecastView } from '@/features/revenue/components/revenue-ml-forecast/RevenueMlForecastView'
 import { useRevenueMlForecast } from '@/features/revenue/hooks/useRevenueMlForecast'
 import { buildRevenueMlForecastViewModel } from '@/features/revenue/logic/revenueMlForecast.logic'
@@ -7,7 +8,7 @@ import type { RevenueMlForecastRangeDays } from '@/types/revenue.types'
 
 export function RevenueMlForecast() {
   const [selectedDays, setSelectedDays] = useState<RevenueMlForecastRangeDays>(30)
-  const { data, isLoading, isError } = useRevenueMlForecast(selectedDays)
+  const { data, isLoading, isError, refetch } = useRevenueMlForecast(selectedDays)
 
   const model = useMemo(() => {
     if (!data) {
@@ -26,11 +27,7 @@ export function RevenueMlForecast() {
   }
 
   if (isError || !model) {
-    return (
-      <div className="rounded-2xl border border-rose-200 bg-rose-50 p-8 text-sm font-semibold text-rose-600">
-        Không tải được dữ liệu dự báo doanh thu ML.
-      </div>
-    )
+    return <DataLoadErrorState title="Không tải được dữ liệu dự báo doanh thu ML." onRetry={() => refetch()} />
   }
 
   return <RevenueMlForecastView model={model} onRangeChange={setSelectedDays} />

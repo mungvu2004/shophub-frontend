@@ -27,7 +27,7 @@ const platformLabel: Record<DashboardAlertRecord['platform'], string> = {
 const sectionMeta: Record<'critical' | 'action' | 'info', string> = {
   critical: 'Khẩn cấp - Cần hành động ngay',
   action: 'Cần xử lý - Trong ngày hôm nay',
-  info: 'Thông tin',
+  info: 'Thông tin tổng quan - Theo dõi chung',
 }
 
 const tabDefinitions: Array<{ id: AlertsTabId; label: string }> = [
@@ -67,6 +67,7 @@ const toCard = (alert: DashboardAlertRecord): DashboardAlertCardModel => {
   return {
     id: alert.id,
     severity: alert.severity,
+    category: alert.category,
     title: alert.title,
     description: alert.description,
     statusLabel: alert.statusLabel,

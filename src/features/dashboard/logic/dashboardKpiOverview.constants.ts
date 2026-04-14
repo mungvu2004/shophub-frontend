@@ -32,6 +32,7 @@ export const PLACEHOLDER_METRICS: Array<MetricCardData & { isPlaceholder?: boole
       { label: 'TIKTOK', value: '--' },
     ],
     isPlaceholder: true,
+    iconName: 'DollarSign',
   },
   {
     id: 'placeholder-2',
@@ -48,6 +49,7 @@ export const PLACEHOLDER_METRICS: Array<MetricCardData & { isPlaceholder?: boole
       { label: 'TIKTOK', value: '--' },
     ],
     isPlaceholder: true,
+    iconName: 'ShoppingCart',
   },
   {
     id: 'placeholder-3',
@@ -61,6 +63,7 @@ export const PLACEHOLDER_METRICS: Array<MetricCardData & { isPlaceholder?: boole
     placeholderLayout: 'alert-summary',
     breakdown: [{ label: '', value: 'Ưu tiên xử lý đơn --' }],
     isPlaceholder: true,
+    iconName: 'AlertCircle',
   },
   {
     id: 'placeholder-4',
@@ -76,5 +79,6 @@ export const PLACEHOLDER_METRICS: Array<MetricCardData & { isPlaceholder?: boole
     comparisonDirection: 'down',
     breakdown: [{ label: 'SO VỚI THÁNG TRƯỚC', value: 'THẤP HƠN 0% SO VỚI THÁNG TRƯỚC' }],
     isPlaceholder: true,
+    iconName: 'BarChart3',
   },
 ]

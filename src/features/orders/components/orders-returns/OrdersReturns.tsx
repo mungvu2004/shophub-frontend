@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { OrdersReturnsView } from '@/features/orders/components/orders-returns/OrdersReturnsView'
 import { useOrdersReturnsData } from '@/features/orders/hooks/useOrdersReturnsData'
 import { useOrdersReturnsViewMode } from '@/features/orders/hooks/useOrdersReturnsViewMode'
@@ -40,18 +41,7 @@ export function OrdersReturns() {
   }
 
   if (isError || !model) {
-    return (
-      <div className="space-y-3 rounded-2xl border border-rose-200 bg-rose-50 p-8">
-        <p className="text-sm font-semibold text-rose-700">Không thể tải dữ liệu hoàn/hủy đơn hàng.</p>
-        <button
-          type="button"
-          className="inline-flex items-center rounded-md bg-rose-600 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-700"
-          onClick={() => refetch()}
-        >
-          Thử lại
-        </button>
-      </div>
-    )
+    return <DataLoadErrorState title="Không thể tải dữ liệu hoàn/hủy đơn hàng." onRetry={() => refetch()} />
   }
 
   return (

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
+import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { RevenueDailyChartSection } from '@/features/revenue/components/revenue-summary-report/RevenueDailyChartSection'
 import { RevenueGoalSection } from '@/features/revenue/components/revenue-summary-report/RevenueGoalSection'
 import { RevenueKpiSection } from '@/features/revenue/components/revenue-summary-report/RevenueKpiSection'
@@ -24,7 +25,7 @@ export function RevenueSummaryReport() {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(5)
 
-  const { data, isLoading, isError } = useRevenueSummaryReport('2026-03')
+  const { data, isLoading, isError, refetch } = useRevenueSummaryReport('2026-03')
 
   const filteredRows = useMemo(
     () => filterProductProfits(data?.productProfits ?? [], keyword),
@@ -68,7 +69,7 @@ export function RevenueSummaryReport() {
   }
 
   if (isError || !model) {
-    return <div className="rounded-2xl border border-rose-200 bg-rose-50 p-8 text-sm font-semibold text-rose-600">Không tải được báo cáo doanh thu.</div>
+    return <DataLoadErrorState title="Không tải được báo cáo doanh thu." onRetry={() => refetch()} />
   }
 
   return (

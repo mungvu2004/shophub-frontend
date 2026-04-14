@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { InventoryStockMovementsView } from '@/features/inventory/components/inventory-stock-movements/InventoryStockMovementsView'
 import { buildInventoryStockMovementsViewModel } from '@/features/inventory/logic/inventoryStockMovements.logic'
 import type {
@@ -59,18 +60,7 @@ export function InventoryStockMovements() {
   }
 
   if (isError || !model) {
-    return (
-      <div className="space-y-4 rounded-2xl border border-rose-200 bg-rose-50 p-8">
-        <p className="text-sm font-semibold text-rose-700">Không tải được dữ liệu biến động kho.</p>
-        <button
-          type="button"
-          onClick={() => refetch()}
-          className="inline-flex items-center rounded-md bg-rose-600 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-700"
-        >
-          Thử lại
-        </button>
-      </div>
-    )
+    return <DataLoadErrorState title="Không tải được dữ liệu biến động kho." onRetry={() => refetch()} />
   }
 
   return (

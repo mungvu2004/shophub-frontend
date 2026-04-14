@@ -33,6 +33,18 @@ const platformTabs: DashboardTopProductsViewModel['platformTabs'] = [
 
 const contributionPalette = ['#3525cd', '#7485ff', '#c7d2fe', '#e2e8f0']
 
+export function getTopProductsSubtitle(metric: TopProductsMetricId) {
+  if (metric === 'quantity') {
+    return 'Xếp hạng theo số lượng - cập nhật lúc'
+  }
+
+  if (metric === 'returnRate') {
+    return 'Xếp hạng theo tỷ lệ hoàn - cập nhật lúc'
+  }
+
+  return 'Xếp hạng theo doanh thu - cập nhật lúc'
+}
+
 const toMoney = (value: number) => `${CURRENCY.format(Math.round(Math.max(0, value)))} ₫`
 
 const toPlatformTone = (platform: TopProductsPlatformId): TopProductsPlatformBadge => {
@@ -103,6 +115,18 @@ const buildPodiumCards = (
     .filter((item): item is DashboardTopProductsViewModel['podiumCards'][number] => Boolean(item))
 }
 
+function formatUpdatedAtTime(isoString: string): string {
+  try {
+    const date = new Date(isoString)
+    if (isNaN(date.getTime())) return 'chưa xác định'
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    return `${hours}:${minutes}`
+  } catch {
+    return 'chưa xác định'
+  }
+}
+
 export const buildDashboardTopProductsViewModel = (params: {
   data: DashboardTopProductsResponse
   selectedMetric: TopProductsMetricId
@@ -110,10 +134,11 @@ export const buildDashboardTopProductsViewModel = (params: {
   selectedPlatform: TopProductsPlatformId
 }): DashboardTopProductsViewModel => {
   const { data, selectedMetric, selectedRange, selectedPlatform } = params
+  const updatedAtTime = formatUpdatedAtTime(data.updatedAt)
 
   return {
     title: 'Sản phẩm Bán chạy',
-    subtitle: 'Xếp hạng theo doanh thu - cập nhật lúc',
+    subtitle: `${getTopProductsSubtitle(selectedMetric)} - cập nhật lúc ${updatedAtTime}`,
     updatedAtLabel: data.updatedAt,
     metricTabs,
     selectedMetric,
@@ -122,7 +147,7 @@ export const buildDashboardTopProductsViewModel = (params: {
     platformTabs,
     selectedPlatform,
     podiumCards: buildPodiumCards(data.podium, selectedMetric),
-    rankingRows: data.ranking.slice(0, 6).map((item, index) => ({
+    rankingRows: data.ranking.map((item, index) => ({
       id: item.id,
       rankLabel: String(index + 1).padStart(2, '0'),
       name: item.name,

@@ -1,7 +1,7 @@
 import {
-  buildDashboardKPIOverviewViewModel,
   type DashboardKPIOverviewPageProps,
 } from '@/features/dashboard/logic/dashboardKpiOverview.logic'
+import { useDashboardKPIOverview } from '@/features/dashboard/hooks/useDashboardKPIOverview'
 import { AIInsightsColumn } from '@/features/dashboard/components/dashboard-bottom-row/AIInsightsColumn'
 import { TopProductsTable } from '@/features/dashboard/components/dashboard-bottom-row/TopProductsTable'
 import { DashboardNoDataStateSection } from '@/features/dashboard/components/dashboard-empty-state/DashboardNoDataStateSection'
@@ -17,17 +17,7 @@ export function DashboardKPIOverviewPage(props: DashboardKPIOverviewPageProps) {
   const hasOrders = Array.isArray(orders) && orders.length > 0
   const isNoDataState = isError || (!isLoading && !hasOrders)
 
-  const model = buildDashboardKPIOverviewViewModel({
-    ...props,
-    tabs: isNoDataState
-      ? [
-          { id: 'all', label: 'Tất cả', count: '(0)' },
-          { id: 'shopee', label: 'Shopee', count: '(0)', dotColor: '#F97316' },
-          { id: 'tiktok', label: 'TikTok Shop', count: '(0)', dotColor: '#0F172A' },
-        ]
-      : props.tabs,
-    showMonthlyGoal: !isNoDataState,
-  })
+  const { model, filteredOrders } = useDashboardKPIOverview(orders, isNoDataState, props)
 
   return (
     <div className="space-y-6">
@@ -39,21 +29,26 @@ export function DashboardKPIOverviewPage(props: DashboardKPIOverviewPageProps) {
         <>
           <section className="grid grid-cols-1 gap-8 xl:grid-cols-5">
             <div className="xl:col-span-3">
-              <RevenueLineChart orders={orders} isLoading={isLoading} isError={isError} days={7} />
+              <RevenueLineChart orders={filteredOrders} isLoading={isLoading} isError={isError} days={7} />
             </div>
 
             <div className="xl:col-span-2">
-              <AllocationDonutChart orders={orders} isLoading={isLoading} isError={isError} />
+              <AllocationDonutChart orders={filteredOrders} isLoading={isLoading} isError={isError} />
             </div>
           </section>
 
-          <section className="grid grid-cols-1 gap-8 xl:grid-cols-5">
-            <div className="xl:col-span-3">
-              <TopProductsTable orders={orders} />
+          <section>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-slate-900">Sản phẩm & Cảnh báo</h2>
             </div>
+            <div className="grid grid-cols-1 gap-8 xl:grid-cols-5">
+              <div className="xl:col-span-3">
+                <TopProductsTable orders={filteredOrders} />
+              </div>
 
-            <div className="xl:col-span-2">
-              <AIInsightsColumn alerts={inventoryAlerts} />
+              <div className="xl:col-span-2">
+                <AIInsightsColumn alerts={inventoryAlerts} />
+              </div>
             </div>
           </section>
         </>

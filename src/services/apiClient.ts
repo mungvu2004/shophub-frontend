@@ -11,6 +11,18 @@ export type ApiError = {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
+const normalizeApiPath = (url: string): string => {
+  if (API_BASE_URL !== "/api") {
+    return url;
+  }
+
+  if (!url.startsWith("/api")) {
+    return url;
+  }
+
+  return url === "/api" ? "/" : url.replace(/^\/api/, "");
+};
+
 const toApiError = (error: unknown): ApiError => {
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError<{
@@ -57,6 +69,10 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use((config) => {
   const { accessToken } = useAuthStore.getState();
+
+  if (typeof config.url === "string") {
+    config.url = normalizeApiPath(config.url);
+  }
 
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;

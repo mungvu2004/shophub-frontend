@@ -59,6 +59,7 @@ export type AlertsTabItem = {
 export type DashboardAlertCardModel = {
   id: string
   severity: AlertsSeverity
+  category: AlertsCategory
   title: string
   description: string
   statusLabel: string

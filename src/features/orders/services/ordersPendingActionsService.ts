@@ -1,4 +1,5 @@
 import { apiClient } from '@/services/apiClient'
+import { buildOrdersPendingActionsResponse } from '@/mocks/data/ordersPendingActions'
 
 import type {
   OrdersPendingActionItem,
@@ -125,6 +126,16 @@ function toItems(value: unknown): OrdersPendingActionItem[] {
 
 class OrdersPendingActionsService {
   async getPendingActions(params: GetOrdersPendingActionsParams): Promise<OrdersPendingActionsResponse> {
+    if (import.meta.env.DEV) {
+      return buildOrdersPendingActionsResponse({
+        search: params.search,
+        platform: params.platform,
+        sla: params.sla,
+        page: params.page,
+        pageSize: params.pageSize,
+      })
+    }
+
     const response = await apiClient.get<OrdersPendingActionsApiResponse>('/orders/pending-actions', {
       params: {
         search: params.search,

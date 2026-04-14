@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { toast } from '@/components/ui/toast'
 import { SettingsProfileView } from '@/features/settings/components/profile-settings/SettingsProfileView'
 import { useSettingsProfile, useUpdateSettingsProfile } from '@/features/settings/hooks/useSettingsProfile'
@@ -60,18 +61,7 @@ export function SettingsProfile() {
   }
 
   if (isError || !model) {
-    return (
-      <div className="space-y-4 rounded-xl border border-rose-200 bg-rose-50 p-8">
-        <p className="text-sm font-semibold text-rose-700">Không tải được dữ liệu profile settings.</p>
-        <button
-          type="button"
-          onClick={() => refetch()}
-          className="inline-flex items-center rounded-md bg-rose-600 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-700"
-        >
-          Thử lại
-        </button>
-      </div>
-    )
+    return <DataLoadErrorState title="Không tải được dữ liệu profile settings." onRetry={() => refetch()} className="rounded-xl" />
   }
 
   return (

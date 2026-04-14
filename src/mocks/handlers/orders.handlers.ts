@@ -2,12 +2,40 @@ import { http, HttpResponse } from "msw";
 import { mockOrders } from "@/mocks/data/orders";
 import { mockOrdersReturns } from "@/mocks/data/ordersReturns";
 import { buildOrdersPendingActionsResponse } from "@/mocks/data/ordersPendingActions";
+import { mockRevenueOrders } from "@/mocks/data/dashboardRevenueOrders";
 
 const pendingStatuses = new Set(["Pending", "PendingPayment", "Confirmed", "Packed", "ReadyToShip", "Shipped"]);
 
 export const ordersHandlers = [
   http.get("/api/orders", ({ request }) => {
     const url = new URL(request.url);
+    
+    // Check if this is a revenue query (for dashboard)
+    const dateFrom = url.searchParams.get("dateFrom");
+    const dateTo = url.searchParams.get("dateTo");
+    
+    if (dateFrom && dateTo) {
+      // Return revenue orders filtered by date range
+      const fromDate = new Date(dateFrom).getTime();
+      const toDate = new Date(dateTo).getTime();
+      
+      const filteredOrders = mockRevenueOrders.filter((order) => {
+        if (!order.createdAt) return false;
+        const orderTime = new Date(order.createdAt).getTime();
+        return orderTime >= fromDate && orderTime <= toDate;
+      });
+      
+      return HttpResponse.json(
+        {
+          items: filteredOrders,
+          data: filteredOrders,
+          totalCount: filteredOrders.length,
+        },
+        { status: 200 },
+      );
+    }
+    
+    // Regular orders query (pagination, search, filter)
     const search = (url.searchParams.get("search") ?? "").trim().toLowerCase();
     const statusGroup = (url.searchParams.get("statusGroup") ?? "all").trim();
     const platform = (url.searchParams.get("platform") ?? "").trim();

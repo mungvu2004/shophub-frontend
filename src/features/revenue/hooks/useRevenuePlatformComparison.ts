@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { revenuePlatformComparisonService } from '@/features/revenue/services/revenuePlatformComparisonService'
 
 export function useRevenuePlatformComparison(month: string) {
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['revenue', 'platform-comparison', month],
     queryFn: () => revenuePlatformComparisonService.getPlatformComparison(month),
     staleTime: 5 * 60 * 1000,
@@ -15,5 +15,6 @@ export function useRevenuePlatformComparison(month: string) {
     isLoading,
     isError,
     error,
+    refetch,
   }
 }

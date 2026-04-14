@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { filterForecastRows, buildInventoryAIForecastViewModel } from '@/features/inventory/logic/inventoryAIForecast.logic'
 import type { ForecastTableFilter } from '@/features/inventory/logic/inventoryAIForecast.types'
 import { useInventoryAIForecast } from '@/features/inventory/hooks/useInventoryAIForecast'
@@ -10,7 +11,7 @@ import { InventoryAIForecastView } from './InventoryAIForecastView'
 export function InventoryAIForecast() {
   const [selectedFilter, setSelectedFilter] = useState<ForecastTableFilter>('all')
   const [selectedSku, setSelectedSku] = useState<string | null>(null)
-  const { data, isPending, isError, error } = useInventoryAIForecast()
+  const { data, isPending, isError, error, refetch } = useInventoryAIForecast()
 
   const model = useMemo(() => {
     if (!data) {
@@ -40,9 +41,12 @@ export function InventoryAIForecast() {
 
   if (isError) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700">
-        Không thể tải dữ liệu dự báo tồn kho. {error instanceof Error ? error.message : ''}
-      </div>
+      <DataLoadErrorState
+        title="Không thể tải dữ liệu dự báo tồn kho."
+        description={error instanceof Error ? error.message : undefined}
+        onRetry={() => refetch()}
+        className="rounded-xl p-6"
+      />
     )
   }
 

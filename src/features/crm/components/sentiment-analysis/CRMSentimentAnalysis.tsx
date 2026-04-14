@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { buildCRMSentimentAnalysisViewModel } from '@/features/crm/logic/crmSentimentAnalysis.logic'
 import { useCRMSentimentAnalysis, useCRMSentimentAnalysisActions } from '@/features/crm/hooks/useCRMSentimentAnalysis'
 import type { CRMSentimentPlatformFilter } from '@/types/crm.types'
@@ -84,18 +85,7 @@ export function CRMSentimentAnalysis() {
   }
 
   if (isError || !model) {
-    return (
-      <div className="rounded-2xl border border-rose-200 bg-rose-50 p-8">
-        <p className="text-sm font-semibold text-rose-700">Không tải được dữ liệu sentiment analysis.</p>
-        <button
-          type="button"
-          onClick={() => refetch()}
-          className="mt-4 inline-flex items-center rounded-md bg-rose-600 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-700"
-        >
-          Thử lại
-        </button>
-      </div>
-    )
+    return <DataLoadErrorState title="Không tải được dữ liệu sentiment analysis." onRetry={() => refetch()} />
   }
 
   return (

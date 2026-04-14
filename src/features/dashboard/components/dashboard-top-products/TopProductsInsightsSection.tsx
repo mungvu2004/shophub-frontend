@@ -16,13 +16,11 @@ const insightToneClassMap = {
   warning: 'border-amber-100 bg-amber-50/60',
 }
 
-function InsightIcon({ tone }: { tone: 'positive' | 'info' | 'warning' }) {
-  if (tone === 'positive') return <Lightbulb className="h-4 w-4 text-emerald-600" />
-  if (tone === 'warning') return <AlertTriangle className="h-4 w-4 text-amber-600" />
-  return <Brain className="h-4 w-4 text-indigo-600" />
-}
+export function buildTopProductsContributionBackground(segments: DashboardTopProductsViewModel['contribution']) {
+  if (segments.length === 0) {
+    return '#e2e8f0'
+  }
 
-function DonutChart({ segments }: { segments: DashboardTopProductsViewModel['contribution'] }) {
   const total = segments.reduce((sum, item) => sum + item.percent, 0) || 1
   let start = 0
 
@@ -33,16 +31,26 @@ function DonutChart({ segments }: { segments: DashboardTopProductsViewModel['con
     return range
   })
 
+  return `conic-gradient(${slices.join(', ')})`
+}
+
+function InsightIcon({ tone }: { tone: 'positive' | 'info' | 'warning' }) {
+  if (tone === 'positive') return <Lightbulb className="h-4 w-4 text-emerald-600" />
+  if (tone === 'warning') return <AlertTriangle className="h-4 w-4 text-amber-600" />
+  return <Brain className="h-4 w-4 text-indigo-600" />
+}
+
+function DonutChart({ segments, totalLabel }: { segments: DashboardTopProductsViewModel['contribution']; totalLabel: string }) {
   return (
     <div
       className="relative mx-auto h-40 w-40 rounded-full"
       style={{
-        background: `conic-gradient(${slices.join(', ')})`,
+        background: buildTopProductsContributionBackground(segments),
       }}
     >
       <div className="absolute inset-4 flex items-center justify-center rounded-full bg-white">
         <div className="text-center">
-          <p className="text-[28px] font-bold leading-7 text-[#111c2d]">20</p>
+          <p className="text-[28px] font-bold leading-7 text-[#111c2d]">{totalLabel}</p>
           <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#64748b]">Sản phẩm</p>
         </div>
       </div>
@@ -84,7 +92,7 @@ export function TopProductsInsightsSection({ insights, contribution, totalLabel 
         </header>
 
         <div className="mt-4">
-          <DonutChart segments={contribution} />
+          <DonutChart segments={contribution} totalLabel={totalLabel} />
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2">

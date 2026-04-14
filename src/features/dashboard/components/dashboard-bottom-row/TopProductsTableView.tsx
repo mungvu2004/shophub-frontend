@@ -4,6 +4,8 @@ import type { TopProductTableRow, TopProductsTableViewModel } from '@/features/d
 
 type TopProductsTableViewProps = {
   model: TopProductsTableViewModel
+  onViewAll?: () => void
+  onProductClick?: (productId: string) => void
 }
 
 const platformBadgeClass: Record<TopProductTableRow['platform'], string> = {
@@ -30,13 +32,17 @@ function ProductAvatar({ name, imageUrl }: { name: string; imageUrl?: string }) 
   )
 }
 
-export function TopProductsTableView({ model }: TopProductsTableViewProps) {
+export function TopProductsTableView({ model, onViewAll, onProductClick }: TopProductsTableViewProps) {
   return (
-    <article className="h-[476px] overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
+    <article className="h-[580px] overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
       <header className="flex items-center justify-between border-b border-[#f0f3ff] px-6 py-6">
         <h3 className="text-lg font-bold leading-7 text-slate-900">{model.title}</h3>
 
-        <button type="button" className="inline-flex items-center gap-1 text-sm font-bold text-indigo-700 hover:text-indigo-600">
+        <button
+          type="button"
+          onClick={onViewAll}
+          className="inline-flex items-center gap-1 text-sm font-bold text-indigo-700 hover:text-indigo-600 transition-colors"
+        >
           <span>{model.ctaLabel}</span>
           <ExternalLink className="h-3.5 w-3.5" />
         </button>
@@ -56,7 +62,13 @@ export function TopProductsTableView({ model }: TopProductsTableViewProps) {
 
           <tbody>
             {model.rows.map((row, index) => (
-              <tr key={row.id} className={index === 0 ? '' : 'border-t border-[#f0f3ff]'}>
+              <tr
+                key={row.id}
+                onClick={() => onProductClick?.(row.id)}
+                className={`${
+                  index === 0 ? '' : 'border-t border-[#f0f3ff]'
+                } cursor-pointer transition-colors hover:bg-slate-50`}
+              >
                 <td className={`px-6 py-6 text-sm font-bold ${index === 0 ? 'text-indigo-700' : 'text-slate-400'}`}>{row.rank}</td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">

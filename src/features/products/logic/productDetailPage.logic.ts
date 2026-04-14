@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useProductAutomationTriggers, useProductById, useProducts, useUpdateProduct } from '@/features/products/hooks/useProducts'
 import { useInventorySKUs } from '@/features/inventory/hooks/useInventoryData'
 import type { ProductDetailViewModel } from './productDetailPage.types'
@@ -32,6 +32,7 @@ export function buildProductDetailViewModel(): ProductDetailViewModel {
   const navigate = useNavigate()
   const location = useLocation()
   const { id } = useParams<{ id: string }>()
+  const [searchParams] = useSearchParams()
 
   const fallbackPathId = location.pathname.split('/').filter(Boolean).at(-1) ?? ''
   const productId = decodeURIComponent((id ?? fallbackPathId).trim())
@@ -117,7 +118,7 @@ export function buildProductDetailViewModel(): ProductDetailViewModel {
     }
   }, [inventoryData?.items, resolvedProduct])
 
-  const fromPath = (location.state as { from?: string } | null)?.from
+  const fromPath = searchParams.get('from')
   const backPath = typeof fromPath === 'string' && fromPath.startsWith('/') ? fromPath : '/products/list'
 
   const isNotFound = !productId || (!isLoading && !isListLoading && !resolvedProduct)

@@ -38,6 +38,7 @@ export type MetricCardData = {
   comparisonPercent?: number
   comparisonDirection?: 'up' | 'down'
   isPlaceholder?: boolean
+  iconName?: string
 }
 
 export type DashboardKPIOverviewPageProps = {

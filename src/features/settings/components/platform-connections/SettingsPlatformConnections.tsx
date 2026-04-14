@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
 
+import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { SettingsPlatformConnectionsView } from '@/features/settings/components/platform-connections/SettingsPlatformConnectionsView'
 import { useSettingsPlatformConnections } from '@/features/settings/hooks/useSettingsPlatformConnections'
 import { buildSettingsPlatformConnectionsViewModel } from '@/features/settings/logic/settingsPlatformConnections.logic'
 
 export function SettingsPlatformConnections() {
-  const { data, isLoading, isError } = useSettingsPlatformConnections()
+  const { data, isLoading, isError, refetch } = useSettingsPlatformConnections()
 
   const model = useMemo(() => {
     if (!data) {
@@ -20,7 +21,7 @@ export function SettingsPlatformConnections() {
   }
 
   if (isError || !model) {
-    return <div className="rounded-xl border border-rose-200 bg-rose-50 p-8 text-sm font-semibold text-rose-600">Không tải được dữ liệu kết nối sàn.</div>
+    return <DataLoadErrorState title="Không tải được dữ liệu kết nối sàn." onRetry={() => refetch()} className="rounded-xl" />
   }
 
   return <SettingsPlatformConnectionsView model={model} />

@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { useInventoryAIForecastDetail } from '@/features/inventory/hooks/useInventoryAIForecastDetail'
 import { buildInventoryAIForecastDetailViewModel } from '@/features/inventory/logic/inventoryAIForecastDetail.logic'
 
@@ -32,11 +33,7 @@ export function InventoryAIForecastDetail({ sku, onBack }: InventoryAIForecastDe
   }
 
   if (isError || !model) {
-    return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700">
-        Không thể tải chi tiết dự báo cho SKU {sku}.
-      </div>
-    )
+    return <DataLoadErrorState title={`Không thể tải chi tiết dự báo cho SKU ${sku}.`} className="rounded-xl p-6" />
   }
 
   return <InventoryAIForecastDetailView model={model} onBack={onBack} />

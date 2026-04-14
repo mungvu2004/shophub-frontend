@@ -10,6 +10,12 @@ const deltaColorByTone = {
   neutral: 'text-slate-500',
 }
 
+export const toDeltaIndicator = (tone?: RevenueChartsSummaryCardViewModel['deltaTone']) => {
+  if (tone === 'down') return '↓'
+  if (tone === 'up') return '↑'
+  return ''
+}
+
 export function RevenueSummaryStrip({ cards }: RevenueSummaryStripProps) {
   return (
     <section className="grid grid-cols-1 overflow-hidden rounded-xl border border-indigo-100 bg-white shadow-sm md:grid-cols-2 xl:grid-cols-4">
@@ -20,7 +26,7 @@ export function RevenueSummaryStrip({ cards }: RevenueSummaryStripProps) {
             <p className="text-2xl font-bold tracking-tight text-slate-900">{card.value}</p>
             {card.deltaLabel ? (
               <p className={`text-xs font-bold ${deltaColorByTone[card.deltaTone ?? 'neutral']}`}>
-                {card.deltaTone === 'down' ? '↓' : '↑'} {card.deltaLabel}
+                {toDeltaIndicator(card.deltaTone)}{toDeltaIndicator(card.deltaTone) ? ' ' : ''}{card.deltaLabel}
               </p>
             ) : null}
             {card.dateLabel ? <p className="text-xs font-bold text-slate-500">{card.dateLabel}</p> : null}

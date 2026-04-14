@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { useRevenuePlatformComparison } from '@/features/revenue/hooks/useRevenuePlatformComparison'
 import {
   buildRevenuePlatformComparisonViewModel,
@@ -7,7 +8,7 @@ import {
 import { RevenuePlatformComparisonView } from '@/features/revenue/components/revenue-platform-comparison/RevenuePlatformComparisonView'
 
 export function RevenuePlatformComparison() {
-  const { data, isLoading, isError } = useRevenuePlatformComparison('2026-03')
+  const { data, isLoading, isError, refetch } = useRevenuePlatformComparison('2026-03')
 
   const model = useMemo(() => {
     if (!data) {
@@ -22,7 +23,7 @@ export function RevenuePlatformComparison() {
   }
 
   if (isError || !model) {
-    return <div className="rounded-2xl border border-rose-200 bg-rose-50 p-8 text-sm font-semibold text-rose-600">Không tải được dữ liệu so sánh sàn.</div>
+    return <DataLoadErrorState title="Không tải được dữ liệu so sánh sàn." onRetry={() => refetch()} />
   }
 
   return <RevenuePlatformComparisonView model={model} />

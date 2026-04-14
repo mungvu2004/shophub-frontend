@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useState } from 'react'
 
+import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { StaffMemberActivityDrawer } from '@/features/settings/components/staff-permissions/StaffMemberActivityDrawer'
 import { StaffMemberActionDialog } from '@/features/settings/components/staff-permissions/StaffMemberActionDialog'
 import { SettingsStaffPermissionsInviteDrawer } from '@/features/settings/components/staff-permissions/SettingsStaffPermissionsInviteDrawer'
@@ -57,18 +58,7 @@ export function SettingsStaffPermissions() {
   }
 
   if (isError || !model) {
-    return (
-      <div className="space-y-4 rounded-2xl border border-rose-200 bg-rose-50 p-8">
-        <p className="text-sm font-semibold text-rose-700">Không tải được dữ liệu phân quyền nhân viên.</p>
-        <button
-          type="button"
-          onClick={() => refetch()}
-          className="inline-flex items-center rounded-md bg-rose-600 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-700"
-        >
-          Thử lại
-        </button>
-      </div>
-    )
+    return <DataLoadErrorState title="Không tải được dữ liệu phân quyền nhân viên." onRetry={() => refetch()} />
   }
 
   const handleMemberActionClick = (_memberId: string, memberName: string, _actionId: string, actionLabel: string) => {

@@ -32,19 +32,17 @@ function InsightIcon({ tone }: { tone: AIInsightItem['tone'] }) {
 
 export function AIInsightsColumnView({ model }: AIInsightsColumnViewProps) {
   return (
-    <article className="flex h-[476px] flex-col overflow-hidden rounded-3xl border border-orange-200 bg-white shadow-sm">
+    <article className="flex h-[580px] flex-col overflow-hidden rounded-3xl border border-orange-200 bg-white shadow-sm">
       <header className="flex items-center justify-between bg-gradient-to-r from-orange-500 to-orange-400 p-6">
         <div className="flex items-center gap-3">
           <BadgeAlert className="h-5 w-5 text-white" />
           <h3 className="text-lg font-bold leading-7 text-white">
-            <span className="block">Cảnh báo Tồn</span>
-            <span className="block">kho</span>
+            Cảnh báo Tồn kho
           </h3>
         </div>
 
         <span className="rounded-md bg-white/20 px-2 py-1 text-[10px] font-black uppercase leading-[15px] tracking-[0.1em] text-white">
-          <span className="block">AI</span>
-          <span className="block">INSIGHT</span>
+          AI INSIGHT
         </span>
       </header>
 

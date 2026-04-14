@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { DashboardRevenueChartsView } from '@/features/dashboard/components/dashboard-revenue-charts-page/DashboardRevenueChartsView'
 import { useDashboardRevenueCharts } from '@/features/dashboard/hooks/useDashboardRevenueCharts'
 import { buildDashboardRevenueChartsViewModel } from '@/features/dashboard/logic/dashboardRevenueCharts.logic'
@@ -7,6 +8,8 @@ import type {
   RevenueChartsPlatformId,
   RevenueChartsRangeDays,
 } from '@/features/dashboard/logic/dashboardRevenueCharts.types'
+
+export const shouldShowBlockingRevenueChartsError = (input: { isError: boolean; hasModel: boolean }) => input.isError && !input.hasModel
 
 export function DashboardRevenueCharts() {
   const [selectedPlatform, setSelectedPlatform] = useState<RevenueChartsPlatformId>('all')
@@ -30,27 +33,28 @@ export function DashboardRevenueCharts() {
     return <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-500">Đang tải dữ liệu doanh thu...</div>
   }
 
-  if (isError || !model) {
-    return (
-      <div className="space-y-4 rounded-2xl border border-rose-200 bg-rose-50 p-8">
-        <p className="text-sm font-semibold text-rose-700">Không tải được dữ liệu Revenue Charts.</p>
-        <button
-          type="button"
-          onClick={() => refetch()}
-          className="inline-flex items-center rounded-md bg-rose-600 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-700"
-        >
-          Thử lại
-        </button>
-      </div>
-    )
+  if (shouldShowBlockingRevenueChartsError({ isError, hasModel: Boolean(model) })) {
+    return <DataLoadErrorState title="Không tải được dữ liệu Revenue Charts." onRetry={() => refetch()} />
+  }
+
+  if (!model) {
+    return <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-500">Đang chuẩn bị dữ liệu Revenue Charts...</div>
   }
 
   return (
-    <DashboardRevenueChartsView
-      model={model}
-      isRefreshing={isFetching}
-      onPlatformChange={setSelectedPlatform}
-      onRangeChange={setSelectedRange}
-    />
+    <div className="space-y-4">
+      {isError ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+          Dữ liệu mới chưa tải được. Đang hiển thị dữ liệu gần nhất.
+        </div>
+      ) : null}
+
+      <DashboardRevenueChartsView
+        model={model}
+        isRefreshing={isFetching}
+        onPlatformChange={setSelectedPlatform}
+        onRangeChange={setSelectedRange}
+      />
+    </div>
   )
 }

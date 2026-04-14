@@ -17,6 +17,9 @@ type DashboardTopProductsViewProps = {
   onMetricChange: (metric: TopProductsMetricId) => void
   onRangeChange: (rangeDays: TopProductsRangeDays) => void
   onPlatformChange: (platform: TopProductsPlatformId) => void
+  onProductClick: (productId: string) => void
+  onQuickFilterPlatform: (platform: TopProductsPlatformId) => void
+  onViewDecliningReason: (productId: string) => void
 }
 
 export function DashboardTopProductsView({
@@ -25,6 +28,9 @@ export function DashboardTopProductsView({
   onMetricChange,
   onRangeChange,
   onPlatformChange,
+  onProductClick,
+  onQuickFilterPlatform,
+  onViewDecliningReason,
 }: DashboardTopProductsViewProps) {
   return (
     <div className="space-y-6 pb-8">
@@ -40,7 +46,11 @@ export function DashboardTopProductsView({
         <>
           <TopProductsPodiumSection cards={model.podiumCards} />
 
-          <TopProductsRankingTable rows={model.rankingRows} />
+          <TopProductsRankingTable
+            rows={model.rankingRows}
+            onProductClick={onProductClick}
+            onQuickFilterPlatform={onQuickFilterPlatform}
+          />
 
           <section className="grid grid-cols-1 gap-6 xl:grid-cols-5">
             <div className="xl:col-span-3">
@@ -52,7 +62,11 @@ export function DashboardTopProductsView({
             </div>
 
             <div className="xl:col-span-2">
-              <TopProductsDecliningSection title={model.decliningTitle} items={model.decliningItems} />
+              <TopProductsDecliningSection
+                title={model.decliningTitle}
+                items={model.decliningItems}
+                onViewReason={onViewDecliningReason}
+              />
             </div>
           </section>
         </>

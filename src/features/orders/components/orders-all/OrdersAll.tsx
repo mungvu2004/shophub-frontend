@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { OrdersAllView } from '@/features/orders/components/orders-all/OrdersAllView'
 import { useOrdersAllData } from '@/features/orders/hooks/useOrdersAllData'
 import { useOrdersAllSelection } from '@/features/orders/hooks/useOrdersAllSelection'
@@ -45,18 +46,7 @@ export function OrdersAll() {
   }
 
   if (isError || !model) {
-    return (
-      <div className="space-y-3 rounded-2xl border border-rose-200 bg-rose-50 p-8">
-        <p className="text-sm font-semibold text-rose-700">Không thể tải danh sách đơn hàng.</p>
-        <button
-          type="button"
-          className="inline-flex items-center rounded-md bg-rose-600 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-700"
-          onClick={() => refetch()}
-        >
-          Thử lại
-        </button>
-      </div>
-    )
+    return <DataLoadErrorState title="Không thể tải danh sách đơn hàng." onRetry={() => refetch()} />
   }
 
   return (

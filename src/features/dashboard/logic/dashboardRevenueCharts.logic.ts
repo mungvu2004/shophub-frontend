@@ -133,6 +133,7 @@ export const buildDashboardRevenueChartsViewModel = (input: {
   })
 
   const goalProgressPercent = Math.max(0, Math.min(data.monthlyGoal.progressPercent, 100))
+  const goalProgressDisplay = Number(goalProgressPercent.toFixed(1))
 
   return {
     updatedAtLabel: `Cập nhật lúc ${data.updatedAt}`,
@@ -142,7 +143,7 @@ export const buildDashboardRevenueChartsViewModel = (input: {
     platformTabs: toPlatformTabs(),
     selectedPlatform,
     summaryCards,
-    goalLabel: `Mục tiêu ${data.monthlyGoal.monthLabel}: ${formatCurrency(data.monthlyGoal.targetRevenue)} - đạt ${data.monthlyGoal.progressPercent}% (${formatCurrency(data.monthlyGoal.achievedRevenue)})`,
+    goalLabel: `Mục tiêu ${data.monthlyGoal.monthLabel}: ${formatCurrency(data.monthlyGoal.targetRevenue)} - đạt ${goalProgressDisplay}% (${formatCurrency(data.monthlyGoal.achievedRevenue)})`,
     goalProgressPercent,
     goalProgressLabel: 'Tiến độ',
     dailyChartTitle: 'Doanh thu theo ngày',
