@@ -11,8 +11,14 @@ export type OrdersPendingActionItem = {
   platform: PlatformCode
   customerName: string
   productName: string
+  sku: string
+  variantLabel: string
+  quantity: number
+  thumbnailUrl: string
+  customerNote?: string
   amount: number
   status: string
+  printStatus: 'printed' | 'not_printed'
   waitingMinutes: number
   slaLevel: OrdersPendingActionSlaLevel
   recommendedAction: string
@@ -41,6 +47,13 @@ export type OrdersPendingActionsQuery = {
   sla: OrdersPendingActionsSlaFilter
   page: number
   pageSize: number
+  dateFrom: string
+  dateTo: string
+}
+
+export type OrdersPendingActionsDateFilters = {
+  dateFrom: string
+  dateTo: string
 }
 
 export type OrdersPendingActionsPlatformOption = {
@@ -65,16 +78,28 @@ export type OrdersPendingActionsTableRowModel = {
   id: string
   orderCode: string
   platformLabel: string
-  platformDotClass: string
+  platformMarkText: string
+  platformMarkClass: string
   customerName: string
+  hasCustomerNote: boolean
+  customerNoteText: string
   productName: string
+  productSku: string
+  productVariantLabel: string
+  productQuantity: number
+  productThumbnailUrl: string
   amountLabel: string
+  amountValue: number
   statusLabel: string
+  printStatus: 'printed' | 'not_printed'
+  printStatusLabel: string
   waitingLabel: string
+  waitingMinutes: number
   waitingClassName: string
   actionLabel: string
   actionClassName: string
   updatedAtLabel: string
+  updatedAtMs: number
 }
 
 export type OrdersPendingActionsViewModel = {

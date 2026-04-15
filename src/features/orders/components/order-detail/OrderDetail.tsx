@@ -1,21 +1,109 @@
-import { useLocation, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
+import { Skeleton } from '@/components/ui/skeleton'
 import { OrderDetailView } from '@/features/orders/components/order-detail/OrderDetailView'
 import { useOrderDetailData } from '@/features/orders/hooks/useOrderDetailData'
+import { useOrderDetailQuickActions } from '@/features/orders/hooks/useOrderDetailQuickActions'
 import { buildOrderDetailViewModel } from '@/features/orders/logic/orderDetail.logic'
 import type { OrderDetailLocationState } from '@/features/orders/logic/orderDetail.types'
 
-export function OrderDetail() {
-  const { id = '' } = useParams()
-  const location = useLocation()
+type OrderDetailProps = {
+  orderId?: string
+  fallbackState?: OrderDetailLocationState | null
+  isModalPresentation?: boolean
+  onClose?: () => void
+}
 
-  const fallbackState = (location.state as OrderDetailLocationState | null) ?? null
+export function OrderDetail({ orderId, fallbackState: fallbackStateProp, isModalPresentation: isModalPresentationProp, onClose }: OrderDetailProps = {}) {
+  const params = useParams()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const id = orderId ?? params.id ?? ''
+  const resolvedOrderId = id.startsWith('pending-') ? id.replace('pending-', '') : id
+
+  const fallbackState = fallbackStateProp ?? (location.state as OrderDetailLocationState | null) ?? null
+  const isModalPresentation = isModalPresentationProp ?? Boolean((location.state as { backgroundLocation?: unknown } | null)?.backgroundLocation)
+
+  const handleClose = () => {
+    if (onClose) {
+      onClose()
+      return
+    }
+
+    if (isModalPresentation) {
+      navigate(-1)
+      return
+    }
+
+    navigate('/orders/all')
+  }
 
   const { data, isLoading, isError, refetch } = useOrderDetailData({
-    id,
+    id: resolvedOrderId,
     fallbackState,
   })
+
+  const { activeActionId, handleQuickAction } = useOrderDetailQuickActions({
+    orderId: resolvedOrderId,
+    order: data?.order,
+    refetchOrder: async () => {
+      await refetch()
+    },
+  })
+
+  if (isLoading && !data) {
+    return isModalPresentation ? (
+      <div className="fixed inset-0 z-50">
+        <button type="button" aria-label="close" className="absolute inset-0 bg-slate-900/35" onClick={handleClose} />
+        <aside className="absolute right-0 top-0 h-full w-full max-w-[520px] border-l border-slate-200 bg-white shadow-2xl">
+          <div className="flex h-full flex-col">
+            <div className="border-b border-slate-100 px-4 py-3">
+              <div className="flex items-center justify-between gap-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-5 w-28 rounded-full" />
+              </div>
+            </div>
+            <div className="border-b px-4 py-2 text-sm font-semibold text-blue-700 bg-blue-50">Đang tải chi tiết đơn...</div>
+            <div className="space-y-3 border-b border-slate-100 px-4 py-3">
+              <Skeleton className="h-8 w-full rounded-md" />
+              <Skeleton className="h-8 w-4/5 rounded-md" />
+            </div>
+            <div className="flex-1 space-y-3 bg-slate-50 px-4 py-4">
+              <Skeleton className="h-20 w-full rounded-xl" />
+              <Skeleton className="h-28 w-full rounded-xl" />
+              <Skeleton className="h-36 w-full rounded-xl" />
+            </div>
+          </div>
+        </aside>
+      </div>
+    ) : (
+      <div className="min-h-screen bg-slate-50 px-4 py-4">
+        <div className="mx-auto flex w-full max-w-[1680px] justify-end">
+          <aside className="w-full max-w-[520px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_50px_-30px_rgba(15,23,42,0.25)]">
+            <div className="flex h-full flex-col">
+              <div className="border-b border-slate-100 px-4 py-3">
+                <div className="flex items-center justify-between gap-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-5 w-28 rounded-full" />
+                </div>
+              </div>
+              <div className="border-b px-4 py-2 text-sm font-semibold text-blue-700 bg-blue-50">Đang tải chi tiết đơn...</div>
+              <div className="space-y-3 border-b border-slate-100 px-4 py-3">
+                <Skeleton className="h-8 w-full rounded-md" />
+                <Skeleton className="h-8 w-4/5 rounded-md" />
+              </div>
+              <div className="flex-1 space-y-3 bg-slate-50 px-4 py-4">
+                <Skeleton className="h-20 w-full rounded-xl" />
+                <Skeleton className="h-28 w-full rounded-xl" />
+                <Skeleton className="h-36 w-full rounded-xl" />
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    )
+  }
 
   if (isError || !data) {
     return (
@@ -27,5 +115,14 @@ export function OrderDetail() {
 
   const model = buildOrderDetailViewModel(data)
 
-  return <OrderDetailView model={model} isLoading={isLoading} />
+  return (
+    <OrderDetailView
+      model={model}
+      isLoading={isLoading}
+      isModalPresentation={isModalPresentation}
+      activeActionId={activeActionId}
+      onClose={handleClose}
+      onQuickAction={(actionId) => void handleQuickAction(actionId)}
+    />
+  )
 }

@@ -21,6 +21,65 @@ const TIME_FORMATTER = new Intl.DateTimeFormat('vi-VN', {
   month: '2-digit',
 })
 
+export function buildTodayDateRange(reference = new Date()) {
+  const start = new Date(reference)
+  start.setHours(0, 0, 0, 0)
+
+  const end = new Date(reference)
+  end.setHours(23, 59, 59, 999)
+
+  return {
+    dateFrom: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`,
+    dateTo: `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`,
+  }
+}
+
+export function buildLastDaysDateRange(days: number, reference = new Date()) {
+  const safeDays = Math.max(1, Math.floor(days))
+  const end = new Date(reference)
+  end.setHours(23, 59, 59, 999)
+
+  const start = new Date(end)
+  start.setDate(end.getDate() - (safeDays - 1))
+  start.setHours(0, 0, 0, 0)
+
+  return {
+    dateFrom: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`,
+    dateTo: `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`,
+  }
+}
+
+export function buildOrdersPendingActionsCsv(rows: OrdersPendingActionsTableRowModel[]) {
+  const headers = ['Mã đơn', 'Khách hàng', 'Sàn', 'Sản phẩm', 'Giá trị', 'Trạng thái in', 'Chờ xử lý', 'Cập nhật']
+  const toCsvCell = (value: string) => `"${value.replaceAll('"', '""')}"`
+
+  return [
+    headers,
+    ...rows.map((row) => [
+      row.orderCode,
+      row.customerName,
+      row.platformLabel,
+      row.productName,
+      row.amountLabel,
+      row.printStatusLabel,
+      row.waitingLabel,
+      row.updatedAtLabel,
+    ]),
+  ].map((line) => line.map(toCsvCell).join(',')).join('\n')
+}
+
+export function downloadCsvFile(filename: string, content: string) {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+
+  anchor.href = url
+  anchor.download = filename
+  anchor.click()
+
+  URL.revokeObjectURL(url)
+}
+
 function getPlatformLabel(platform: OrdersPendingActionsPlatformFilter): string {
   if (platform === 'shopee') return 'Shopee'
   if (platform === 'lazada') return 'Lazada'
@@ -35,11 +94,18 @@ function getSlaLabel(sla: OrdersPendingActionsSlaFilter): string {
   return 'Mọi SLA'
 }
 
-function getPlatformDotClass(platform: OrdersPendingActionsPlatformFilter): string {
-  if (platform === 'shopee') return 'bg-orange-500'
-  if (platform === 'lazada') return 'bg-blue-600'
-  if (platform === 'tiktok_shop') return 'bg-black'
-  return 'bg-slate-400'
+function getPlatformMarkClass(platform: OrdersPendingActionsPlatformFilter): string {
+  if (platform === 'shopee') return 'bg-orange-100 text-orange-700'
+  if (platform === 'lazada') return 'bg-blue-100 text-blue-700'
+  if (platform === 'tiktok_shop') return 'bg-neutral-200 text-neutral-800'
+  return 'bg-slate-200 text-slate-700'
+}
+
+function getPlatformMarkText(platform: OrdersPendingActionsPlatformFilter): string {
+  if (platform === 'shopee') return 'S'
+  if (platform === 'lazada') return 'L'
+  if (platform === 'tiktok_shop') return 'T'
+  return 'A'
 }
 
 function getWaitingPresentation(item: OrdersPendingActionItem): Pick<OrdersPendingActionsTableRowModel, 'waitingLabel' | 'waitingClassName'> {
@@ -68,19 +134,36 @@ function getWaitingPresentation(item: OrdersPendingActionItem): Pick<OrdersPendi
 function toTableRows(items: OrdersPendingActionItem[]): OrdersPendingActionsTableRowModel[] {
   return items.map((item) => {
     const waiting = getWaitingPresentation(item)
+    const actionLabel =
+      item.slaLevel === 'critical'
+        ? 'Xác nhận + kho'
+        : item.slaLevel === 'warning'
+          ? 'Nhắc xử lý'
+          : 'Theo dõi'
 
     return {
       id: item.id,
       orderCode: item.orderCode,
       platformLabel: getPlatformLabel(item.platform),
-      platformDotClass: getPlatformDotClass(item.platform),
+      platformMarkText: getPlatformMarkText(item.platform),
+      platformMarkClass: getPlatformMarkClass(item.platform),
       customerName: item.customerName,
+      hasCustomerNote: Boolean(item.customerNote?.trim()),
+      customerNoteText: item.customerNote?.trim() || 'Không có ghi chú',
       productName: item.productName,
+      productSku: item.sku,
+      productVariantLabel: item.variantLabel,
+      productQuantity: item.quantity,
+      productThumbnailUrl: item.thumbnailUrl,
+      amountValue: item.amount,
       amountLabel: CURRENCY_FORMATTER.format(item.amount),
       statusLabel: item.status,
+      printStatus: item.printStatus,
+      printStatusLabel: item.printStatus === 'printed' ? 'Đã in' : 'Chưa in',
       waitingLabel: waiting.waitingLabel,
+      waitingMinutes: item.waitingMinutes,
       waitingClassName: waiting.waitingClassName,
-      actionLabel: item.recommendedAction,
+      actionLabel,
       actionClassName:
         item.slaLevel === 'critical'
           ? 'bg-rose-100 text-rose-700'
@@ -88,6 +171,7 @@ function toTableRows(items: OrdersPendingActionItem[]): OrdersPendingActionsTabl
             ? 'bg-amber-100 text-amber-700'
             : 'bg-slate-100 text-slate-600',
       updatedAtLabel: TIME_FORMATTER.format(new Date(item.updatedAt)),
+      updatedAtMs: new Date(item.updatedAt).getTime() || 0,
     }
   })
 }

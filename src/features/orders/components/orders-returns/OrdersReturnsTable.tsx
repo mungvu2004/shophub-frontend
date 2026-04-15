@@ -1,13 +1,14 @@
 import { Pagination } from '@/components/ui/pagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { OrdersReturnsTableRowModel } from '@/features/orders/logic/ordersReturns.types'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 type OrdersReturnsTableProps = {
   rows: OrdersReturnsTableRowModel[]
   totalCount: number
   page: number
   pageSize: number
+  onOpenDetail?: (row: OrdersReturnsTableRowModel) => void
   onPageChange: (page: number) => void
   onPageSizeChange: (pageSize: number) => void
 }
@@ -17,14 +18,22 @@ export function OrdersReturnsTable({
   totalCount,
   page,
   pageSize,
+  onOpenDetail,
   onPageChange,
   onPageSizeChange,
 }: OrdersReturnsTableProps) {
   const navigate = useNavigate()
+  const location = useLocation()
 
   const openOrderDetail = (row: OrdersReturnsTableRowModel) => {
+    if (onOpenDetail) {
+      onOpenDetail(row)
+      return
+    }
+
     navigate(`/orders/${row.id}`, {
       state: {
+        backgroundLocation: location,
         orderCode: row.orderCode,
         platformLabel: row.platformLabel,
         customerName: row.customerName,

@@ -81,12 +81,10 @@ export function InventoryTableView({ filters }: InventoryTableViewProps) {
     return {
       columns: [
         { id: 'image', label: 'Ảnh', align: 'center' },
-        { id: 'sku', label: 'SKU' },
         { id: 'productName', label: 'Tên sản phẩm' },
+        { id: 'sku', label: 'SKU' },
         { id: 'category', label: 'Phân loại' },
-        { id: 'shopee', label: 'Shopee', align: 'right' },
-        { id: 'tiktok', label: 'TikTok', align: 'right' },
-        { id: 'lazada', label: 'Lazada', align: 'right' },
+        { id: 'marketplaceStock', label: 'Tồn trên sàn', align: 'right' },
         { id: 'actualStock', label: 'Tồn thực tế', align: 'right' },
         { id: 'onOrder', label: 'Đã đặt', align: 'right' },
         { id: 'available', label: 'Khả dụng', align: 'right' },

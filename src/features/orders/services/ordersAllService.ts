@@ -23,6 +23,10 @@ type GetOrdersAllParams = {
   platform?: OrderPlatformFilter
   page?: number
   pageSize?: number
+  dateFrom?: string
+  dateTo?: string
+  minAmount?: number
+  maxAmount?: number
 }
 
 export type { GetOrdersAllParams }
@@ -111,6 +115,10 @@ class OrdersAllService {
         platform: params.platform && params.platform !== 'all' ? params.platform : undefined,
         page: params.page,
         pageSize: params.pageSize,
+        dateFrom: params.dateFrom,
+        dateTo: params.dateTo,
+        minAmount: params.minAmount,
+        maxAmount: params.maxAmount,
       },
     })
 
@@ -120,6 +128,18 @@ class OrdersAllService {
       hasMore: response.data?.hasMore === true,
       nextCursor: typeof response.data?.nextCursor === 'string' ? response.data.nextCursor : undefined,
       summary: toSummary(response.data?.summary),
+    }
+  }
+
+  async bulkConfirmOrders(orderIds: string[]): Promise<{ updatedCount: number }> {
+    const response = await apiClient.post<{ updatedCount?: unknown }>('/orders/bulk-confirm', {
+      orderIds,
+    })
+
+    return {
+      updatedCount: typeof response.data?.updatedCount === 'number' && Number.isFinite(response.data.updatedCount)
+        ? response.data.updatedCount
+        : 0,
     }
   }
 }

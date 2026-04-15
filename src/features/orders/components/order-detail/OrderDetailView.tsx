@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { OrderDetailCustomerCard } from '@/features/orders/components/order-detail/OrderDetailCustomerCard'
 import { OrderDetailHistoryTab } from '@/features/orders/components/order-detail/OrderDetailHistoryTab'
@@ -11,6 +10,10 @@ import type { OrderDetailTab, OrderDetailViewModel } from '@/features/orders/log
 type OrderDetailViewProps = {
   model: OrderDetailViewModel
   isLoading: boolean
+  isModalPresentation: boolean
+  activeActionId: string | null
+  onClose: () => void
+  onQuickAction: (actionId: string) => void
 }
 
 function statusToneClass(tone: OrderDetailViewModel['statusTone']) {
@@ -26,9 +29,21 @@ function actionButtonClass(tone: 'primary' | 'danger' | 'neutral') {
   return 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
 }
 
-export function OrderDetailView({ model, isLoading }: OrderDetailViewProps) {
-  const navigate = useNavigate()
+export function OrderDetailView({ model, isLoading, isModalPresentation, activeActionId, onClose, onQuickAction }: OrderDetailViewProps) {
   const [activeTab, setActiveTab] = useState<OrderDetailTab>('detail')
+  const handleClose = onClose
+
+  const handleQuickAction = (actionId: string) => {
+    if (actionId === 'view-proof' || actionId === 'track-order') {
+      setActiveTab('history')
+    }
+
+    if (actionId === 'view-support') {
+      setActiveTab('review')
+    }
+
+    onQuickAction(actionId)
+  }
 
   const tabContent = useMemo(() => {
     if (activeTab === 'history') {
@@ -56,58 +71,118 @@ export function OrderDetailView({ model, isLoading }: OrderDetailViewProps) {
   }, [activeTab, model])
 
   return (
-    <div className="fixed inset-0 z-50">
-      <button type="button" aria-label="close" className="absolute inset-0 bg-slate-900/35" onClick={() => navigate(-1)} />
+    isModalPresentation ? (
+      <div className="fixed inset-0 z-50">
+        <button type="button" aria-label="close" className="absolute inset-0 bg-slate-900/35" onClick={handleClose} />
 
-      <aside className="absolute right-0 top-0 h-full w-full max-w-[520px] animate-[slideIn_180ms_ease-out] border-l border-slate-200 bg-white shadow-2xl">
-        <div className="flex h-full flex-col">
-          <header className="border-b border-slate-100 px-4 py-3">
-            <div className="flex items-center justify-between gap-2">
-              <button type="button" className="text-sm font-semibold text-slate-500 hover:text-slate-700" onClick={() => navigate(-1)}>
-                ← Đóng
-              </button>
-              <h1 className="text-base font-bold text-slate-900">{model.title}</h1>
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-sm font-bold text-slate-700">{model.orderCode}</span>
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${model.platformClassName}`}>{model.platformLabel}</span>
+        <aside className="absolute right-0 top-0 h-full w-full max-w-[520px] animate-[slideIn_180ms_ease-out] border-l border-slate-200 bg-white shadow-2xl">
+          <div className="flex h-full flex-col">
+            <header className="border-b border-slate-100 px-4 py-3">
+              <div className="flex items-center justify-between gap-2">
+                <button type="button" className="text-sm font-semibold text-slate-500 hover:text-slate-700" onClick={handleClose}>
+                  ← Đóng
+                </button>
+                <h1 className="text-base font-bold text-slate-900">{model.title}</h1>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-sm font-bold text-slate-700">{model.orderCode}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${model.platformClassName}`}>{model.platformLabel}</span>
+                </div>
               </div>
+            </header>
+
+            <div className={`border-b px-4 py-2 text-sm font-semibold ${statusToneClass(model.statusTone)}`}>
+              {isLoading ? 'Đang tải chi tiết đơn...' : model.statusMessage}
             </div>
-          </header>
 
-          <div className={`border-b px-4 py-2 text-sm font-semibold ${statusToneClass(model.statusTone)}`}>
-            {isLoading ? 'Đang tải chi tiết đơn...' : model.statusMessage}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 bg-white px-4 py-3">
-            {model.quickActions.map((action) => (
-              <button
-                key={action.id}
-                type="button"
-                className={`inline-flex items-center rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors ${actionButtonClass(action.tone)}`}
-              >
-                {action.label}
-              </button>
-            ))}
-          </div>
-
-          <nav className="border-b border-slate-100 px-4 pt-3">
-            <div className="flex items-center gap-5 text-sm">
-              {model.tabs.map((tab) => (
+            <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 bg-white px-4 py-3">
+              {model.quickActions.map((action) => (
                 <button
-                  key={tab.id}
+                  key={action.id}
                   type="button"
-                  className={`border-b-2 pb-2 ${activeTab === tab.id ? 'border-indigo-600 font-bold text-indigo-600' : 'border-transparent font-medium text-slate-400'}`}
-                  onClick={() => setActiveTab(tab.id)}
+                  disabled={activeActionId !== null}
+                  onClick={() => handleQuickAction(action.id)}
+                  className={`inline-flex items-center rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors ${actionButtonClass(action.tone)}`}
                 >
-                  {tab.label}
+                  {activeActionId === action.id ? 'Đang xử lý...' : action.label}
                 </button>
               ))}
             </div>
-          </nav>
 
-          <div className="flex-1 overflow-y-auto bg-slate-50 px-4 py-4">{tabContent}</div>
+            <nav className="border-b border-slate-100 px-4 pt-3">
+              <div className="flex items-center gap-5 text-sm">
+                {model.tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    className={`border-b-2 pb-2 ${activeTab === tab.id ? 'border-indigo-600 font-bold text-indigo-600' : 'border-transparent font-medium text-slate-400'}`}
+                    onClick={() => setActiveTab(tab.id)}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </nav>
+
+            <div className="flex-1 overflow-y-auto bg-slate-50 px-4 py-4">{tabContent}</div>
+          </div>
+        </aside>
+      </div>
+    ) : (
+      <div className="min-h-screen bg-slate-50 px-4 py-4">
+        <div className="mx-auto flex w-full max-w-[1680px] justify-end">
+          <aside className="w-full max-w-[520px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_50px_-30px_rgba(15,23,42,0.25)]">
+            <div className="flex h-full flex-col">
+              <header className="border-b border-slate-100 px-4 py-3">
+                <div className="flex items-center justify-between gap-2">
+                  <button type="button" className="text-sm font-semibold text-slate-500 hover:text-slate-700" onClick={handleClose}>
+                    ← Quay lại
+                  </button>
+                  <div className="text-right">
+                    <h1 className="text-base font-bold text-slate-900">{model.title}</h1>
+                    <p className="font-mono text-sm font-bold text-slate-700">{model.orderCode}</p>
+                  </div>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${model.platformClassName}`}>{model.platformLabel}</span>
+                </div>
+              </header>
+
+              <div className={`border-b px-4 py-2 text-sm font-semibold ${statusToneClass(model.statusTone)}`}>
+                {isLoading ? 'Đang tải chi tiết đơn...' : model.statusMessage}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 bg-white px-4 py-3">
+                {model.quickActions.map((action) => (
+                  <button
+                    key={action.id}
+                    type="button"
+                    disabled={activeActionId !== null}
+                    onClick={() => handleQuickAction(action.id)}
+                    className={`inline-flex items-center rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors ${actionButtonClass(action.tone)}`}
+                  >
+                    {activeActionId === action.id ? 'Đang xử lý...' : action.label}
+                  </button>
+                ))}
+              </div>
+
+              <nav className="border-b border-slate-100 px-4 pt-3">
+                <div className="flex items-center gap-5 text-sm">
+                  {model.tabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      className={`border-b-2 pb-2 ${activeTab === tab.id ? 'border-indigo-600 font-bold text-indigo-600' : 'border-transparent font-medium text-slate-400'}`}
+                      onClick={() => setActiveTab(tab.id)}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              </nav>
+
+              <div className="flex-1 overflow-y-auto bg-slate-50 px-4 py-4">{tabContent}</div>
+            </div>
+          </aside>
         </div>
-      </aside>
-    </div>
+      </div>
+    )
   )
 }

@@ -3,9 +3,10 @@ import type { OrdersReturnsDateGroupModel } from '@/features/orders/logic/orders
 
 type OrdersReturnsTimelineGroupProps = {
   group: OrdersReturnsDateGroupModel
+  onOpenDetail?: (item: OrdersReturnsDateGroupModel['items'][number]) => void
 }
 
-export function OrdersReturnsTimelineGroup({ group }: OrdersReturnsTimelineGroupProps) {
+export function OrdersReturnsTimelineGroup({ group, onOpenDetail }: OrdersReturnsTimelineGroupProps) {
   return (
     <section className="space-y-5">
       <div className="flex items-center gap-4">
@@ -16,7 +17,7 @@ export function OrdersReturnsTimelineGroup({ group }: OrdersReturnsTimelineGroup
       <div className="relative space-y-3 pl-8">
         <div className="absolute bottom-3 left-[10px] top-3 w-[2px] bg-[#d8e3fb]" />
         {group.items.map((item) => (
-          <OrdersReturnsTimelineItem key={item.id} item={item} />
+          <OrdersReturnsTimelineItem key={item.id} item={item} onOpenDetail={onOpenDetail} />
         ))}
       </div>
     </section>

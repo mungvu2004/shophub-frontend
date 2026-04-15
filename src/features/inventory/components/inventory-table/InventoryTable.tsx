@@ -13,16 +13,46 @@ const statusConfig = {
   critical: { label: 'Hết hàng', bgColor: 'bg-red-50', textColor: 'text-red-700', dotColor: 'bg-red-500' },
 }
 
+function getStickyRowBackground(status: 'normal' | 'warning' | 'critical') {
+  if (status === 'warning') return 'bg-amber-50/30 group-hover:bg-amber-50/40'
+  if (status === 'critical') return 'bg-red-50/30 group-hover:bg-red-50/40'
+  return 'bg-white group-hover:bg-slate-50/50'
+}
+
+function getForecastMeta(restockDays?: string) {
+  if (restockDays === '<7 ngày') {
+    return {
+      textClass: 'text-red-700',
+      bgClass: 'bg-red-50',
+      description: 'Dự kiến hết tồn kho trong dưới 7 ngày tới',
+    }
+  }
+
+  if (restockDays === '7-14 ngày') {
+    return {
+      textClass: 'text-amber-700',
+      bgClass: 'bg-amber-50',
+      description: 'Dự kiến hết tồn kho trong 7-14 ngày tới',
+    }
+  }
+
+  return {
+    textClass: 'text-emerald-700',
+    bgClass: 'bg-emerald-50',
+    description: 'Tồn kho an toàn, chưa có rủi ro hết hàng ngắn hạn',
+  }
+}
+
 export function InventoryTable({ model }: InventoryTableProps) {
   const isAllSelected = model.selectedRows.length === model.rows.length && model.rows.length > 0
 
   return (
     <div className="rounded-xl bg-white shadow-sm overflow-hidden flex flex-col">
-      <div className="overflow-auto flex-1">
-        <Table>
+      <div className="overflow-x-auto overflow-y-hidden flex-1">
+        <Table className="min-w-[1300px]">
         <TableHeader className="bg-indigo-50/50">
           <TableRow className="border-b border-slate-200 hover:bg-transparent">
-            <TableHead className="w-12">
+            <TableHead className="w-12 min-w-12 sticky left-0 z-30 bg-indigo-50/80 backdrop-blur supports-[backdrop-filter]:bg-indigo-50/70">
               <input
                 type="checkbox"
                 checked={isAllSelected}
@@ -34,13 +64,23 @@ export function InventoryTable({ model }: InventoryTableProps) {
               <TableHead
                 key={col.id}
                 className={`text-xs font-bold uppercase text-slate-600 tracking-wide ${
+                  col.id === 'image'
+                    ? 'w-16 min-w-16 sticky left-12 z-30 bg-indigo-50/80 backdrop-blur supports-[backdrop-filter]:bg-indigo-50/70'
+                    : ''
+                } ${
+                  col.id === 'productName'
+                    ? 'min-w-[260px] sticky left-28 z-30 bg-indigo-50/80 backdrop-blur supports-[backdrop-filter]:bg-indigo-50/70'
+                    : ''
+                } ${
+                  col.id === 'sku' ? 'min-w-[140px]' : ''
+                } ${
                   col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''
                 }`}
               >
                 {col.label}
               </TableHead>
             ))}
-            <TableHead className="text-right text-xs font-bold uppercase text-slate-600">Hành động</TableHead>
+            <TableHead className="text-right text-xs font-bold uppercase text-slate-600 min-w-[110px]">Hành động</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -59,7 +99,7 @@ export function InventoryTable({ model }: InventoryTableProps) {
                       : ''
                 }`}
               >
-                <TableCell>
+                <TableCell className={`sticky left-0 z-20 ${getStickyRowBackground(row.status)}`}>
                   <input
                     type="checkbox"
                     checked={isSelected}
@@ -71,7 +111,7 @@ export function InventoryTable({ model }: InventoryTableProps) {
                 {model.columns.map((col) => {
                   if (col.id === 'image') {
                     return (
-                      <TableCell key={col.id} className="text-center py-3">
+                      <TableCell key={col.id} className={`text-center py-3 sticky left-12 z-20 ${getStickyRowBackground(row.status)}`}>
                         {row.image ? (
                           <img
                             src={row.image}
@@ -91,7 +131,7 @@ export function InventoryTable({ model }: InventoryTableProps) {
                     )
                   } else if (col.id === 'productName') {
                     return (
-                      <TableCell key={col.id} className="max-w-xs">
+                      <TableCell key={col.id} className={`max-w-xs sticky left-28 z-20 ${getStickyRowBackground(row.status)}`}>
                         <button
                           type="button"
                           onClick={(event) => {
@@ -110,22 +150,18 @@ export function InventoryTable({ model }: InventoryTableProps) {
                         {row.category}
                       </TableCell>
                     )
-                  } else if (col.id === 'shopee') {
+                  } else if (col.id === 'marketplaceStock') {
+                    const marketplaceTotal = row.shopeeStock + row.tiktokStock + row.lazadaStock
+
                     return (
                       <TableCell key={col.id} className="text-right font-mono text-sm text-slate-900">
-                        {row.shopeeStock}
-                      </TableCell>
-                    )
-                  } else if (col.id === 'tiktok') {
-                    return (
-                      <TableCell key={col.id} className="text-right font-mono text-sm text-slate-900">
-                        {row.tiktokStock}
-                      </TableCell>
-                    )
-                  } else if (col.id === 'lazada') {
-                    return (
-                      <TableCell key={col.id} className="text-right font-mono text-sm text-slate-900">
-                        {row.lazadaStock}
+                        <button
+                          type="button"
+                          title={`Chi tiết tồn trên sàn\nShopee: ${row.shopeeStock}\nTikTok: ${row.tiktokStock}\nLazada: ${row.lazadaStock}`}
+                          className="rounded px-1.5 py-0.5 hover:bg-slate-100"
+                        >
+                          {marketplaceTotal}
+                        </button>
                       </TableCell>
                     )
                   } else if (col.id === 'actualStock') {
@@ -170,9 +206,16 @@ export function InventoryTable({ model }: InventoryTableProps) {
                       </TableCell>
                     )
                   } else if (col.id === 'forecast') {
+                    const forecast = getForecastMeta(row.restockDays)
+
                     return (
-                      <TableCell key={col.id} className="text-sm font-medium text-slate-600">
-                        {row.restockDays || '-'}
+                      <TableCell key={col.id} className="text-sm">
+                        <span
+                          title={forecast.description}
+                          className={`inline-flex items-center rounded-md px-2 py-0.5 font-medium ${forecast.bgClass} ${forecast.textClass}`}
+                        >
+                          {row.restockDays || '-'}
+                        </span>
                       </TableCell>
                     )
                   }

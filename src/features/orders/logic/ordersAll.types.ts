@@ -10,6 +10,17 @@ export type OrdersAllQueryState = {
   platform: OrderPlatformFilter
   page: number
   pageSize: number
+  dateFrom: string
+  dateTo: string
+  minAmount: string
+  maxAmount: string
+}
+
+export type OrdersAllAdvancedFilters = {
+  dateFrom: string
+  dateTo: string
+  minAmount: string
+  maxAmount: string
 }
 
 export type OrdersSummary = {
@@ -51,12 +62,19 @@ export type OrdersAllTableRowModel = {
   platform: PlatformCode
   platformLabel: string
   buyerName: string
+  firstProductName: string
+  productCount: number
+  totalQuantity: number
   productLabel: string
   status: OrderStatus
   statusLabel: string
   statusShortLabel: string
+  printStatus: 'printed' | 'not_printed'
+  printStatusLabel: string
+  amountValue: number
   amountLabel: string
   updatedAgoLabel: string
+  updatedAtMs: number
   updatedTone: 'default' | 'danger'
 }
 

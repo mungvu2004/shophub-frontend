@@ -5,6 +5,9 @@ type OrdersAllHeaderProps = {
   totalOrders: number
   pendingOrders: number
   isRefreshing: boolean
+  onConfirmBatch: () => void
+  onExportCsv: () => void
+  onPrintWaybills: () => void
 }
 
 export function OrdersAllHeader({
@@ -12,6 +15,9 @@ export function OrdersAllHeader({
   totalOrders,
   pendingOrders,
   isRefreshing,
+  onConfirmBatch,
+  onExportCsv,
+  onPrintWaybills,
 }: OrdersAllHeaderProps) {
   return (
     <section className="rounded-xl bg-white px-6 py-4 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
@@ -24,14 +30,28 @@ export function OrdersAllHeader({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="outline" className="h-9 rounded-lg border-indigo-500 px-4 text-[14px] font-semibold text-indigo-600">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-9 rounded-lg border-indigo-500 px-4 text-[14px] font-semibold text-indigo-600"
+            onClick={onConfirmBatch}
+          >
             Xác nhận loạt
           </Button>
-          <Button type="button" variant="outline" className="h-9 rounded-lg border-slate-300 px-4 text-[14px] font-semibold text-slate-600">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-9 rounded-lg border-slate-300 px-4 text-[14px] font-semibold text-slate-600"
+            onClick={onExportCsv}
+          >
             Xuất CSV
           </Button>
-          <Button type="button" className="h-9 rounded-lg bg-indigo-600 px-4 text-[14px] font-semibold text-white hover:bg-indigo-700">
-            In vận đơn
+          <Button
+            type="button"
+            className="h-9 rounded-lg bg-indigo-600 px-4 text-[14px] font-semibold text-white hover:bg-indigo-700"
+            onClick={onPrintWaybills}
+          >
+            In mã VĐ
           </Button>
         </div>
       </div>

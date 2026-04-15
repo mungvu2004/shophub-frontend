@@ -6,7 +6,9 @@ import { OrdersReturnsTimeline } from '@/features/orders/components/orders-retur
 import { OrdersReturnsViewModeToggle } from '@/features/orders/components/orders-returns/OrdersReturnsViewModeToggle'
 import type {
   OrdersReturnsPlatformFilter,
+  OrdersReturnsTimelineItemModel,
   OrdersReturnsViewMode,
+  OrdersReturnsTableRowModel,
   OrdersReturnsViewModel,
 } from '@/features/orders/logic/ordersReturns.types'
 
@@ -17,6 +19,7 @@ type OrdersReturnsViewProps = {
   onViewModeChange: (mode: OrdersReturnsViewMode) => void
   onSearchChange: (value: string) => void
   onPlatformChange: (value: OrdersReturnsPlatformFilter) => void
+  onOpenDetail: (row: OrdersReturnsTableRowModel | OrdersReturnsTimelineItemModel) => void
   onPageChange: (page: number) => void
   onPageSizeChange: (pageSize: number) => void
 }
@@ -28,6 +31,7 @@ export function OrdersReturnsView({
   onViewModeChange,
   onSearchChange,
   onPlatformChange,
+  onOpenDetail,
   onPageChange,
   onPageSizeChange,
 }: OrdersReturnsViewProps) {
@@ -55,13 +59,14 @@ export function OrdersReturnsView({
         </div>
 
         {viewMode === 'timeline' ? (
-          <OrdersReturnsTimeline groups={model.timelineGroups} />
+          <OrdersReturnsTimeline groups={model.timelineGroups} onOpenDetail={onOpenDetail} />
         ) : (
           <OrdersReturnsTable
             rows={model.tableRows}
             totalCount={model.totalCount}
             page={model.page}
             pageSize={model.pageSize}
+            onOpenDetail={onOpenDetail}
             onPageChange={onPageChange}
             onPageSizeChange={onPageSizeChange}
           />

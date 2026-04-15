@@ -11,10 +11,24 @@ const statuses: Order["status"][] = [
   "Cancelled",
 ];
 
+const DAY_IN_MS = 24 * 60 * 60 * 1000
+const baseDate = new Date()
+baseDate.setHours(12, 0, 0, 0)
+
 export const mockOrders: Order[] = Array.from({ length: 12 }, (_, idx) => {
   const n = idx + 1;
   const platform = platforms[idx % platforms.length];
   const status = statuses[idx % statuses.length];
+  const orderDate = new Date(baseDate.getTime() - idx * DAY_IN_MS)
+  const createdAtPlatform = new Date(orderDate)
+  createdAtPlatform.setHours(3, 0, 0, 0)
+  const updatedAtPlatform = new Date(orderDate)
+  updatedAtPlatform.setHours(3, 30, 0, 0)
+  const createdAt = new Date(orderDate)
+  createdAt.setHours(4, 0, 0, 0)
+  const updatedAt = new Date(orderDate)
+  updatedAt.setHours(4, 30, 0, 0)
+  const promisedShippingTime = new Date(orderDate.getTime() + 2 * DAY_IN_MS)
 
   return {
     id: `ord-${String(n).padStart(3, "0")}`,
@@ -40,10 +54,10 @@ export const mockOrders: Order[] = Array.from({ length: 12 }, (_, idx) => {
     shippingCountry: "VN",
     source: n % 2 === 0 ? "platform_sync" : "platform_webhook",
     isDeleted: false,
-    createdAt_platform: `2026-03-${String((n % 28) + 1).padStart(2, "0")}T03:00:00Z`,
-    updatedAt_platform: `2026-03-${String((n % 28) + 1).padStart(2, "0")}T03:30:00Z`,
-    createdAt: `2026-03-${String((n % 28) + 1).padStart(2, "0")}T04:00:00Z`,
-    updatedAt: `2026-03-${String((n % 28) + 1).padStart(2, "0")}T04:30:00Z`,
+    createdAt_platform: createdAtPlatform.toISOString(),
+    updatedAt_platform: updatedAtPlatform.toISOString(),
+    createdAt: createdAt.toISOString(),
+    updatedAt: updatedAt.toISOString(),
     items: [
       {
         id: `item-${String(n).padStart(3, "0")}-1`,
@@ -62,7 +76,7 @@ export const mockOrders: Order[] = Array.from({ length: 12 }, (_, idx) => {
         status,
         trackingCode: `TRACK-${n}`,
         shipmentProvider: "GHN",
-        promisedShippingTime: `2026-04-${String((n % 28) + 1).padStart(2, "0")}T12:00:00Z`,
+        promisedShippingTime: promisedShippingTime.toISOString(),
         isFulfilledByPlatform: n % 2 === 0,
         isDigital: false,
         returnStatus: undefined,

@@ -22,6 +22,8 @@ type GetOrdersPendingActionsParams = {
   search?: string
   platform?: OrdersPendingActionsPlatformFilter
   sla?: OrdersPendingActionsSlaFilter
+  dateFrom?: string
+  dateTo?: string
   page?: number
   pageSize?: number
 }
@@ -86,8 +88,14 @@ function toItems(value: unknown): OrdersPendingActionItem[] {
       platform: PlatformCode
       customerName: string
       productName: string
+      sku?: string
+      variantLabel?: string
+      quantity?: number
+      thumbnailUrl?: string
+      customerNote?: string
       amount: number
       status: string
+      printStatus: OrdersPendingActionItem['printStatus']
       waitingMinutes: number
       slaLevel: OrdersPendingActionItem['slaLevel']
       recommendedAction: string
@@ -102,6 +110,7 @@ function toItems(value: unknown): OrdersPendingActionItem[] {
         && typeof item.amount === 'number'
         && Number.isFinite(item.amount)
         && typeof item.status === 'string'
+        && (item.printStatus === 'printed' || item.printStatus === 'not_printed')
         && typeof item.waitingMinutes === 'number'
         && Number.isFinite(item.waitingMinutes)
         && isSla(item.slaLevel)
@@ -115,8 +124,14 @@ function toItems(value: unknown): OrdersPendingActionItem[] {
       platform: item.platform,
       customerName: item.customerName,
       productName: item.productName,
+      sku: typeof item.sku === 'string' ? item.sku : 'SKU-NA',
+      variantLabel: typeof item.variantLabel === 'string' ? item.variantLabel : 'Mặc định',
+      quantity: typeof item.quantity === 'number' && Number.isFinite(item.quantity) ? item.quantity : 1,
+      thumbnailUrl: typeof item.thumbnailUrl === 'string' && item.thumbnailUrl.length > 0 ? item.thumbnailUrl : 'https://picsum.photos/seed/default/64/64',
+      customerNote: typeof item.customerNote === 'string' ? item.customerNote : '',
       amount: item.amount,
       status: item.status,
+      printStatus: item.printStatus,
       waitingMinutes: item.waitingMinutes,
       slaLevel: item.slaLevel,
       recommendedAction: item.recommendedAction,
@@ -131,6 +146,8 @@ class OrdersPendingActionsService {
         search: params.search,
         platform: params.platform,
         sla: params.sla,
+        dateFrom: params.dateFrom,
+        dateTo: params.dateTo,
         page: params.page,
         pageSize: params.pageSize,
       })
@@ -141,6 +158,8 @@ class OrdersPendingActionsService {
         search: params.search,
         platform: params.platform && params.platform !== 'all' ? params.platform : undefined,
         sla: params.sla && params.sla !== 'all' ? params.sla : undefined,
+        dateFrom: params.dateFrom,
+        dateTo: params.dateTo,
         page: params.page,
         pageSize: params.pageSize,
       },

@@ -1,24 +1,15 @@
 import type { OrdersReturnsTimelineItemModel } from '@/features/orders/logic/ordersReturns.types'
-import { useNavigate } from 'react-router-dom'
 
 type OrdersReturnsTimelineItemProps = {
   item: OrdersReturnsTimelineItemModel
+  onOpenDetail?: (item: OrdersReturnsTimelineItemModel) => void
 }
 
-export function OrdersReturnsTimelineItem({ item }: OrdersReturnsTimelineItemProps) {
-  const navigate = useNavigate()
-
+export function OrdersReturnsTimelineItem({ item, onOpenDetail }: OrdersReturnsTimelineItemProps) {
   const openOrderDetail = () => {
-    navigate(`/orders/${item.id}`, {
-      state: {
-        orderCode: item.orderCode,
-        platformLabel: item.platformLabel,
-        customerName: item.customerName,
-        productName: item.productName,
-        amountLabel: item.amountLabel,
-        statusLabel: item.statusLabel,
-      },
-    })
+    if (onOpenDetail) {
+      onOpenDetail(item)
+    }
   }
 
   return (
