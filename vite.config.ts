@@ -10,13 +10,15 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  server: {
-    proxy: {
-      '/api': {
-        target: process.env.VITE_API_PROXY_TARGET ?? 'http://localhost:5000',
-        changeOrigin: true,
-        secure: false,
-      },
-    },
-  },
+  server: process.env.VITE_API_PROXY_TARGET
+    ? {
+        proxy: {
+          '/api': {
+            target: process.env.VITE_API_PROXY_TARGET,
+            changeOrigin: true,
+            secure: false,
+          },
+        },
+      }
+    : undefined,
 })

@@ -1,16 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowDown, ArrowUp, ArrowUpDown, Download, FileText, Printer, Settings2 } from 'lucide-react'
+import { Download, FileText, Printer, Settings2 } from 'lucide-react'
 
+import { DataTable, type DataTableColumn, type DataTableSortState } from '@/components/shared/DataTable'
 import { Pagination } from '@/components/ui/pagination'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
   canToggleColumn,
-  countVisibleDataColumns,
   PENDING_ACTIONS_INITIAL_VISIBLE_COLUMNS,
-  sortPendingActionsRows,
   type PendingActionsTableColumnKey as ColumnKey,
-  type PendingActionsTableSortDirection as SortDirection,
-  type PendingActionsTableSortKey as SortKey,
 } from '@/features/orders/logic/ordersPendingActionsTable.logic'
 import type { OrdersPendingActionsTableRowModel } from '@/features/orders/logic/ordersPendingActions.types'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -46,8 +42,7 @@ export function OrdersPendingActionsTable({
 }: OrdersPendingActionsTableProps) {
   const navigate = useNavigate()
   const location = useLocation()
-  const [sortKey, setSortKey] = useState<SortKey>('waiting')
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+  const [sortState, setSortState] = useState<DataTableSortState>({ columnId: 'waiting', direction: 'desc' })
   const [visibleColumns, setVisibleColumns] = useState<Record<ColumnKey, boolean>>(PENDING_ACTIONS_INITIAL_VISIBLE_COLUMNS)
   const [isColumnMenuOpen, setIsColumnMenuOpen] = useState(false)
   const columnMenuRef = useRef<HTMLDivElement | null>(null)
@@ -68,24 +63,6 @@ export function OrdersPendingActionsTable({
       document.removeEventListener('mousedown', handleOutsideClick)
     }
   }, [isColumnMenuOpen])
-
-  const sortedRows = useMemo(() => sortPendingActionsRows(rows, sortKey, sortDirection), [rows, sortDirection, sortKey])
-
-  const toggleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortDirection((current) => (current === 'asc' ? 'desc' : 'asc'))
-      return
-    }
-
-    setSortKey(key)
-    setSortDirection('desc')
-  }
-
-  const renderSortIcon = (key: SortKey) => {
-    if (sortKey !== key) return <ArrowUpDown className="size-3.5 text-slate-400" />
-    if (sortDirection === 'asc') return <ArrowUp className="size-3.5 text-indigo-600" />
-    return <ArrowDown className="size-3.5 text-indigo-600" />
-  }
 
   const openOrderDetail = (row: OrdersPendingActionsTableRowModel) => {
     if (onOpenDetail) {
@@ -120,7 +97,159 @@ export function OrdersPendingActionsTable({
     }))
   }
 
-  const visibleDataColumnCount = countVisibleDataColumns(visibleColumns)
+  const columns = useMemo<DataTableColumn<OrdersPendingActionsTableRowModel>[]>(() => {
+    const base: DataTableColumn<OrdersPendingActionsTableRowModel>[] = [
+      {
+        id: 'select',
+        header: <input type="checkbox" checked={isAllSelected} onChange={onToggleAll} className="size-4 rounded border-slate-300" />,
+        align: 'center',
+        widthClassName: 'w-10',
+        cellClassName: 'text-center',
+        cell: (row) => (
+          <input
+            type="checkbox"
+            checked={selectedIds.includes(row.id)}
+            onClick={stopRowClickPropagation}
+            onChange={() => onToggleOne(row.id)}
+            className="size-4 rounded border-slate-300"
+          />
+        ),
+      },
+      {
+        id: 'orderCode',
+        header: 'Mã đơn',
+        widthClassName: 'min-w-[92px]',
+        cell: (row) => (
+          <>
+            <p className="font-mono text-[13px] font-semibold text-[#3525cd] hover:underline">{row.orderCode}</p>
+            <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-slate-400">
+              <span className="truncate">{row.customerName}</span>
+              <span className="relative inline-flex h-4 w-4 items-center justify-center" title={row.customerNoteText}>
+                <FileText className={`size-3.5 ${row.hasCustomerNote ? 'text-indigo-600' : 'text-slate-300'}`} />
+                {row.hasCustomerNote ? <span className="absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-rose-500" /> : null}
+              </span>
+            </div>
+          </>
+        ),
+      },
+    ]
+
+    if (visibleColumns.platform) {
+      base.push({
+        id: 'platform',
+        header: 'Sàn',
+        align: 'center',
+        widthClassName: 'min-w-[70px]',
+        cell: (row) => (
+          <span
+            className={`inline-flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-bold ${row.platformMarkClass}`}
+            title={row.platformLabel}
+          >
+            {row.platformMarkText}
+          </span>
+        ),
+      })
+    }
+
+    if (visibleColumns.product) {
+      base.push({
+        id: 'product',
+        header: 'Sản phẩm',
+        widthClassName: 'min-w-[210px]',
+        cell: (row) => (
+          <div className="flex items-start gap-2">
+            <img
+              src={row.productThumbnailUrl}
+              alt={row.productName}
+              className="h-9 w-9 rounded-md border border-slate-200 object-cover"
+              loading="lazy"
+              onError={(event) => {
+                const target = event.currentTarget
+                target.onerror = null
+                target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="100%" height="100%" fill="%23e2e8f0"/><text x="50%" y="52%" font-size="20" text-anchor="middle" fill="%2364758b" font-family="Arial">P</text></svg>'
+              }}
+            />
+            <div className="min-w-0">
+              <p className="text-[13px] text-slate-700" title={row.productName}>{row.productName}</p>
+              <p className="text-[11px] text-slate-400">{row.productSku} • {row.productVariantLabel} • x{row.productQuantity}</p>
+            </div>
+          </div>
+        ),
+      })
+    }
+
+    if (visibleColumns.amount) {
+      base.push({
+        id: 'amount',
+        header: 'Giá trị',
+        sortable: true,
+        sortAccessor: (row) => row.amountValue,
+        accessor: (row) => row.amountLabel,
+        align: 'right',
+        widthClassName: 'min-w-[120px]',
+        cellClassName: 'font-mono text-[13px] font-semibold text-slate-800',
+      })
+    }
+
+    if (visibleColumns.waiting) {
+      base.push({
+        id: 'waiting',
+        header: 'Chờ xử lý',
+        sortable: true,
+        sortAccessor: (row) => row.waitingMinutes,
+        accessor: (row) => row.waitingLabel,
+        align: 'right',
+        widthClassName: 'min-w-[120px]',
+        cellClassName: (row) => `font-mono text-[13px] font-semibold ${row.waitingClassName}`,
+      })
+    }
+
+    if (visibleColumns.printStatus) {
+      base.push({
+        id: 'printStatus',
+        header: 'Trạng thái in',
+        align: 'center',
+        widthClassName: 'min-w-[100px]',
+        cell: (row) => (
+          <span className="inline-flex" title={row.printStatusLabel}>
+            <Printer
+              className={`mx-auto size-4 ${row.printStatus === 'printed' ? 'text-emerald-600' : 'text-slate-300'}`}
+              aria-label={row.printStatusLabel}
+            />
+          </span>
+        ),
+      })
+    }
+
+    if (visibleColumns.action) {
+      base.push({
+        id: 'action',
+        header: 'Hành động',
+        align: 'center',
+        widthClassName: 'min-w-[140px]',
+        cell: (row) => (
+          <span className={`inline-flex h-7 min-w-[112px] items-center justify-center rounded-full px-2.5 text-[11px] font-semibold ${row.actionClassName}`}>
+            {row.actionLabel}
+          </span>
+        ),
+      })
+    }
+
+    if (visibleColumns.updated) {
+      base.push({
+        id: 'updated',
+        header: 'Cập nhật',
+        sortable: true,
+        sortAccessor: (row) => row.updatedAtMs,
+        accessor: (row) => row.updatedAtLabel,
+        align: 'center',
+        widthClassName: 'min-w-[110px]',
+        cellClassName: 'font-mono text-[12px] text-slate-500',
+      })
+    }
+
+    return base
+  }, [isAllSelected, onToggleAll, onToggleOne, selectedIds, visibleColumns])
 
   const renderColumnToggleItem = (column: ColumnKey, label: string) => (
     <button
@@ -185,119 +314,18 @@ export function OrdersPendingActionsTable({
         </div>
       </div>
 
-      <Table className="w-full table-auto [&_th]:whitespace-nowrap [&_td]:align-middle">
-        <TableHeader>
-          <TableRow className="h-10 border-b border-indigo-100 bg-gradient-to-r from-[#f0f3ff] to-[#f8faff] hover:bg-[#f0f3ff]">
-            <TableHead className="w-10 text-center">
-              <input type="checkbox" checked={isAllSelected} onChange={onToggleAll} className="size-4 rounded border-slate-300" />
-            </TableHead>
-            <TableHead className="min-w-[92px] text-[11px] font-semibold tracking-[0.2px] text-slate-500">Mã đơn</TableHead>
-            {visibleColumns.platform ? <TableHead className="min-w-[70px] text-center text-[11px] font-semibold tracking-[0.2px] text-slate-500">Sàn</TableHead> : null}
-            {visibleColumns.product ? <TableHead className="min-w-[210px] text-[11px] font-semibold tracking-[0.2px] text-slate-500">Sản phẩm</TableHead> : null}
-            {visibleColumns.amount ? <TableHead className="min-w-[120px] text-right text-[11px] font-semibold tracking-[0.2px] text-slate-500">
-              <button type="button" className="ml-auto inline-flex items-center gap-2" onClick={() => toggleSort('amount')}>
-                Giá trị
-                {renderSortIcon('amount')}
-              </button>
-            </TableHead> : null}
-            {visibleColumns.waiting ? <TableHead className="min-w-[120px] text-right text-[11px] font-semibold tracking-[0.2px] text-slate-500">
-              <button type="button" className="ml-auto inline-flex items-center gap-2" onClick={() => toggleSort('waiting')}>
-                Chờ xử lý
-                {renderSortIcon('waiting')}
-              </button>
-            </TableHead> : null}
-            {visibleColumns.printStatus ? <TableHead className="min-w-[100px] text-center text-[11px] font-semibold tracking-[0.2px] text-slate-500">Trạng thái in</TableHead> : null}
-            {visibleColumns.action ? <TableHead className="min-w-[140px] text-center text-[11px] font-semibold tracking-[0.2px] text-slate-500">Hành động</TableHead> : null}
-            {visibleColumns.updated ? <TableHead className="min-w-[110px] text-center text-[11px] font-semibold tracking-[0.2px] text-slate-500">
-              <button type="button" className="inline-flex items-center gap-2" onClick={() => toggleSort('updated')}>
-                Cập nhật
-                {renderSortIcon('updated')}
-              </button>
-            </TableHead> : null}
-          </TableRow>
-        </TableHeader>
-
-        <TableBody className="bg-white">
-          {rows.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={1 + visibleDataColumnCount + 1} className="py-8 text-center text-sm text-slate-500">
-                Không có đơn nào cần xử lý theo bộ lọc hiện tại.
-              </TableCell>
-            </TableRow>
-          ) : (
-            sortedRows.map((row) => (
-              <TableRow
-                key={row.id}
-                className="h-[68px] cursor-pointer border-b border-slate-100 bg-white hover:bg-indigo-50/20"
-                onClick={() => openOrderDetail(row)}
-              >
-                <TableCell className="text-center">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.includes(row.id)}
-                    onClick={stopRowClickPropagation}
-                    onChange={() => onToggleOne(row.id)}
-                    className="size-4 rounded border-slate-300"
-                  />
-                </TableCell>
-                <TableCell>
-                  <p className="font-mono text-[13px] font-semibold text-[#3525cd] hover:underline">{row.orderCode}</p>
-                  <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-slate-400">
-                    <span className="truncate">{row.customerName}</span>
-                    <span className="relative inline-flex h-4 w-4 items-center justify-center" title={row.customerNoteText}>
-                      <FileText className={`size-3.5 ${row.hasCustomerNote ? 'text-indigo-600' : 'text-slate-300'}`} />
-                      {row.hasCustomerNote ? <span className="absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-rose-500" /> : null}
-                    </span>
-                  </div>
-                </TableCell>
-                {visibleColumns.platform ? <TableCell className="text-center">
-                  <span
-                    className={`inline-flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-bold ${row.platformMarkClass}`}
-                    title={row.platformLabel}
-                  >
-                    {row.platformMarkText}
-                  </span>
-                </TableCell> : null}
-                {visibleColumns.product ? <TableCell>
-                  <div className="flex items-start gap-2">
-                    <img
-                      src={row.productThumbnailUrl}
-                      alt={row.productName}
-                      className="h-9 w-9 rounded-md border border-slate-200 object-cover"
-                      loading="lazy"
-                      onError={(event) => {
-                        const target = event.currentTarget
-                        target.onerror = null
-                        target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="100%" height="100%" fill="%23e2e8f0"/><text x="50%" y="52%" font-size="20" text-anchor="middle" fill="%2364758b" font-family="Arial">P</text></svg>'
-                      }}
-                    />
-                    <div className="min-w-0">
-                      <p className="text-[13px] text-slate-700" title={row.productName}>{row.productName}</p>
-                      <p className="text-[11px] text-slate-400">{row.productSku} • {row.productVariantLabel} • x{row.productQuantity}</p>
-                    </div>
-                  </div>
-                </TableCell> : null}
-                {visibleColumns.amount ? <TableCell className="text-right font-mono text-[13px] font-semibold text-slate-800">{row.amountLabel}</TableCell> : null}
-                {visibleColumns.waiting ? <TableCell className={`text-right font-mono text-[13px] font-semibold ${row.waitingClassName}`}>{row.waitingLabel}</TableCell> : null}
-                {visibleColumns.printStatus ? <TableCell className="text-center">
-                  <span className="inline-flex" title={row.printStatusLabel}>
-                    <Printer
-                      className={`mx-auto size-4 ${row.printStatus === 'printed' ? 'text-emerald-600' : 'text-slate-300'}`}
-                      aria-label={row.printStatusLabel}
-                    />
-                  </span>
-                </TableCell> : null}
-                {visibleColumns.action ? <TableCell className="text-center">
-                  <span className={`inline-flex h-7 min-w-[112px] items-center justify-center rounded-full px-2.5 text-[11px] font-semibold ${row.actionClassName}`}>
-                    {row.actionLabel}
-                  </span>
-                </TableCell> : null}
-                {visibleColumns.updated ? <TableCell className="text-center font-mono text-[12px] text-slate-500">{row.updatedAtLabel}</TableCell> : null}
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+      <DataTable
+        rows={rows}
+        columns={columns}
+        rowKey={(row) => row.id}
+        tableClassName="w-full table-auto [&_th]:whitespace-nowrap [&_td]:align-middle [&_thead_tr]:h-10 [&_thead_tr]:border-b [&_thead_tr]:border-indigo-100 [&_thead_tr]:bg-gradient-to-r [&_thead_tr]:from-[#f0f3ff] [&_thead_tr]:to-[#f8faff] [&_thead_tr]:hover:bg-[#f0f3ff]"
+        bodyClassName="bg-white"
+        rowClassName="h-[68px] cursor-pointer hover:bg-indigo-50/20"
+        onRowClick={(row) => openOrderDetail(row)}
+        emptyText="Không có đơn nào cần xử lý theo bộ lọc hiện tại."
+        sortState={sortState}
+        onSortChange={(nextSort) => setSortState(nextSort)}
+      />
 
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/70 px-4 py-4">
         <p className="text-[13px] text-slate-500">

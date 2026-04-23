@@ -86,7 +86,7 @@ export function LoginForm() {
 
   const redirectTo =
     (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ||
-    "/dashboard";
+    "/dashboard/kpi-overview";
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),

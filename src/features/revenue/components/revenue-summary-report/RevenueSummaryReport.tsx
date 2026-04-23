@@ -3,12 +3,16 @@ import { toast } from 'sonner'
 
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { RevenueDailyChartSection } from '@/features/revenue/components/revenue-summary-report/RevenueDailyChartSection'
-import { RevenueGoalSection } from '@/features/revenue/components/revenue-summary-report/RevenueGoalSection'
 import { RevenueKpiSection } from '@/features/revenue/components/revenue-summary-report/RevenueKpiSection'
 import { RevenueProfitTableSection } from '@/features/revenue/components/revenue-summary-report/RevenueProfitTableSection'
 import { RevenueSummaryHeader } from '@/features/revenue/components/revenue-summary-report/RevenueSummaryHeader'
-import { RevenueTopProductsSection } from '@/features/revenue/components/revenue-summary-report/RevenueTopProductsSection'
 import {
+  RevenueCostBreakdownSection,
+  RevenueProfitFlowSection,
+  RevenueTopProductsSection,
+} from './RevenueTopProductsSection'
+import {
+  applyRevenuePlatformFilter,
   buildRevenueSummaryReportViewModel,
   filterProductProfits,
   getRevenueComparisonLabel,
@@ -17,19 +21,61 @@ import {
   pickDailyRevenueByRange,
 } from '@/features/revenue/logic/revenueSummaryReport.logic'
 import { useRevenueSummaryReport } from '@/features/revenue/hooks/useRevenueSummaryReport'
-import type { RevenueRange } from '@/types/revenue.types'
+import type { RevenueRange, RevenueSummaryPlatformFilter } from '@/types/revenue.types'
 
 export function RevenueSummaryReport() {
   const [selectedRange, setSelectedRange] = useState<RevenueRange>('month')
+  const [selectedPlatform, setSelectedPlatform] = useState<RevenueSummaryPlatformFilter>('all')
   const [keyword, setKeyword] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(5)
 
-  const { data, isLoading, isError, refetch } = useRevenueSummaryReport('2026-03')
+  const reportMonth = useMemo(() => {
+    const now = new Date()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    return `${now.getFullYear()}-${month}`
+  }, [])
+
+  const reportBaseDate = useMemo(() => {
+    return new Date(`${reportMonth}-01T00:00:00`)
+  }, [reportMonth])
+
+  const { data, isLoading, isError, refetch } = useRevenueSummaryReport(reportMonth)
+
+  const handleExportPdf = () => {
+    toast.success('Đang mở hộp thoại in/PDF...')
+    window.print()
+  }
+
+  const handleViewTopProductsDetail = () => {
+    setCurrentPage(1)
+    setKeyword('')
+
+    const tableElement = document.getElementById('revenue-profit-table')
+    if (tableElement) {
+      tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      toast.success('Đã chuyển đến bảng Lợi nhuận theo sản phẩm.')
+    }
+  }
+
+  const scopedData = useMemo(() => {
+    if (!data) {
+      return null
+    }
+
+    const platformFilteredReport = applyRevenuePlatformFilter(data, selectedPlatform)
+
+    return {
+      ...platformFilteredReport,
+      periodLabel: getRevenueRangeLabel(selectedRange, reportBaseDate),
+      comparisonLabel: getRevenueComparisonLabel(selectedRange, reportBaseDate),
+      dailyRevenue: pickDailyRevenueByRange(platformFilteredReport.dailyRevenue, selectedRange),
+    }
+  }, [data, reportBaseDate, selectedPlatform, selectedRange])
 
   const filteredRows = useMemo(
-    () => filterProductProfits(data?.productProfits ?? [], keyword),
-    [data?.productProfits, keyword],
+    () => filterProductProfits(scopedData?.productProfits ?? [], keyword),
+    [scopedData?.productProfits, keyword],
   )
 
   const paginatedRows = useMemo(
@@ -48,21 +94,14 @@ export function RevenueSummaryReport() {
   }, [isError])
 
   const model = useMemo(() => {
-    if (!data) {
+    if (!scopedData) {
       return null
-    }
-
-    const scopedReport = {
-      ...data,
-      periodLabel: getRevenueRangeLabel(selectedRange),
-      comparisonLabel: getRevenueComparisonLabel(selectedRange),
-      dailyRevenue: pickDailyRevenueByRange(data.dailyRevenue, selectedRange),
     }
 
     const stablePageRows = paginateProductProfits(filteredRows, safePage, paginatedRows.pageSize)
 
-    return buildRevenueSummaryReportViewModel(scopedReport, stablePageRows.rows)
-  }, [data, filteredRows, paginatedRows.pageSize, safePage, selectedRange])
+    return buildRevenueSummaryReportViewModel(scopedData, stablePageRows.rows)
+  }, [scopedData, filteredRows, paginatedRows.pageSize, safePage])
 
   if (isLoading) {
     return <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-500">Đang tải báo cáo doanh thu...</div>
@@ -73,34 +112,42 @@ export function RevenueSummaryReport() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <RevenueSummaryHeader
         title={model.title}
         selectedRange={selectedRange}
+        selectedPlatform={selectedPlatform}
         onRangeChange={(nextRange) => setSelectedRange(nextRange)}
+        onPlatformChange={(nextPlatform) => setSelectedPlatform(nextPlatform)}
+        onExportPdf={handleExportPdf}
       />
 
       <RevenueKpiSection kpis={model.kpis} />
 
-      <RevenueGoalSection
-        monthlyGoalLabel={model.monthlyGoalLabel}
-        goalProgressLabel={model.goalProgressLabel}
-        goalProgressPercent={model.goalProgressPercent}
-      />
+      <section className="grid grid-cols-1 gap-4 xl:min-h-[520px] xl:grid-cols-[2fr_1fr] xl:items-stretch">
+        <div className="grid gap-4 xl:h-full xl:grid-rows-[60fr_40fr]">
+          <RevenueDailyChartSection
+            periodLabel={model.periodLabel}
+            comparisonLabel={model.comparisonLabel}
+            dailyRevenue={model.dailyRevenue}
+            selectedPlatform={selectedPlatform}
+          />
 
-      <RevenueDailyChartSection
-        periodLabel={model.periodLabel}
-        comparisonLabel={model.comparisonLabel}
-        dailyRevenue={model.dailyRevenue}
-      />
+          <RevenueTopProductsSection topProducts={model.topProducts} onViewDetails={handleViewTopProductsDetail} />
+        </div>
 
-      <RevenueTopProductsSection
-        topProducts={model.topProducts}
-        profitMomentum={model.profitMomentum}
-        profitMomentumMax={model.profitMomentumMax}
-      />
+        <div className="grid gap-4 xl:h-full xl:grid-rows-[30fr_70fr]">
+          <RevenueCostBreakdownSection costBreakdown={model.costBreakdown} />
 
-      <RevenueProfitTableSection
+          <RevenueProfitFlowSection
+            profitFlow={model.profitFlow}
+            profitFlowMax={model.profitFlowMax}
+          />
+        </div>
+      </section>
+
+      <section id="revenue-profit-table" className="mt-10 self-start">
+        <RevenueProfitTableSection
         keyword={keyword}
         onKeywordChange={(value) => {
           setKeyword(value)
@@ -116,7 +163,8 @@ export function RevenueSummaryReport() {
           setPageSize(nextPageSize)
           setCurrentPage(1)
         }}
-      />
+        />
+      </section>
     </div>
   )
 }

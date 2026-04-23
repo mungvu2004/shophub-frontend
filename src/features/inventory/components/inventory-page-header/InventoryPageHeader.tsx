@@ -44,15 +44,31 @@ export function InventoryPageHeader({ model }: InventoryPageHeaderProps) {
 
       {/* Action Buttons */}
       <div className="flex items-center gap-3">
-        <Button variant="outline" size="sm">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => model.onAdjustStock?.()}
+          disabled={!model.onAdjustStock}
+        >
           <Settings className="h-4 w-4" />
           <span className="ml-1.5">Điều chỉnh</span>
         </Button>
-        <Button variant="outline" size="sm">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => model.onExportData?.()}
+          disabled={!model.onExportData}
+        >
           <Download className="h-4 w-4" />
           <span className="ml-1.5">Xuất kho</span>
         </Button>
-        <Button variant="default" size="sm" className="bg-indigo-600">
+        <Button 
+          variant="default" 
+          size="sm" 
+          className="bg-indigo-600"
+          onClick={() => model.onImportData?.()}
+          disabled={!model.onImportData}
+        >
           <Upload className="h-4 w-4" />
           <span className="ml-1.5">Nhập kho</span>
         </Button>

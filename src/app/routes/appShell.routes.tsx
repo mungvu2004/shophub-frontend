@@ -12,6 +12,7 @@ import { DashboardKPIOverviewPage } from '@/pages/dashboard/DashboardKPIOverview
 import { DashboardRevenueChartsPage } from '@/pages/dashboard/DashboardRevenueChartsPage'
 import { DashboardTopProductsPage } from '@/pages/dashboard/DashboardTopProductsPage'
 import { InventoryAIForecastPage } from '@/pages/inventory/InventoryAIForecastPage'
+import { InventoryStockAdjustmentPage } from '@/pages/inventory/InventoryStockAdjustmentPage'
 import { InventorySKUStockPage } from '@/pages/inventory/InventorySKUStockPage'
 import { InventoryStockMovementsPage } from '@/pages/inventory/InventoryStockMovementsPage'
 import { OrdersAllPage } from '@/pages/orders/OrdersAllPage'
@@ -67,7 +68,7 @@ export function AppShellRoutes() {
   return (
     <Route element={<ProtectedRoute />}>
       <Route path="/" element={<AppShell />}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route index element={<Navigate to="/dashboard/kpi-overview" replace />} />
         <Route path="dashboard" element={<Navigate to="/dashboard/kpi-overview" replace />} />
         <Route
           path="dashboard/kpi-overview"
@@ -148,6 +149,22 @@ export function AppShellRoutes() {
           element={
             <PageLoader>
               <InventoryAIForecastPage />
+            </PageLoader>
+          }
+        />
+        <Route
+          path="inventory/adjust"
+          element={
+            <PageLoader>
+              <InventoryStockAdjustmentPage />
+            </PageLoader>
+          }
+        />
+        <Route
+          path="inventory/adjust/:stockLevelId"
+          element={
+            <PageLoader>
+              <InventoryStockAdjustmentPage />
             </PageLoader>
           }
         />

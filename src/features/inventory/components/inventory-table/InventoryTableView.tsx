@@ -2,9 +2,10 @@ import { useState, useMemo, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { InventoryTable } from '@/features/inventory/components/inventory-table/InventoryTable'
 import { useInventorySKUs } from '@/features/inventory/hooks/useInventoryData'
-import type { InventoryTableViewModel, InventoryTableRow } from '@/features/inventory/logic/inventoryTable.types'
-import type { StockLevel } from '@/types/inventory.types'
+import type { InventorySortState, InventoryTableViewModel, InventoryTableRow } from '@/features/inventory/logic/inventoryTable.types'
+import { mapStockLevelToTableRow } from '@/features/inventory/logic/inventoryTableLogic'
 import { mockStockLevels } from '@/mocks/data/inventory'
+import { toast } from 'sonner'
 
 type InventoryTableViewProps = {
   filters?: {
@@ -15,45 +16,16 @@ type InventoryTableViewProps = {
   }
 }
 
-function mapStockLevelToTableRow(stockLevel: StockLevel): InventoryTableRow {
-  const matched = stockLevel.variantId.match(/^var-(\d+)-/)
-  const productId = matched ? `prod-${matched[1]}` : undefined
-
-  return {
-    id: stockLevel.id,
-    productId,
-    sku: stockLevel.sku,
-    productName: stockLevel.productName || stockLevel.variantName || 'Unknown',
-    category: stockLevel.category || 'Uncategorized',
-    shopeeStock: stockLevel.channelStock?.shopee || 0,
-    tiktokStock: stockLevel.channelStock?.tiktok || 0,
-    lazadaStock: stockLevel.channelStock?.lazada || 0,
-    actualStock: stockLevel.physicalQty || 0,
-    onOrder: stockLevel.onOrder || 0,
-    available: stockLevel.availableQty || 0,
-    status: getStockStatus(stockLevel.availableQty || 0, stockLevel.physicalQty || 0),
-    restockDays: getRestockDays(stockLevel.physicalQty || 0),
-  }
-}
-
-function getStockStatus(available: number, physical: number): 'normal' | 'warning' | 'critical' {
-  if (physical === 0 || available < 0) return 'critical'
-  if (available <= 10) return 'warning'
-  return 'normal'
-}
-
-function getRestockDays(stock: number): string {
-  if (stock === 0) return '<7 ngày'
-  if (stock < 30) return '7-14 ngày'
-  return '>14 ngày'
-}
-
 export function InventoryTableView({ filters }: InventoryTableViewProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const [selectedRows, setSelectedRows] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
+  const [sortState, setSortState] = useState<InventorySortState>({
+    columnId: 'actualStock',
+    direction: 'desc',
+  })
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -70,8 +42,11 @@ export function InventoryTableView({ filters }: InventoryTableViewProps) {
     offset: (currentPage - 1) * pageSize,
   })
 
-  // Use mock data as fallback if API returns empty or hasn't loaded yet
-  const displayData = (data?.items && data.items.length > 0) ? data.items : mockStockLevels
+  // Determine which data to display:
+  // - If loading: show empty array (allows loading skeleton to display)
+  // - If data exists: use API data (even if empty array)
+  // - Otherwise: use mock data as last resort fallback
+  const displayData = isLoading ? [] : (data?.items ?? mockStockLevels)
 
   const rows: InventoryTableRow[] = useMemo(() => {
     return displayData.map(mapStockLevelToTableRow)
@@ -84,6 +59,7 @@ export function InventoryTableView({ filters }: InventoryTableViewProps) {
         { id: 'productName', label: 'Tên sản phẩm' },
         { id: 'sku', label: 'SKU' },
         { id: 'category', label: 'Phân loại' },
+        { id: 'platformType', label: 'Loại sàn' },
         { id: 'marketplaceStock', label: 'Tồn trên sàn', align: 'right' },
         { id: 'actualStock', label: 'Tồn thực tế', align: 'right' },
         { id: 'onOrder', label: 'Đã đặt', align: 'right' },
@@ -94,6 +70,7 @@ export function InventoryTableView({ filters }: InventoryTableViewProps) {
       rows,
       selectedRows,
       isLoading,
+      sortState,
       currentPage,
       pageSize,
       totalCount: data?.totalCount || mockStockLevels.length,
@@ -105,25 +82,43 @@ export function InventoryTableView({ filters }: InventoryTableViewProps) {
       onSelectAll: (selected) => {
         setSelectedRows(selected ? rows.map((r) => r.id) : [])
       },
+      onSortChange: setSortState,
+      onEditRow: (_rowId, productId) => {
+        if (!productId) return
+        navigate(`/products/${productId}/edit`, {
+          state: {
+            from: `${location.pathname}${location.search}`,
+          },
+        })
+      },
+      onDeleteRows: (rowIds: string[]) => {
+        setSelectedRows((prev) => prev.filter((id) => !rowIds.includes(id)))
+        toast.success(`Da xoa khoi danh sach chon ${rowIds.length} SKU.`)
+      },
+      onBulkAdjust: () => {
+        toast.info(`Bat dau dieu chinh hang loat cho ${selectedRows.length} SKU.`)
+      },
       onPageChange: setCurrentPage,
       onPageSizeChange: (size) => {
         setPageSize(size)
         setCurrentPage(1)
       },
       pageSizeOptions: [10, 20, 50, 100],
-      onOpenProductDetail: (_rowId, productId) => {
-        if (!productId) {
+      onOpenProductDetail: (_rowId, _productId) => {
+        const selectedRow = rows.find((row) => row.id === _rowId)
+        if (!selectedRow) {
           return
         }
 
-        navigate(`/products/${productId}`, {
+        navigate(`/inventory/adjust/${selectedRow.id}`, {
           state: {
             from: `${location.pathname}${location.search}`,
+            prefillStockLevelId: selectedRow.id,
           },
         })
       },
     }
-  }, [rows, selectedRows, isLoading, currentPage, pageSize, data?.totalCount, navigate, location.pathname, location.search])
+  }, [rows, selectedRows, isLoading, sortState, currentPage, pageSize, data?.totalCount, navigate, location.pathname, location.search])
 
   return <InventoryTable model={model} />
 }

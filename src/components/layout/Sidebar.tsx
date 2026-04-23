@@ -24,7 +24,7 @@ export function Sidebar() {
       <div
         aria-hidden
         className={cn(
-          'fixed inset-0 z-40 bg-black/35 backdrop-blur-[2px] transition-opacity duration-200 lg:hidden',
+          'fixed inset-0 z-40 bg-black/35 backdrop-blur-[2px] transition-opacity duration-200 xl:hidden',
           sidebarOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
         onClick={closeSidebarOnMobile}
@@ -32,7 +32,7 @@ export function Sidebar() {
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-60 border-r border-slate-900 bg-[#020617] text-slate-300 shadow-2xl transition-transform duration-200 ease-out lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 w-60 border-r border-secondary-800 bg-secondary-900 text-secondary-400 shadow-2xl transition-transform duration-200 ease-out xl:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >

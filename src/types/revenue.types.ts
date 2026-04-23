@@ -1,4 +1,5 @@
 export type RevenueKpiTone = 'positive' | 'negative'
+export type RevenueKpiDisplayType = 'currency' | 'number' | 'percent'
 
 export interface RevenueSummaryKpi {
   id: string
@@ -7,6 +8,7 @@ export interface RevenueSummaryKpi {
   deltaPercent: number
   note: string
   tone: RevenueKpiTone
+  displayType?: RevenueKpiDisplayType
 }
 
 export interface RevenueMonthlyGoal {
@@ -23,6 +25,7 @@ export interface RevenueDailyPoint {
 }
 
 export type RevenueRange = 'week' | 'month' | 'quarter' | 'year'
+export type RevenueSummaryPlatformFilter = 'all' | RevenuePlatformKey
 
 export interface RevenueTopProduct {
   id: string
@@ -38,6 +41,22 @@ export interface RevenueProfitMomentumPoint {
   deltaPercent: number
 }
 
+export type RevenueProfitFlowStepKind = 'increase' | 'decrease' | 'total'
+
+export interface RevenueProfitFlowStep {
+  id: string
+  label: string
+  amount: number
+  kind: RevenueProfitFlowStepKind
+}
+
+export interface RevenueCostBreakdownItem {
+  id: string
+  label: string
+  amount: number
+  color: string
+}
+
 export type RevenueProfitTrend = 'up' | 'down' | 'flat'
 
 export interface RevenueProductProfitItem {
@@ -49,6 +68,7 @@ export interface RevenueProductProfitItem {
   cost: number
   profit: number
   marginPercent: number
+  returnCancellationRatePercent: number
   trend: RevenueProfitTrend
   aiSuggestion: string
 }
@@ -58,10 +78,12 @@ export interface RevenueSummaryReportResponse {
   periodLabel: string
   comparisonLabel: string
   kpis: RevenueSummaryKpi[]
+  returnCancellationRatePercent: number
   monthlyGoal: RevenueMonthlyGoal
   dailyRevenue: RevenueDailyPoint[]
+  costBreakdown: RevenueCostBreakdownItem[]
   topProducts: RevenueTopProduct[]
-  profitMomentum: RevenueProfitMomentumPoint[]
+  profitFlow: RevenueProfitFlowStep[]
   productProfits: RevenueProductProfitItem[]
 }
 
@@ -78,6 +100,7 @@ export interface RevenuePlatformSnapshot {
   returnRatePercent: number
   aov: number
   feeRatePercent: number
+  netMarginPercent: number
   rating: number
 }
 
@@ -173,6 +196,20 @@ export interface RevenueMlForecastScenario {
   isRecommended?: boolean
 }
 
+export interface RevenueMlForecastChannelBreakdown {
+  channel: string
+  percentage: number
+  revenue: number
+  colorHex: string
+}
+
+export interface RevenueMlForecastKeyDriver {
+  id: string
+  label: string
+  impact: number
+  trend: 'positive' | 'negative'
+}
+
 export interface RevenueMlForecastResponse {
   title: string
   modelLabel: string
@@ -196,4 +233,9 @@ export interface RevenueMlForecastResponse {
     steps: string[]
     ctaLabel: string
   }
+  targetRevenue?: number
+  gapToTarget?: number
+  channelBreakdown?: RevenueMlForecastChannelBreakdown[]
+  historicalMape?: number
+  keyDrivers?: RevenueMlForecastKeyDriver[]
 }

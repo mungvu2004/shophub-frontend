@@ -57,9 +57,9 @@ export function InventoryFilterBarView({
       statuses,
       
       onSearchChange: (query) => onFilterChange({ search: query }),
-      onCategoryChange: (category) => onFilterChange({ category }),
-      onPlatformChange: (platform) => onFilterChange({ platform }),
-      onStatusChange: (status) => onFilterChange({ status }),
+      onCategoryChange: (category) => onFilterChange({ category: category === 'all' ? '' : category }),
+      onPlatformChange: (platform) => onFilterChange({ platform: platform === 'all' ? '' : platform }),
+      onStatusChange: (status) => onFilterChange({ status: status === 'all' ? '' : status }),
     }
   }, [filters, onFilterChange])
 

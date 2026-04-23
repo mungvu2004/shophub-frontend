@@ -1,4 +1,10 @@
-export type InventoryRowStatus = 'normal' | 'warning' | 'critical'
+export type InventoryRowStatus = 'normal' | 'warning' | 'critical' | 'discontinued'
+export type InventorySortDirection = 'asc' | 'desc'
+
+export type InventorySortState = {
+  columnId: string
+  direction: InventorySortDirection
+}
 
 export interface InventoryTableColumn {
   id: string
@@ -10,10 +16,13 @@ export interface InventoryTableColumn {
 export interface InventoryTableRow {
   id: string
   productId?: string
+  variantId?: string
+  warehouseId?: string
   image?: string
   sku: string
   productName: string
   category: string
+  platformType: string
   shopeeStock: number
   tiktokStock: number
   lazadaStock: number
@@ -23,6 +32,10 @@ export interface InventoryTableRow {
   status: InventoryRowStatus
   aiPrediction?: string
   restockDays?: string
+  avgDailySales?: number
+  forecastDays?: number
+  isDiscontinued?: boolean
+  maxCapacity?: number
 }
 
 export interface InventoryTableViewModel {
@@ -32,7 +45,11 @@ export interface InventoryTableViewModel {
   isLoading: boolean
   onSelectRow: (rowId: string) => void
   onSelectAll: (selected: boolean) => void
-  onSort?: (columnId: string) => void
+  sortState?: InventorySortState
+  onSortChange?: (state: InventorySortState) => void
+  onEditRow?: (rowId: string, productId?: string) => void
+  onDeleteRows?: (rowIds: string[]) => void
+  onBulkAdjust?: () => void
   // Pagination
   currentPage: number
   pageSize: number

@@ -13,11 +13,12 @@ import type { RevenueOrderItem } from '@/features/dashboard/services/dashboardSe
 
 export type { DashboardKPIOverviewPageProps, DashboardKPIOverviewViewModel } from '@/features/dashboard/logic/dashboardKpiOverview.types'
 
-export function normalizeDashboardPlatform(platform?: string): 'shopee' | 'lazada' | 'tiktok' {
+export function normalizeDashboardPlatform(platform?: string): 'shopee' | 'lazada' | 'tiktok' | 'other' {
   const normalized = platform?.toLowerCase().trim() ?? ''
   if (normalized === 'tiktok_shop' || normalized === 'tiktok') return 'tiktok'
   if (normalized === 'lazada') return 'lazada'
-  return 'shopee'
+  if (normalized === 'shopee') return 'shopee'
+  return 'other'
 }
 
 function toLocalDateKey(date: Date): string {
@@ -61,12 +62,31 @@ function buildPriorityText(metric: MetricCardData): string {
 function buildComparisonText(metric: MetricCardData): string {
   const percent = metric.comparisonPercent ?? 0
   const direction = metric.comparisonDirection === 'up' ? 'CAO' : 'THẤP'
-  return `${direction} HƠN ${percent}% SO VỚI THÁNG TRƯỚC`
+  return `${direction} HƠN ${percent}% SO VỚI HÔM QUA`
 }
 
 export function calculatePlatformMetrics(orders: RevenueOrderItem[]): MetricCardData[] {
   if (!orders.length) return []
   return calculatePlatformMetricsAt(orders)
+}
+
+function getMetricValueAtDate(orders: RevenueOrderItem[], dateKey: string, metricId: string): number {
+  const dayOrders = orders.filter((o) => getOrderLocalDateKey(o.createdAt) === dateKey)
+  if (metricId === 'today-revenue') {
+    return dayOrders.reduce((sum, o) => sum + (o.totalAmount ?? 0), 0)
+  }
+  if (metricId === 'total-orders') {
+    return dayOrders.length
+  }
+  if (metricId === 'urgent-orders') {
+    return dayOrders.filter((o) => o.status?.toLowerCase() === 'cancelled').length
+  }
+  if (metricId === 'refund-rate') {
+    if (dayOrders.length === 0) return 0
+    const refunds = dayOrders.filter((o) => o.status?.toLowerCase() === 'refunded' || o.status?.toLowerCase() === 'cancelled').length
+    return (refunds / dayOrders.length) * 100
+  }
+  return 0
 }
 
 export function calculatePlatformMetricsAt(
@@ -83,98 +103,126 @@ export function calculatePlatformMetricsAt(
   yesterdayDate.setDate(yesterdayDate.getDate() - 1)
   const yesterday = toLocalDateKey(yesterdayDate)
 
-  const todayOrders = orders.filter((order) => {
-    const orderDate = getOrderLocalDateKey(order.createdAt)
-    return orderDate === today
-  })
-  const yesterdayOrders = orders.filter((order) => {
-    const orderDate = getOrderLocalDateKey(order.createdAt)
-    return orderDate === yesterday
-  })
+  // Calculate trends for the last 7 days
+  const last7Days: string[] = []
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now)
+    d.setDate(d.getDate() - i)
+    last7Days.push(toLocalDateKey(d))
+  }
 
   // Calculate metrics
-  const todayRevenue = todayOrders.reduce((sum, order) => sum + (order.totalAmount ?? 0), 0)
-  const totalOrders = orders.length
-  const cancelledOrders = orders.filter((o) => o.status?.toLowerCase() === 'cancelled').length
-  const refundedOrders = orders.filter((o) => o.status?.toLowerCase() === 'refunded').length
-  const todayCancelledOrders = todayOrders.filter((o) => o.status?.toLowerCase() === 'cancelled').length
-  const yesterdayCancelledOrders = yesterdayOrders.filter((o) => o.status?.toLowerCase() === 'cancelled').length
-  const todayCancelledRate = todayOrders.length > 0 ? (todayCancelledOrders / todayOrders.length) * 100 : 0
-  const yesterdayCancelledRate = yesterdayOrders.length > 0 ? (yesterdayCancelledOrders / yesterdayOrders.length) * 100 : 0
-  const cancelledRateDelta = Number((todayCancelledRate - yesterdayCancelledRate).toFixed(1))
-  const cancelledRateChangeLabel =
-    cancelledRateDelta === 0 ? '0.0%' : `${cancelledRateDelta > 0 ? '+' : '-'}${Math.abs(cancelledRateDelta).toFixed(1)}%`
-  const cancelledRateChangeTone: MetricCardData['changeTone'] =
-    cancelledRateDelta > 0 ? 'warning' : cancelledRateDelta < 0 ? 'positive' : 'neutral'
+  const todayRevenue = getMetricValueAtDate(orders, today, 'today-revenue')
+  const yesterdayRevenue = getMetricValueAtDate(orders, yesterday, 'today-revenue')
+  const revenueDelta = yesterdayRevenue > 0 ? ((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100 : 0
+  const revenueTrend = last7Days.map((date) => getMetricValueAtDate(orders, date, 'today-revenue'))
 
-  const refundRate = totalOrders > 0 ? ((refundedOrders / totalOrders) * 100).toFixed(1) : '0'
+  const todayOrdersCount = getMetricValueAtDate(orders, today, 'total-orders')
+  const yesterdayOrdersCount = getMetricValueAtDate(orders, yesterday, 'total-orders')
+  const ordersDelta = yesterdayOrdersCount > 0 ? ((todayOrdersCount - yesterdayOrdersCount) / yesterdayOrdersCount) * 100 : 0
+  const ordersTrend = last7Days.map((date) => getMetricValueAtDate(orders, date, 'total-orders'))
 
-  // Platform breakdown for today
-  const platformBreakdown = ['shopee', 'lazada', 'tiktok'].map((platform) => ({
-    label: platform.toUpperCase(),
-    value: (
-      todayOrders
-        .filter((o) => normalizeDashboardPlatform(o.platform) === platform)
-        .reduce((sum, o) => sum + (o.totalAmount ?? 0), 0) / 1000000
-    ).toFixed(1) + 'M',
-  }))
+  const todayUrgent = getMetricValueAtDate(orders, today, 'urgent-orders')
+  const yesterdayUrgent = getMetricValueAtDate(orders, yesterday, 'urgent-orders')
+  const urgentDelta = todayUrgent - yesterdayUrgent
+  const urgentTrend = last7Days.map((date) => getMetricValueAtDate(orders, date, 'urgent-orders'))
+
+  const todayRefundRate = getMetricValueAtDate(orders, today, 'refund-rate')
+  const yesterdayRefundRate = getMetricValueAtDate(orders, yesterday, 'refund-rate')
+  const refundRateDelta = Number((todayRefundRate - yesterdayRefundRate).toFixed(1))
+  const refundTrend = last7Days.map((date) => getMetricValueAtDate(orders, date, 'refund-rate'))
+
+  const formatDelta = (delta: number) => {
+    if (delta === 0) return '0.0%'
+    return `${delta > 0 ? '+' : '-'}${Math.abs(delta).toFixed(1)}%`
+  }
+
+  const platformBreakdown = ['shopee', 'lazada', 'tiktok'].map((platform) => {
+    const dayOrders = orders.filter((o) => getOrderLocalDateKey(o.createdAt) === today)
+    return {
+      label: platform.toUpperCase(),
+      value: (
+        dayOrders
+          .filter((o) => normalizeDashboardPlatform(o.platform) === platform)
+          .reduce((sum, o) => sum + (o.totalAmount ?? 0), 0) / 1000000
+      ).toFixed(1) + 'M',
+    }
+  })
 
   const metrics: MetricCardData[] = [
     {
       id: 'today-revenue',
       title: 'DOANH THU HÔM NAY',
       value: (todayRevenue / 1000000).toFixed(2) + 'M',
-      changeLabel: '+12%',
-      changeTone: 'positive',
-      signalTone: 'good',
+      changeLabel: formatDelta(revenueDelta),
+      changeTone: revenueDelta >= 0 ? 'positive' : 'warning',
+      signalTone: revenueDelta >= 0 ? 'good' : 'bad',
       accentColor: '#EDE9FE',
       placeholderLayout: 'platform-split',
       breakdown: platformBreakdown,
       iconName: 'DollarSign',
+      trendData: revenueTrend,
     },
     {
       id: 'total-orders',
-      title: 'TỔNG ĐƠN HÀNG',
-      value: totalOrders.toString(),
-      changeLabel: '+5%',
-      changeTone: 'positive',
-      signalTone: 'good',
+      title: 'TỔNG ĐƠN HÀNG HÔM NAY',
+      value: todayOrdersCount.toString(),
+      changeLabel: formatDelta(ordersDelta),
+      changeTone: ordersDelta >= 0 ? 'positive' : 'warning',
+      signalTone: ordersDelta >= 0 ? 'good' : 'bad',
       accentColor: '#E2E8F0',
       placeholderLayout: 'platform-split',
       breakdown: [
-        { label: 'SHOPEE', value: orders.filter((o) => normalizeDashboardPlatform(o.platform) === 'shopee').length.toString() },
-        { label: 'LAZADA', value: orders.filter((o) => normalizeDashboardPlatform(o.platform) === 'lazada').length.toString() },
-        { label: 'TIKTOK', value: orders.filter((o) => normalizeDashboardPlatform(o.platform) === 'tiktok').length.toString() },
+        {
+          label: 'SHOPEE',
+          value: orders
+            .filter((o) => getOrderLocalDateKey(o.createdAt) === today && normalizeDashboardPlatform(o.platform) === 'shopee')
+            .length.toString(),
+        },
+        {
+          label: 'LAZADA',
+          value: orders
+            .filter((o) => getOrderLocalDateKey(o.createdAt) === today && normalizeDashboardPlatform(o.platform) === 'lazada')
+            .length.toString(),
+        },
+        {
+          label: 'TIKTOK',
+          value: orders
+            .filter((o) => getOrderLocalDateKey(o.createdAt) === today && normalizeDashboardPlatform(o.platform) === 'tiktok')
+            .length.toString(),
+        },
       ],
       iconName: 'ShoppingCart',
+      trendData: ordersTrend,
     },
     {
       id: 'urgent-orders',
       title: 'CẦN XỬ LÝ NGAY',
-      value: cancelledOrders.toString(),
-      changeLabel: cancelledRateChangeLabel,
-      changeTone: cancelledRateChangeTone,
-      signalTone: cancelledOrders > 0 ? 'bad' : 'good',
+      value: todayUrgent.toString(),
+      changeLabel: urgentDelta === 0 ? '0' : `${urgentDelta > 0 ? '+' : ''}${urgentDelta}`,
+      changeTone: urgentDelta > 0 ? 'warning' : urgentDelta < 0 ? 'positive' : 'neutral',
+      signalTone: todayUrgent > 0 ? 'bad' : 'good',
       accentColor: '#FFEDD5',
-      borderTone: cancelledOrders > 0 ? 'warning' : 'default',
+      borderTone: todayUrgent > 0 ? 'warning' : 'default',
       placeholderLayout: 'alert-summary',
-      breakdown: [{ label: '', value: `Cần xử lý ${cancelledOrders} đơn hủy` }],
+      breakdown: [{ label: '', value: `Cần xử lý ${todayUrgent} đơn hủy` }],
       iconName: 'AlertCircle',
+      trendData: urgentTrend,
     },
     {
       id: 'refund-rate',
-      title: 'TỶ LỆ HOÀN/HỦY',
-      value: `${refundRate}%`,
-      changeLabel: '-2%',
-      changeTone: 'positive',
-      signalTone: 'good',
+      title: 'TỶ LỆ HOÀN/HỦY HÔM NAY',
+      value: `${todayRefundRate.toFixed(1)}%`,
+      changeLabel: formatDelta(refundRateDelta),
+      changeTone: refundRateDelta <= 0 ? 'positive' : 'warning',
+      signalTone: todayRefundRate < 5 ? 'good' : 'bad',
       accentColor: '#E2E8F0',
       placeholderLayout: 'rate-compare',
-      ratioPercent: Math.min(parseFloat(refundRate) || 0, 100),
-      comparisonPercent: 2,
-      comparisonDirection: 'down',
-      breakdown: [{ label: 'SO VỚI THÁNG TRƯỚC', value: 'THẤP HƠN 2% SO VỚI THÁNG TRƯỚC' }],
+      ratioPercent: Math.min(todayRefundRate, 100),
+      comparisonPercent: Math.abs(refundRateDelta),
+      comparisonDirection: refundRateDelta > 0 ? 'up' : 'down',
       iconName: 'BarChart3',
+      trendData: refundTrend,
     },
   ]
 
@@ -197,7 +245,7 @@ function normalizeMetric(metric: MetricCardData, isPlaceholderMode: boolean): Me
 
   if (metric.placeholderLayout === 'rate-compare') {
     normalized.ratioPercent = clampPercent(metric.ratioPercent ?? 0)
-    normalized.breakdown = [{ label: 'SO VỚI THÁNG TRƯỚC', value: buildComparisonText(metric) }]
+    normalized.breakdown = [{ label: 'SO VỚI HÔM QUA', value: buildComparisonText(metric) }]
   }
 
   return normalized
@@ -213,6 +261,8 @@ export function buildDashboardKPIOverviewViewModel({
   metrics = [],
   noDataHint = DEFAULT_NO_DATA_HINT,
   showMonthlyGoal = true,
+  onRefresh,
+  isRefreshing,
 }: DashboardKPIOverviewPageProps): DashboardKPIOverviewViewModel {
   const resolvedTabs = tabs.length ? tabs : PLACEHOLDER_TABS
   const resolvedSelectedTabId = selectedTabId ?? resolvedTabs[0]?.id ?? 'all'
@@ -234,5 +284,7 @@ export function buildDashboardKPIOverviewViewModel({
     metrics: resolvedMetrics.map((metric) => normalizeMetric(metric, !metrics.length)),
     noDataHint,
     hasRealMetrics: metrics.length > 0,
+    onRefresh,
+    isRefreshing,
   }
 }

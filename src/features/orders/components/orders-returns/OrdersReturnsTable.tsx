@@ -1,5 +1,5 @@
 import { Pagination } from '@/components/ui/pagination'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { DataTable, type DataTableColumn } from '@/components/shared/DataTable'
 import type { OrdersReturnsTableRowModel } from '@/features/orders/logic/ordersReturns.types'
 import { useLocation, useNavigate } from 'react-router-dom'
 
@@ -44,64 +44,86 @@ export function OrdersReturnsTable({
     })
   }
 
+  const columns: DataTableColumn<OrdersReturnsTableRowModel>[] = [
+    {
+      id: 'orderCode',
+      header: 'MÃ ĐƠN',
+      widthClassName: 'w-[120px]',
+      headerClassName: 'text-[11px] font-bold tracking-[0.55px] text-slate-500',
+      cell: (row) => (
+        <div className="space-y-1">
+          <p className="font-mono text-[13px] font-semibold text-[#3525cd] hover:underline">{row.orderCode}</p>
+          <p className={`text-[10px] font-bold uppercase ${row.orderKindTone === 'rose' ? 'text-[#ba1a1a]' : 'text-[#777587]'}`}>
+            {row.orderKindLabel}
+          </p>
+        </div>
+      ),
+    },
+    {
+      id: 'productName',
+      header: 'SẢN PHẨM',
+      headerClassName: 'text-[11px] font-bold tracking-[0.55px] text-slate-500',
+      cell: (row) => (
+        <>
+          <p className="text-[14px] font-semibold text-[#111c2d]">{row.productName}</p>
+          <p className="text-[12px] text-[#464555]">{row.customerName}</p>
+        </>
+      ),
+    },
+    {
+      id: 'platformLabel',
+      header: 'SÀN',
+      widthClassName: 'w-[96px]',
+      headerClassName: 'text-[11px] font-bold tracking-[0.55px] text-slate-500',
+      cell: (row) => (
+        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">
+          <span className={`h-1.5 w-1.5 rounded-full ${row.platformDotClass}`} />
+          {row.platformLabel}
+        </span>
+      ),
+    },
+    {
+      id: 'amountLabel',
+      header: 'GIÁ TRỊ',
+      accessor: (row) => row.amountLabel,
+      widthClassName: 'w-[130px]',
+      headerClassName: 'text-[11px] font-bold tracking-[0.55px] text-slate-500',
+      cellClassName: 'font-mono text-[14px] font-bold text-slate-800',
+      align: 'right',
+    },
+    {
+      id: 'statusLabel',
+      header: 'TRẠNG THÁI',
+      widthClassName: 'w-[130px]',
+      headerClassName: 'text-[11px] font-bold tracking-[0.55px] text-slate-500',
+      cell: (row) => (
+        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold ${row.statusClassName}`}>
+          {row.statusLabel}
+        </span>
+      ),
+    },
+    {
+      id: 'timeLabel',
+      header: 'GIỜ',
+      accessor: (row) => row.timeLabel,
+      widthClassName: 'w-[90px]',
+      headerClassName: 'text-[11px] font-bold tracking-[0.55px] text-slate-500',
+      cellClassName: 'font-mono text-[13px] text-slate-500',
+      align: 'right',
+    },
+  ]
+
   return (
     <section className="overflow-hidden rounded-xl border border-slate-100">
-      <Table>
-        <TableHeader>
-          <TableRow className="h-10 border-b border-slate-200 bg-slate-50 hover:bg-slate-50">
-            <TableHead className="w-[120px] text-[11px] font-bold tracking-[0.55px] text-slate-500">MÃ ĐƠN</TableHead>
-            <TableHead className="text-[11px] font-bold tracking-[0.55px] text-slate-500">SẢN PHẨM</TableHead>
-            <TableHead className="w-[96px] text-[11px] font-bold tracking-[0.55px] text-slate-500">SÀN</TableHead>
-            <TableHead className="w-[130px] text-right text-[11px] font-bold tracking-[0.55px] text-slate-500">GIÁ TRỊ</TableHead>
-            <TableHead className="w-[130px] text-[11px] font-bold tracking-[0.55px] text-slate-500">TRẠNG THÁI</TableHead>
-            <TableHead className="w-[90px] text-right text-[11px] font-bold tracking-[0.55px] text-slate-500">GIỜ</TableHead>
-          </TableRow>
-        </TableHeader>
-
-        <TableBody>
-          {rows.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={6} className="py-8 text-center text-sm text-slate-500">
-                Không có dữ liệu hoàn/hủy theo bộ lọc hiện tại.
-              </TableCell>
-            </TableRow>
-          ) : (
-            rows.map((row) => (
-              <TableRow
-                key={row.id}
-                className="h-14 cursor-pointer border-b border-slate-100 bg-white hover:bg-indigo-50/20"
-                onClick={() => openOrderDetail(row)}
-              >
-                <TableCell>
-                  <div className="space-y-1">
-                    <p className="font-mono text-[13px] font-semibold text-[#3525cd] hover:underline">{row.orderCode}</p>
-                    <p className={`text-[10px] font-bold uppercase ${row.orderKindTone === 'rose' ? 'text-[#ba1a1a]' : 'text-[#777587]'}`}>
-                      {row.orderKindLabel}
-                    </p>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <p className="text-[14px] font-semibold text-[#111c2d]">{row.productName}</p>
-                  <p className="text-[12px] text-[#464555]">{row.customerName}</p>
-                </TableCell>
-                <TableCell>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">
-                    <span className={`h-1.5 w-1.5 rounded-full ${row.platformDotClass}`} />
-                    {row.platformLabel}
-                  </span>
-                </TableCell>
-                <TableCell className="text-right font-mono text-[14px] font-bold text-slate-800">{row.amountLabel}</TableCell>
-                <TableCell>
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold ${row.statusClassName}`}>
-                    {row.statusLabel}
-                  </span>
-                </TableCell>
-                <TableCell className="text-right font-mono text-[13px] text-slate-500">{row.timeLabel}</TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+      <DataTable
+        rows={rows}
+        columns={columns}
+        rowKey={(row) => row.id}
+        tableClassName="h-full"
+        emptyText="Không có dữ liệu hoàn/hủy theo bộ lọc hiện tại."
+        rowClassName="h-14 hover:bg-indigo-50/20"
+        onRowClick={openOrderDetail}
+      />
 
       <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-4">
         <p className="text-[13px] text-slate-500">

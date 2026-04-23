@@ -2,69 +2,79 @@ import type { RevenueOrderItem } from '@/features/dashboard/services/dashboardSe
 import { mockProducts } from './products'
 
 /**
- * Generate mock revenue orders for the past 7 days with platform distribution
+ * Generate mock revenue orders for the past 30 days with platform distribution
  */
 const generateRevenueOrders = (): RevenueOrderItem[] => {
   const orders: RevenueOrderItem[] = []
   const today = new Date()
+  today.setHours(23, 59, 59, 999)
   const platforms: Array<'shopee' | 'lazada' | 'tiktok'> = ['shopee', 'lazada', 'tiktok']
-  const statues = ['completed', 'shipped', 'delivered', 'pending', 'cancelled']
-  const productNames = [
-    'Áo thun cotton nam',
-    'Quần jean nữ',
-    'Giày thể thao',
-    'Túi xách da',
-    'Ví da nam',
-    'Đồng hồ thông minh',
-    'Pin sạc nhanh',
-    'Tai nghe Bluetooth',
-    'Bàn phím cơ',
-    'Chuột không dây',
-  ]
+  const statues = ['completed', 'shipped', 'delivered', 'pending', 'cancelled', 'refunded']
 
   let orderId = 1
 
-  // Generate orders for past 7 days
-  for (let dayOffset = 6; dayOffset >= 0; dayOffset--) {
+  // Generate orders for past 30 days
+  for (let dayOffset = 29; dayOffset >= 0; dayOffset--) {
     const currentDate = new Date(today)
     currentDate.setDate(today.getDate() - dayOffset)
-    const dateStr = currentDate.toISOString().split('T')[0]
-    const date = `${dateStr}T00:00:00Z`
+    
+    // Use local date parts to ensure consistency with toLocalDateKey in logic
+    const year = currentDate.getFullYear()
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0')
+    const day = String(currentDate.getDate()).padStart(2, '0')
+    const dateStr = `${year}-${month}-${day}`
 
-    // Number of orders per day varies (5-15 orders)
-    const ordersPerDay = 5 + Math.floor(Math.random() * 11)
+    // Number of orders per day varies (10-30 orders for more realistic charts)
+    // Make today and yesterday have slightly different patterns to test change percentage
+    let ordersPerDay = 15 + Math.floor(Math.random() * 20)
+    
+    // Artificial spike/dip for testing delta
+    if (dayOffset === 0) ordersPerDay = 25 // Today
+    if (dayOffset === 1) ordersPerDay = 20 // Yesterday
 
     for (let i = 0; i < ordersPerDay; i++) {
       const platform = platforms[Math.floor(Math.random() * platforms.length)]
       const hour = Math.floor(Math.random() * 24)
       const minute = Math.floor(Math.random() * 60)
+      const second = Math.floor(Math.random() * 60)
 
-      // Revenue varies by platform and time
-      let baseAmount = 500000
-      if (platform === 'shopee') baseAmount = 800000 + Math.random() * 400000
-      if (platform === 'lazada') baseAmount = 600000 + Math.random() * 350000
-      if (platform === 'tiktok') baseAmount = 400000 + Math.random() * 300000
+      // Revenue varies by platform and day
+      const trendMultiplier = 1 + (29 - dayOffset) * 0.01 
+      let baseAmount = 400000 * trendMultiplier
+      
+      if (platform === 'shopee') baseAmount *= (1.2 + Math.random() * 0.5)
+      if (platform === 'lazada') baseAmount *= (1.0 + Math.random() * 0.4)
+      if (platform === 'tiktok') baseAmount *= (0.8 + Math.random() * 0.6)
 
       const totalAmount = Math.round(baseAmount)
-      const createdAtTime = `T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00Z`
+      // Create local ISO-like string (no 'Z' so new Date() parses it as local)
+      const createdAt = `${dateStr}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`
       
-      // Pick a random product from mock products
+      // Randomly pick a status
+      const statusSeed = Math.random()
+      let status = 'delivered'
+      if (statusSeed < 0.1) status = 'cancelled'
+      else if (statusSeed < 0.15) status = 'refunded'
+      else if (statusSeed < 0.3) status = 'shipped'
+      else if (statusSeed < 0.4) status = 'pending'
+      else if (statusSeed < 0.7) status = 'completed'
+
       const randomProduct = mockProducts[Math.floor(Math.random() * mockProducts.length)]
 
       orders.push({
-        id: `order-${String(orderId).padStart(5, '0')}`,
+        id: `order-rev-${String(orderId).padStart(6, '0')}`,
         platform: platform === 'tiktok' ? 'tiktok_shop' : platform,
-        status: statues[Math.floor(Math.random() * statues.length)] as any,
+        status: status as any,
         totalAmount,
-        createdAt: `${dateStr}${createdAtTime}`,
-        createdAt_platform: `${dateStr}${createdAtTime}`,
+        createdAt: createdAt,
+        createdAt_platform: createdAt,
         items: [
           {
             productId: randomProduct.id,
             productName: randomProduct.name,
-            qty: Math.floor(Math.random() * 3) + 1,
-            itemPrice: Math.round(totalAmount * (0.6 + Math.random() * 0.3)),
-            paidPrice: Math.round(totalAmount * (0.8 + Math.random() * 0.15)),
+            qty: Math.floor(Math.random() * 2) + 1,
+            itemPrice: Math.round(totalAmount * (0.8 + Math.random() * 0.1)),
+            paidPrice: totalAmount,
           },
         ],
       })
@@ -79,7 +89,7 @@ const generateRevenueOrders = (): RevenueOrderItem[] => {
 export const mockRevenueOrders = generateRevenueOrders()
 
 /**
- * Summary of revenue by platform for past 7 days
+ * Summary of revenue by platform for past 30 days
  */
 export const revenueSummary = (() => {
   const summary = {
@@ -100,7 +110,7 @@ export const revenueSummary = (() => {
 })()
 
 /**
- * Daily revenue breakdown for past 7 days
+ * Daily revenue breakdown for past 30 days
  */
 export const dailyRevenueBreakdown = (() => {
   const today = new Date()
@@ -115,7 +125,7 @@ export const dailyRevenueBreakdown = (() => {
     }
   > = {}
 
-  for (let dayOffset = 6; dayOffset >= 0; dayOffset--) {
+  for (let dayOffset = 29; dayOffset >= 0; dayOffset--) {
     const currentDate = new Date(today)
     currentDate.setDate(today.getDate() - dayOffset)
     const dateStr = currentDate.toISOString().split('T')[0]

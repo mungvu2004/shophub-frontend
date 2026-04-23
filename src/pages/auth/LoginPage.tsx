@@ -10,7 +10,7 @@ export function LoginPage() {
 
   const redirectTo =
     (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ||
-    "/dashboard";
+    "/dashboard/kpi-overview";
 
   if (isLoading) {
     return <FullPageAuthLoading />;

@@ -1,59 +1,48 @@
-import { useMemo, useState } from 'react'
-
+import { DashboardRevenueChartsView } from './DashboardRevenueChartsView'
+import { useRevenueChartsController } from './useRevenueChartsController'
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
-import { DashboardRevenueChartsView } from '@/features/dashboard/components/dashboard-revenue-charts-page/DashboardRevenueChartsView'
-import { useDashboardRevenueCharts } from '@/features/dashboard/hooks/useDashboardRevenueCharts'
-import { buildDashboardRevenueChartsViewModel } from '@/features/dashboard/logic/dashboardRevenueCharts.logic'
-import type {
-  RevenueChartsPlatformId,
-  RevenueChartsRangeDays,
-} from '@/features/dashboard/logic/dashboardRevenueCharts.types'
-
-export const shouldShowBlockingRevenueChartsError = (input: { isError: boolean; hasModel: boolean }) => input.isError && !input.hasModel
+import { PageSkeleton } from '@/components/PageSkeleton'
 
 export function DashboardRevenueCharts() {
-  const [selectedPlatform, setSelectedPlatform] = useState<RevenueChartsPlatformId>('all')
-  const [selectedRange, setSelectedRange] = useState<RevenueChartsRangeDays>(30)
-
-  const { data, isLoading, isFetching, isError, refetch } = useDashboardRevenueCharts({
-    platform: selectedPlatform,
-    range: selectedRange,
-  })
-
-  const model = useMemo(() => {
-    if (!data) return null
-
-    return buildDashboardRevenueChartsViewModel({
-      data,
-      selectedPlatform,
-    })
-  }, [data, selectedPlatform])
+  const { 
+    model, 
+    isLoading, 
+    isError,
+    isRefreshing, 
+    onPlatformChange, 
+    onRangeChange, 
+    refetch 
+  } = useRevenueChartsController()
 
   if (isLoading && !model) {
-    return <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-500">Đang tải dữ liệu doanh thu...</div>
+    return <PageSkeleton />
   }
 
-  if (shouldShowBlockingRevenueChartsError({ isError, hasModel: Boolean(model) })) {
-    return <DataLoadErrorState title="Không tải được dữ liệu Revenue Charts." onRetry={() => refetch()} />
+  if (isError && !model) {
+    return (
+      <DataLoadErrorState
+        title="Không thể tải dữ liệu doanh thu"
+        description="Đã xảy ra lỗi khi kết nối với máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại."
+        onRetry={refetch}
+      />
+    )
   }
 
-  if (!model) {
-    return <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-500">Đang chuẩn bị dữ liệu Revenue Charts...</div>
-  }
+  if (!model) return null
 
   return (
-    <div className="space-y-4">
-      {isError ? (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
-          Dữ liệu mới chưa tải được. Đang hiển thị dữ liệu gần nhất.
+    <div className="relative">
+      {isError && (
+        <div className="sticky top-4 z-50 mb-6 rounded-2xl border border-amber-200 bg-amber-50/90 px-6 py-4 text-sm font-bold text-amber-800 shadow-xl backdrop-blur-md">
+          ⚠️ Hệ thống đang gặp sự cố khi tải dữ liệu mới. Đang hiển thị dữ liệu lưu tạm gần nhất.
         </div>
-      ) : null}
-
+      )}
+      
       <DashboardRevenueChartsView
         model={model}
-        isRefreshing={isFetching}
-        onPlatformChange={setSelectedPlatform}
-        onRangeChange={setSelectedRange}
+        isRefreshing={isRefreshing}
+        onPlatformChange={onPlatformChange}
+        onRangeChange={onRangeChange}
       />
     </div>
   )

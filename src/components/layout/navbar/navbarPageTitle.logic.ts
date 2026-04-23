@@ -34,6 +34,10 @@ export function resolvePageTitle(pathname: string) {
     return 'Đơn hàng'
   }
 
+  if (pathname.startsWith('/inventory/adjust')) {
+    return 'Điều chỉnh tồn kho'
+  }
+
   if (pathname.startsWith('/products/')) {
     return 'Sản phẩm'
   }

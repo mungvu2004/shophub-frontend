@@ -43,7 +43,7 @@ export const mockWarehouses: Warehouse[] = [
   },
 ];
 
-export const mockStockLevels: StockLevel[] = Array.from({ length: 12 }, (_, idx) => {
+export const mockStockLevels: (StockLevel & { avgDailySales?: number; forecastDays?: number; isDiscontinued?: boolean; maxCapacity?: number })[] = Array.from({ length: 12 }, (_, idx) => {
   const n = idx + 1;
   const physicalQty = 20 + n;
   const reservedQty = n % 5;
@@ -71,6 +71,15 @@ export const mockStockLevels: StockLevel[] = Array.from({ length: 12 }, (_, idx)
   ];
   const productName = productNames[n - 1];
   
+  // Tốc độ bán trung bình (units/ngày)
+  const avgDailySales = 0.5 + (n % 5) * 0.8;
+  // Dự báo hết hàng (ngày)
+  const forecastDays = Math.ceil(physicalQty / avgDailySales);
+  // Một số sản phẩm bị đánh dấu ngừng bán
+  const isDiscontinued = n === 11;
+  // Sức chứa tối đa của kho (units)
+  const maxCapacity = 80 + (n % 5) * 40;
+  
   return {
     id: `sl-${String(n).padStart(3, "0")}`,
     sku,
@@ -93,6 +102,10 @@ export const mockStockLevels: StockLevel[] = Array.from({ length: 12 }, (_, idx)
     minThreshold: 15,
     maxThreshold: 250,
     updatedAt: `2026-03-${String((n % 28) + 1).padStart(2, "0")}T06:00:00Z`,
+    avgDailySales,
+    forecastDays,
+    isDiscontinued,
+    maxCapacity,
   };
 });
 

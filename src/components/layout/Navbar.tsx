@@ -8,6 +8,7 @@ import { NavbarNotificationsMenu } from '@/components/layout/navbar/NavbarNotifi
 import { resolvePageTitle } from '@/components/layout/navbar/navbarPageTitle.logic'
 import { NavbarTitleSection } from '@/components/layout/navbar/NavbarTitleSection'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/authStore'
 import { useUIStore } from '@/stores/uiStore'
 
@@ -37,29 +38,41 @@ export function Navbar() {
     () => resolvePageTitle(location.pathname),
     [location.pathname],
   )
+  const isPlatformComparisonPage = location.pathname === '/revenue/platform-comparison'
+  const isRevenueMlForecastPage = location.pathname === '/revenue/ml-forecast'
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur lg:px-8">
+    <header
+      className={cn(
+        'border-b border-secondary-200 bg-white/90 px-4 py-3 backdrop-blur xl:px-8',
+        isRevenueMlForecastPage ? 'relative z-10' : 'sticky top-0 z-30',
+      )}
+    >
       <div className="flex items-center justify-between gap-4">
         <NavbarTitleSection
           pageTitle={pageTitle}
           selectedDate={selectedDate}
           toggleSidebar={toggleSidebar}
+          showDateBadge={!isPlatformComparisonPage}
         />
 
         <div className="flex items-center gap-2">
-          <NavbarDatePicker selectedDate={selectedDate} onDateSelect={setSelectedDate} />
+          {!isPlatformComparisonPage ? (
+            <>
+              <NavbarDatePicker selectedDate={selectedDate} onDateSelect={setSelectedDate} />
 
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={handleRefresh}
-            className="border border-slate-200 hover:bg-slate-50"
-            aria-label="Refresh data"
-          >
-            <RefreshCw className="size-[18px]" />
-          </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleRefresh}
+                className="border border-slate-200 hover:bg-slate-50"
+                aria-label="Refresh data"
+              >
+                <RefreshCw className="size-[18px]" />
+              </Button>
+            </>
+          ) : null}
 
           <NavbarNotificationsMenu />
 

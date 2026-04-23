@@ -9,7 +9,7 @@ import { Sidebar } from './Sidebar'
 
 export function AppShell() {
   return (
-    <div className="min-h-screen bg-[#f8f9ff] text-foreground lg:pl-60">
+    <div className="min-h-screen bg-secondary-50 text-foreground xl:pl-60">
       <Sidebar />
       <div className="flex min-h-screen flex-col">
         <Navbar />

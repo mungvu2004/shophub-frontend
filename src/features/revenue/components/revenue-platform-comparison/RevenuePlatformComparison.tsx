@@ -6,9 +6,24 @@ import {
   buildRevenuePlatformComparisonViewModel,
 } from '@/features/revenue/logic/revenuePlatformComparison.logic'
 import { RevenuePlatformComparisonView } from '@/features/revenue/components/revenue-platform-comparison/RevenuePlatformComparisonView'
+import { useUIStore } from '@/stores/uiStore'
 
 export function RevenuePlatformComparison() {
-  const { data, isLoading, isError, refetch } = useRevenuePlatformComparison('2026-03')
+  const selectedDate = useUIStore((state) => state.selectedDate)
+
+  const selectedMonth = useMemo(() => {
+    const datePattern = /^(\d{4})-(\d{2})-\d{2}$/
+    const matched = datePattern.exec(selectedDate)
+
+    if (matched) {
+      return `${matched[1]}-${matched[2]}`
+    }
+
+    const now = new Date()
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  }, [selectedDate])
+
+  const { data, isLoading, isError, refetch } = useRevenuePlatformComparison(selectedMonth)
 
   const model = useMemo(() => {
     if (!data) {

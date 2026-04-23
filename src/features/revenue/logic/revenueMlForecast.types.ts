@@ -20,6 +20,7 @@ export type RevenueMlForecastKpiCardViewModel = {
   label: string
   valueLabel: string
   subValueLabel: string
+  confidencePercent?: number
   trendLabel?: string
   trendClassName?: string
   tagLabel?: string
@@ -53,10 +54,25 @@ export type RevenueMlForecastChartAnnotationViewModel = {
 export type RevenueMlForecastScenarioCardViewModel = {
   id: string
   title: string
+  projectedRevenue: number
   valueLabel: string
   note: string
   accent: 'negative' | 'neutral' | 'positive'
   isRecommended?: boolean
+}
+
+export type RevenueMlForecastChannelBreakdown = {
+  channel: string
+  percentage: number
+  revenue: number
+  colorHex: string
+}
+
+export type RevenueMlForecastKeyDriver = {
+  id: string
+  label: string
+  impact: number
+  trend: 'positive' | 'negative'
 }
 
 export type RevenueMlForecastActionPlanViewModel = {
@@ -72,6 +88,11 @@ export type RevenueMlForecastViewModel = {
   chartPoints: RevenueMlForecastChartPointViewModel[]
   chartLegends: RevenueMlForecastChartLegendViewModel[]
   chartAnnotations: RevenueMlForecastChartAnnotationViewModel[]
+  targetRevenue: number
+  gapToTarget: number
+  channelBreakdown: RevenueMlForecastChannelBreakdown[]
+  historicalMape: number
+  keyDrivers: RevenueMlForecastKeyDriver[]
   scenarioTitle: string
   scenarioActionLabel: string
   scenarios: RevenueMlForecastScenarioCardViewModel[]

@@ -34,8 +34,9 @@ export const ordersHandlers = [
       && !url.searchParams.has('minAmount')
       && !url.searchParams.has('maxAmount')
     ) {
-      const fromDate = new Date(revenueDateFrom).getTime()
-      const toDate = new Date(revenueDateTo).getTime()
+      // Use local date parsing by providing a time string without 'Z'
+      const fromDate = new Date(`${revenueDateFrom}T00:00:00`).getTime()
+      const toDate = new Date(`${revenueDateTo}T23:59:59`).getTime()
 
       const filteredOrders = mockRevenueOrders.filter((order) => {
         if (!order.createdAt) return false

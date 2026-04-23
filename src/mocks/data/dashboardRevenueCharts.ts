@@ -6,7 +6,9 @@ export type RevenueChartsDailyPoint = {
   shopee: number;
   lazada: number;
   tiktokShop: number;
-  previousTotal: number;
+  previousShopee: number;
+  previousLazada: number;
+  previousTiktokShop: number;
 };
 
 export type RevenueChartsHourlyPoint = {
@@ -51,7 +53,13 @@ export type DashboardRevenueChartsPayload = {
     achievedRevenue: number;
     progressPercent: number;
   };
-  dailySeries: RevenueChartsDailyPoint[];
+  dailySeries: Array<{
+    date: string;
+    shopee: number;
+    lazada: number;
+    tiktokShop: number;
+    previousTotal: number;
+  }>;
   hourlyDistribution: RevenueChartsHourlyPoint[];
   categoryBreakdown: RevenueChartsCategoryPoint[];
   weeklyComparison: RevenueChartsWeeklyPoint[];
@@ -66,22 +74,25 @@ const toDate = (offset: number) => {
   return date.toISOString().slice(0, 10);
 };
 
-const dailyBase: Array<{ date: string; shopee: number; lazada: number; tiktokShop: number; previousTotal: number }> = Array.from(
+const dailyBase: RevenueChartsDailyPoint[] = Array.from(
   { length: 30 },
   (_, idx) => {
     const shopee = 31_500_000 + idx * 360_000 + (idx % 4) * 1_100_000;
     const lazada = 18_700_000 + idx * 285_000 + (idx % 5) * 860_000;
     const tiktokShop = 24_800_000 + idx * 320_000 + (idx % 3) * 940_000;
 
-    const currentTotal = shopee + lazada + tiktokShop;
-    const previousTotal = Math.round(currentTotal * (0.86 + (idx % 6) * 0.012));
+    const previousShopee = Math.round(shopee * (0.88 + (idx % 5) * 0.01));
+    const previousLazada = Math.round(lazada * (0.84 + (idx % 7) * 0.012));
+    const previousTiktokShop = Math.round(tiktokShop * (0.82 + (idx % 4) * 0.015));
 
     return {
       date: toDate(idx),
       shopee,
       lazada,
       tiktokShop,
-      previousTotal,
+      previousShopee,
+      previousLazada,
+      previousTiktokShop,
     };
   },
 );
@@ -163,29 +174,41 @@ const weeklyBase: RevenueChartsWeeklyPoint[] = [
 const toScopedRevenue = (point: RevenueChartsDailyPoint, platform: RevenueChartsPlatform) => {
   if (platform === "shopee") {
     return {
-      ...point,
+      date: point.date,
+      shopee: point.shopee,
       lazada: 0,
       tiktokShop: 0,
+      previousTotal: point.previousShopee,
     };
   }
 
   if (platform === "lazada") {
     return {
-      ...point,
+      date: point.date,
       shopee: 0,
+      lazada: point.lazada,
       tiktokShop: 0,
+      previousTotal: point.previousLazada,
     };
   }
 
   if (platform === "tiktok_shop") {
     return {
-      ...point,
+      date: point.date,
       shopee: 0,
       lazada: 0,
+      tiktokShop: point.tiktokShop,
+      previousTotal: point.previousTiktokShop,
     };
   }
 
-  return point;
+  return {
+    date: point.date,
+    shopee: point.shopee,
+    lazada: point.lazada,
+    tiktokShop: point.tiktokShop,
+    previousTotal: point.previousShopee + point.previousLazada + point.previousTiktokShop,
+  };
 };
 
 const toCategoryBreakdown = (platform: RevenueChartsPlatform): RevenueChartsCategoryPoint[] => {
@@ -235,9 +258,9 @@ const toWeeklyComparison = (platform: RevenueChartsPlatform): RevenueChartsWeekl
   });
 };
 
-const totalOfPoint = (item: RevenueChartsDailyPoint) => item.shopee + item.lazada + item.tiktokShop;
+const totalOfPoint = (item: { shopee: number; lazada: number; tiktokShop: number }) => item.shopee + item.lazada + item.tiktokShop;
 
-const toSummary = (dailySeries: RevenueChartsDailyPoint[]) => {
+const toSummary = (dailySeries: Array<{ shopee: number; lazada: number; tiktokShop: number; date: string; previousTotal: number }>) => {
   if (dailySeries.length === 0) {
     return {
       totalRevenue: 0,

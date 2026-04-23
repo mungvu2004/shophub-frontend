@@ -20,6 +20,8 @@ export type RevenuePlatformCardViewModel = {
   returnRateClassName: string
   aovLabel: string
   feeRateLabel: string
+  netMarginLabel: string
+  netMarginClassName: string
   ratingLabel: string
 }
 
@@ -119,6 +121,18 @@ const getReturnRateClassName = (value: number) => {
   return 'text-rose-600'
 }
 
+const getNetMarginClassName = (value: number) => {
+  if (value >= 24) {
+    return 'text-emerald-600'
+  }
+
+  if (value >= 18) {
+    return 'text-amber-600'
+  }
+
+  return 'text-rose-600'
+}
+
 const getLegendColor = (platform: RevenuePlatformKey) => {
   if (platform === 'shopee') {
     return '#EE4D2D'
@@ -147,6 +161,8 @@ const toCardViewModel = (platform: RevenuePlatformSnapshot): RevenuePlatformCard
   returnRateClassName: getReturnRateClassName(platform.returnRatePercent),
   aovLabel: toCurrency(platform.aov),
   feeRateLabel: `${platform.feeRatePercent.toFixed(0)}%`,
+  netMarginLabel: `${platform.netMarginPercent.toFixed(1)}%`,
+  netMarginClassName: getNetMarginClassName(platform.netMarginPercent),
   ratingLabel: platform.rating.toFixed(1),
 })
 
@@ -162,7 +178,7 @@ const toComparisonMetrics = (
       values: metric.values.map((item) => ({
         platform: item.platform,
         valueLabel: `${item.value.toFixed(1)}%`,
-        percentage: max > 0 ? Math.round((item.value / max) * 100) : 0,
+        percentage: max > 0 ? Number(((item.value / max) * 100).toFixed(1)) : 0,
       })),
     }
   })

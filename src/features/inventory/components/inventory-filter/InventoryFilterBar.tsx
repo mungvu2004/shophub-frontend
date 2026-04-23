@@ -1,11 +1,21 @@
-import { Search, ChevronDown } from 'lucide-react'
+import { Search, ChevronDown, Check } from 'lucide-react'
 import type { InventoryFilterModel } from '@/features/inventory/logic/inventoryFilter.types'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 type InventoryFilterBarProps = {
   model: InventoryFilterModel
 }
 
 export function InventoryFilterBar({ model }: InventoryFilterBarProps) {
+  const selectedCategory = model.categories.find((category) => category.id === model.selectedCategory)
+  const selectedStatus = model.statuses.find((status) => status.id === model.selectedStatus)
+
   return (
     <div className="rounded-xl bg-white shadow-sm p-0">
       {/* Search Section */}
@@ -25,20 +35,24 @@ export function InventoryFilterBar({ model }: InventoryFilterBarProps) {
       {/* Filters Section */}
       <div className="px-5 py-3 flex items-center flex-wrap gap-4">
         {/* Category Dropdown */}
-        <div className="relative">
-          <select
-            value={model.selectedCategory}
-            onChange={(e) => model.onCategoryChange(e.target.value as typeof model.selectedCategory)}
-            className="appearance-none min-w-[180px] px-4 py-2.5 pr-9 bg-indigo-50 text-slate-900 text-sm font-medium rounded-lg border border-transparent hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-          >
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="outline" className="min-w-[200px] justify-between bg-indigo-50 hover:bg-indigo-100 border-transparent" />}>
+            <span className="truncate text-sm">{selectedCategory?.label || 'Tất cả danh mục'}</span>
+            <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="min-w-[220px]">
             {model.categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.label}
-              </option>
+              <DropdownMenuItem
+                key={category.id}
+                onClick={() => model.onCategoryChange(category.id)}
+                className="flex items-center justify-between"
+              >
+                <span>{category.label}</span>
+                {model.selectedCategory === category.id ? <Check className="h-3.5 w-3.5 text-indigo-600" /> : null}
+              </DropdownMenuItem>
             ))}
-          </select>
-          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-        </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Platform Tabs */}
         <div className="flex items-center gap-1 bg-indigo-50 p-1 rounded-lg">
@@ -58,20 +72,24 @@ export function InventoryFilterBar({ model }: InventoryFilterBarProps) {
         </div>
 
         {/* Status Dropdown */}
-        <div className="relative">
-          <select
-            value={model.selectedStatus}
-            onChange={(e) => model.onStatusChange(e.target.value as typeof model.selectedStatus)}
-            className="appearance-none min-w-[170px] px-4 py-2.5 pr-9 bg-indigo-50 text-slate-900 text-sm font-medium rounded-lg border border-transparent hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-          >
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="outline" className="min-w-[210px] justify-between bg-indigo-50 hover:bg-indigo-100 border-transparent" />}>
+            <span className="truncate text-sm">Trạng thái: {selectedStatus?.label || 'Tất cả'}</span>
+            <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="min-w-[220px]">
             {model.statuses.map((status) => (
-              <option key={status.id} value={status.id}>
-                {status.id === 'all' ? 'Trạng thái tồn: Tất cả' : status.label}
-              </option>
+              <DropdownMenuItem
+                key={status.id}
+                onClick={() => model.onStatusChange(status.id)}
+                className="flex items-center justify-between"
+              >
+                <span>{status.label}</span>
+                {model.selectedStatus === status.id ? <Check className="h-3.5 w-3.5 text-indigo-600" /> : null}
+              </DropdownMenuItem>
             ))}
-          </select>
-          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-        </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   )

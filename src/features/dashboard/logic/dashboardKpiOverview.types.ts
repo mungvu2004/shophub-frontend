@@ -39,6 +39,7 @@ export type MetricCardData = {
   comparisonDirection?: 'up' | 'down'
   isPlaceholder?: boolean
   iconName?: string
+  trendData?: number[]
 }
 
 export type DashboardKPIOverviewPageProps = {
@@ -51,6 +52,8 @@ export type DashboardKPIOverviewPageProps = {
   metrics?: MetricCardData[]
   noDataHint?: string
   showMonthlyGoal?: boolean
+  onRefresh?: () => void
+  isRefreshing?: boolean
 }
 
 export type DashboardKPIOverviewViewModel = {
@@ -64,4 +67,6 @@ export type DashboardKPIOverviewViewModel = {
   metrics: Array<MetricCardData & { isPlaceholder?: boolean }>
   noDataHint: string
   hasRealMetrics: boolean
+  onRefresh?: () => void
+  isRefreshing?: boolean
 }

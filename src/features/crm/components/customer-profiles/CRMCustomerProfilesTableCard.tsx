@@ -1,7 +1,7 @@
 import { ChevronDown } from 'lucide-react'
 
+import { DataTable, type DataTableColumn } from '@/components/shared/DataTable'
 import { Button } from '@/components/ui/button'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 
 type CustomerProfilesTableItem = {
@@ -33,126 +33,128 @@ export function CRMCustomerProfilesTableCard({
   onSelectCustomer,
   onViewDetails,
 }: CRMCustomerProfilesTableCardProps) {
+  const columns: DataTableColumn<CustomerProfilesTableItem>[] = [
+    {
+      id: 'checkbox',
+      header: <div className="size-4 rounded-[4px] border border-slate-300 bg-white" />,
+      widthClassName: 'w-16 px-6',
+      headerClassName: 'py-4',
+      cellClassName: 'px-6 align-middle',
+      cell: () => <div className="size-4 rounded-[4px] border border-slate-300 bg-white" />,
+    },
+    {
+      id: 'customer',
+      header: 'Khách hàng',
+      widthClassName: 'w-[220px] px-4',
+      headerClassName: 'py-4 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500',
+      cellClassName: 'px-4 align-middle',
+      cell: (customer) => (
+        <div className="flex items-center gap-3">
+          <img src={customer.avatarUrl} alt={customer.fullName} className="size-8 rounded-full object-cover" />
+          <div>
+            <div className="text-sm font-semibold text-slate-900">{customer.fullName}</div>
+            <div className="text-xs text-slate-500">{customer.maskedPhone}</div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'platform',
+      header: 'Sàn',
+      widthClassName: 'w-[92px] px-4',
+      headerClassName: 'py-4 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500',
+      cellClassName: 'px-4 align-middle',
+      cell: (customer) => (
+        <div className="flex flex-wrap gap-1.5">
+          {customer.platformBadges.map((badge) => (
+            <span
+              key={`${customer.id}-${badge.id}`}
+              className={cn('inline-flex size-5 items-center justify-center rounded-[4px] text-[10px] font-bold uppercase', badge.className)}
+              title={badge.label}
+            >
+              {badge.label.slice(0, 1)}
+            </span>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: 'totalOrdersLabel',
+      header: 'Tổng đơn',
+      accessor: (customer) => customer.totalOrdersLabel,
+      widthClassName: 'w-[110px] px-4',
+      headerClassName: 'py-4 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500',
+      cellClassName: 'px-4 align-middle font-mono text-sm text-slate-900',
+    },
+    {
+      id: 'totalSpendLabel',
+      header: 'Tổng chi tiêu',
+      accessor: (customer) => customer.totalSpendLabel,
+      align: 'right',
+      widthClassName: 'w-[150px] px-4',
+      headerClassName: 'py-4 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500',
+      cellClassName: 'px-4 align-middle font-mono text-sm text-slate-900',
+    },
+    {
+      id: 'lastOrderLabel',
+      header: 'Đơn gần nhất',
+      accessor: (customer) => customer.lastOrderLabel,
+      widthClassName: 'w-[138px] px-4',
+      headerClassName: 'py-4 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500',
+      cellClassName: 'px-4 align-middle text-sm text-slate-500',
+    },
+    {
+      id: 'segment',
+      header: 'Phân khúc',
+      widthClassName: 'w-[150px] px-4',
+      headerClassName: 'py-4 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500',
+      cellClassName: 'px-4 align-middle',
+      cell: (customer) => (
+        <span className={cn('inline-flex rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.08em]', customer.segmentBadge.className)}>
+          {customer.segmentBadge.label}
+        </span>
+      ),
+    },
+    {
+      id: 'action',
+      header: 'Hành động',
+      align: 'right',
+      widthClassName: 'w-[126px] px-6',
+      headerClassName: 'py-4 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500',
+      cellClassName: 'px-6 align-middle',
+      cell: (customer) => (
+        <Button
+          type="button"
+          variant="ghost"
+          className="h-auto rounded-none p-0 text-sm font-semibold text-[#3525cd] hover:bg-transparent hover:text-[#3525cd]"
+          onClick={(event) => {
+            event.stopPropagation()
+            onSelectCustomer(customer.id)
+          }}
+        >
+          {customer.detailLabel}
+        </Button>
+      ),
+    },
+  ]
+
   return (
     <section className="overflow-hidden rounded-[12px] border border-slate-200 bg-white shadow-[0px_12px_32px_0px_rgba(15,23,42,0.06)]">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-[rgba(240,243,255,0.5)] hover:bg-[rgba(240,243,255,0.5)]">
-            <TableHead className="w-16 px-6 py-4">
-              <div className="size-4 rounded-[4px] border border-slate-300 bg-white" />
-            </TableHead>
-            <TableHead className="w-[220px] px-4 py-4 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
-              Khách hàng
-            </TableHead>
-            <TableHead className="w-[92px] px-4 py-4 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
-              Sàn
-            </TableHead>
-            <TableHead className="w-[110px] px-4 py-4 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
-              Tổng đơn
-            </TableHead>
-            <TableHead className="w-[150px] px-4 py-4 text-right text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
-              Tổng chi tiêu
-            </TableHead>
-            <TableHead className="w-[138px] px-4 py-4 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
-              Đơn gần nhất
-            </TableHead>
-            <TableHead className="w-[150px] px-4 py-4 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
-              Phân khúc
-            </TableHead>
-            <TableHead className="w-[126px] px-6 py-4 text-right text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
-              Hành động
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {isLoading
-            ? Array.from({ length: 3 }).map((_, index) => (
-                <TableRow key={`customer-skeleton-${index}`} className="hover:bg-transparent">
-                  <TableCell className="px-6 py-6">
-                    <div className="size-4 rounded-[4px] border border-slate-200 bg-slate-100" />
-                  </TableCell>
-                  <TableCell className="px-4 py-6">
-                    <div className="h-5 w-40 rounded bg-slate-100" />
-                    <div className="mt-2 h-4 w-28 rounded bg-slate-100" />
-                  </TableCell>
-                  <TableCell className="px-4 py-6">
-                    <div className="h-5 w-10 rounded bg-slate-100" />
-                  </TableCell>
-                  <TableCell className="px-4 py-6">
-                    <div className="h-5 w-12 rounded bg-slate-100" />
-                  </TableCell>
-                  <TableCell className="px-4 py-6">
-                    <div className="ml-auto h-5 w-28 rounded bg-slate-100" />
-                  </TableCell>
-                  <TableCell className="px-4 py-6">
-                    <div className="h-5 w-24 rounded bg-slate-100" />
-                  </TableCell>
-                  <TableCell className="px-4 py-6">
-                    <div className="h-6 w-24 rounded-full bg-slate-100" />
-                  </TableCell>
-                  <TableCell className="px-6 py-6">
-                    <div className="ml-auto h-5 w-16 rounded bg-slate-100" />
-                  </TableCell>
-                </TableRow>
-              ))
-            : customers.map((customer) => (
-                <TableRow
-                  key={customer.id}
-                  className={cn('hover:bg-slate-50/60', customer.id === selectedCustomerId && 'bg-slate-50')}
-                >
-                  <TableCell className="px-6 py-5 align-middle">
-                    <div className="size-4 rounded-[4px] border border-slate-300 bg-white" />
-                  </TableCell>
-                  <TableCell className="px-4 py-5 align-middle">
-                    <div className="flex items-center gap-3">
-                      <img src={customer.avatarUrl} alt={customer.fullName} className="size-8 rounded-full object-cover" />
-                      <div>
-                        <div className="text-sm font-semibold text-slate-900">{customer.fullName}</div>
-                        <div className="text-xs text-slate-500">{customer.maskedPhone}</div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-5 align-middle">
-                    <div className="flex flex-wrap gap-1.5">
-                      {customer.platformBadges.map((badge) => (
-                        <span
-                          key={`${customer.id}-${badge.id}`}
-                          className={cn('inline-flex size-5 items-center justify-center rounded-[4px] text-[10px] font-bold uppercase', badge.className)}
-                          title={badge.label}
-                        >
-                          {badge.label.slice(0, 1)}
-                        </span>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-5 align-middle font-mono text-sm text-slate-900">
-                    {customer.totalOrdersLabel}
-                  </TableCell>
-                  <TableCell className="px-4 py-5 align-middle text-right font-mono text-sm text-slate-900">
-                    {customer.totalSpendLabel}
-                  </TableCell>
-                  <TableCell className="px-4 py-5 align-middle text-sm text-slate-500">
-                    {customer.lastOrderLabel}
-                  </TableCell>
-                  <TableCell className="px-4 py-5 align-middle">
-                    <span className={cn('inline-flex rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.08em]', customer.segmentBadge.className)}>
-                      {customer.segmentBadge.label}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-6 py-5 align-middle text-right">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="h-auto rounded-none p-0 text-sm font-semibold text-[#3525cd] hover:bg-transparent hover:text-[#3525cd]"
-                      onClick={() => onSelectCustomer(customer.id)}
-                    >
-                      {customer.detailLabel}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-        </TableBody>
-      </Table>
+      {isLoading ? (
+        <div className="space-y-2 p-4">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={`customer-skeleton-${index}`} className="h-16 rounded-lg bg-slate-100/80" />
+          ))}
+        </div>
+      ) : (
+        <DataTable
+          rows={customers}
+          columns={columns}
+          rowKey={(customer) => customer.id}
+          tableClassName="[&_thead_tr]:bg-[rgba(240,243,255,0.5)] [&_thead_tr]:hover:bg-[rgba(240,243,255,0.5)]"
+          rowClassName={(customer) => cn('hover:bg-slate-50/60', customer.id === selectedCustomerId && 'bg-slate-50')}
+        />
+      )}
 
       <div className="border-t border-slate-100 bg-[rgba(240,243,255,0.3)] px-6 py-4 text-center">
         <Button

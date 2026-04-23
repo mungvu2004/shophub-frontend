@@ -1,7 +1,11 @@
 import type {
+  RevenueCostBreakdownItem,
   RevenueDailyPoint,
+  RevenueKpiDisplayType,
   RevenueProductProfitItem,
+  RevenueProfitFlowStep,
   RevenueRange,
+  RevenueSummaryPlatformFilter,
   RevenueSummaryKpi,
   RevenueSummaryReportResponse,
 } from '@/types/revenue.types'
@@ -28,13 +32,29 @@ export type RevenueProductProfitRowViewModel = {
   name: string
   sku: string
   imageUrl: string
+  revenueValue: number
   revenueLabel: string
+  costValue: number
   costLabel: string
+  profitValue: number
   profitLabel: string
+  marginValue: number
   marginLabel: string
   marginClassName: string
+  returnCancellationRateValue: number
+  returnCancellationRateLabel: string
+  returnCancellationRateClassName: string
   trend: RevenueProductProfitItem['trend']
   aiSuggestion: string
+}
+
+export type RevenueCostBreakdownViewModel = {
+  id: string
+  label: string
+  amount: number
+  amountLabel: string
+  percentLabel: string
+  color: string
 }
 
 export type RevenueSummaryReportViewModel = {
@@ -46,10 +66,11 @@ export type RevenueSummaryReportViewModel = {
   goalProgressPercent: number
   goalProgressLabel: string
   dailyRevenue: Array<RevenueDailyPoint & { label: string }>
+  costBreakdown: RevenueCostBreakdownViewModel[]
   topProducts: RevenueTopProductViewModel[]
   maxTopRevenue: number
-  profitMomentum: RevenueSummaryReportResponse['profitMomentum']
-  profitMomentumMax: number
+  profitFlow: Array<RevenueProfitFlowStep & { amountLabel: string }>
+  profitFlowMax: number
   productProfitRows: RevenueProductProfitRowViewModel[]
   totalProducts: number
 }
@@ -64,6 +85,22 @@ const compactCurrencyFormatter = new Intl.NumberFormat('vi-VN', {
 const toCurrencyLabel = (value: number) => `${currencyFormatter.format(Math.round(value))} ₫`
 
 const toCompactCurrencyLabel = (value: number) => `${compactCurrencyFormatter.format(Math.round(value))}`
+
+const toNumberLabel = (value: number) => currencyFormatter.format(Math.round(value))
+
+const toPercentLabel = (value: number) => `${value.toFixed(1)}%`
+
+const toKpiValueLabel = (value: number, displayType: RevenueKpiDisplayType = 'currency') => {
+  if (displayType === 'number') {
+    return toNumberLabel(value)
+  }
+
+  if (displayType === 'percent') {
+    return toPercentLabel(value)
+  }
+
+  return toCurrencyLabel(value)
+}
 
 const toDeltaLabel = (value: number, tone: RevenueSummaryKpi['tone']) => {
   const absValue = Math.abs(value)
@@ -92,6 +129,18 @@ const toMarginClassName = (marginPercent: number) => {
   return 'text-rose-600'
 }
 
+const toReturnCancellationRateClassName = (value: number) => {
+  if (value <= 2) {
+    return 'text-emerald-600'
+  }
+
+  if (value <= 4) {
+    return 'text-amber-600'
+  }
+
+  return 'text-rose-600'
+}
+
 const toTopProducts = (rows: RevenueSummaryReportResponse['topProducts']) => {
   const maxRevenue = rows.reduce((acc, item) => Math.max(acc, item.revenue), 0)
 
@@ -113,13 +162,167 @@ const toProductProfitRows = (rows: RevenueProductProfitItem[]) => {
     name: item.name,
     sku: item.sku,
     imageUrl: item.imageUrl,
+    revenueValue: item.revenue,
     revenueLabel: toCurrencyLabel(item.revenue),
+    costValue: item.cost,
     costLabel: toCurrencyLabel(item.cost),
+    profitValue: item.profit,
     profitLabel: toCurrencyLabel(item.profit),
+    marginValue: item.marginPercent,
     marginLabel: `${item.marginPercent.toFixed(1)}%`,
     marginClassName: toMarginClassName(item.marginPercent),
+    returnCancellationRateValue: item.returnCancellationRatePercent,
+    returnCancellationRateLabel: toPercentLabel(item.returnCancellationRatePercent),
+    returnCancellationRateClassName: toReturnCancellationRateClassName(item.returnCancellationRatePercent),
     trend: item.trend,
     aiSuggestion: item.aiSuggestion,
+  }))
+}
+
+const scaleRevenueNumber = (value: number, scaleFactor: number) => Math.round(value * scaleFactor)
+
+const costMixMultiplierByPlatform: Record<Exclude<RevenueSummaryPlatformFilter, 'all'>, Record<string, number>> = {
+  shopee: {
+    'cb-platform-fee': 1.25,
+    'cb-shipping': 1.05,
+    'cb-ads': 0.92,
+    'cb-packaging': 1,
+  },
+  lazada: {
+    'cb-platform-fee': 0.9,
+    'cb-shipping': 1.15,
+    'cb-ads': 0.85,
+    'cb-packaging': 1.05,
+  },
+  tiktok: {
+    'cb-platform-fee': 0.78,
+    'cb-shipping': 0.95,
+    'cb-ads': 1.45,
+    'cb-packaging': 0.92,
+  },
+}
+
+const getFlowCostIdByStepId = (stepId: string) => {
+  if (stepId === 'pf-platform-fee') return 'cb-platform-fee'
+  if (stepId === 'pf-shipping') return 'cb-shipping'
+  if (stepId === 'pf-ads') return 'cb-ads'
+  if (stepId === 'pf-packaging') return 'cb-packaging'
+
+  return null
+}
+
+const getScaleFactorByPlatform = (
+  rows: RevenueDailyPoint[],
+  platform: RevenueSummaryPlatformFilter,
+) => {
+  if (platform === 'all') {
+    return 1
+  }
+
+  const totalAll = rows.reduce((acc, point) => acc + point.shopee + point.tiktok + point.lazada, 0)
+
+  if (totalAll <= 0) {
+    return 1
+  }
+
+  const totalByPlatform = rows.reduce((acc, point) => acc + point[platform], 0)
+
+  return totalByPlatform / totalAll
+}
+
+export const applyRevenuePlatformFilter = (
+  data: RevenueSummaryReportResponse,
+  platform: RevenueSummaryPlatformFilter,
+) => {
+  if (platform === 'all') {
+    return data
+  }
+
+  const scaleFactor = getScaleFactorByPlatform(data.dailyRevenue, platform)
+
+  const targetCostTotal = data.costBreakdown.reduce((acc, item) => acc + scaleRevenueNumber(item.amount, scaleFactor), 0)
+  const platformMix = costMixMultiplierByPlatform[platform]
+
+  const weightedCostRows = data.costBreakdown.map((item) => {
+    const weighted = item.amount * (platformMix[item.id] ?? 1)
+
+    return {
+      ...item,
+      weighted,
+    }
+  })
+
+  const weightedTotal = weightedCostRows.reduce((acc, item) => acc + item.weighted, 0)
+
+  const filteredCostBreakdown = weightedCostRows.map((item) => {
+    const ratio = weightedTotal > 0 ? item.weighted / weightedTotal : 0
+
+    return {
+      ...item,
+      amount: Math.round(targetCostTotal * ratio),
+    }
+  })
+
+  const costById = new Map(filteredCostBreakdown.map((item) => [item.id, item.amount]))
+
+  return {
+    ...data,
+    kpis: data.kpis.map((kpi) => ({
+      ...kpi,
+      value: kpi.displayType === 'percent'
+        ? kpi.value
+        : scaleRevenueNumber(kpi.value, scaleFactor),
+    })),
+    monthlyGoal: {
+      current: scaleRevenueNumber(data.monthlyGoal.current, scaleFactor),
+      target: scaleRevenueNumber(data.monthlyGoal.target, scaleFactor),
+    },
+    dailyRevenue: data.dailyRevenue.map((point) => ({
+      ...point,
+      shopee: platform === 'shopee' ? point.shopee : 0,
+      tiktok: platform === 'tiktok' ? point.tiktok : 0,
+      lazada: platform === 'lazada' ? point.lazada : 0,
+      previous: scaleRevenueNumber(point.previous, scaleFactor),
+    })),
+    costBreakdown: filteredCostBreakdown,
+    topProducts: data.topProducts.map((item) => ({
+      ...item,
+      revenue: scaleRevenueNumber(item.revenue, scaleFactor),
+    })),
+    profitFlow: data.profitFlow.map((item) => {
+      const mappedCostId = getFlowCostIdByStepId(item.id)
+
+      if (mappedCostId) {
+        return {
+          ...item,
+          amount: costById.get(mappedCostId) ?? scaleRevenueNumber(item.amount, scaleFactor),
+        }
+      }
+
+      return {
+        ...item,
+        amount: scaleRevenueNumber(item.amount, scaleFactor),
+      }
+    }),
+    productProfits: data.productProfits.map((item) => ({
+      ...item,
+      revenue: scaleRevenueNumber(item.revenue, scaleFactor),
+      cost: scaleRevenueNumber(item.cost, scaleFactor),
+      profit: scaleRevenueNumber(item.profit, scaleFactor),
+    })),
+  }
+}
+
+const toCostBreakdown = (rows: RevenueCostBreakdownItem[]) => {
+  const total = rows.reduce((acc, item) => acc + item.amount, 0)
+
+  return rows.map((item) => ({
+    id: item.id,
+    label: item.label,
+    amount: item.amount,
+    amountLabel: toCurrencyLabel(item.amount),
+    percentLabel: total > 0 ? `${((item.amount / total) * 100).toFixed(1)}%` : '0.0%',
+    color: item.color,
   }))
 }
 
@@ -165,23 +368,27 @@ const rangeSliceSizeMap: Record<RevenueRange, number> = {
   year: 6,
 }
 
-export const getRevenueRangeLabel = (range: RevenueRange) => {
+const formatMonthYearLabel = (date: Date) => `Tháng ${date.getMonth() + 1}/${date.getFullYear()}`
+
+const getQuarter = (date: Date) => Math.floor(date.getMonth() / 3) + 1
+
+export const getRevenueRangeLabel = (range: RevenueRange, baseDate: Date = new Date()) => {
   if (range === 'week') {
     return 'Tuần gần nhất'
   }
 
   if (range === 'quarter') {
-    return 'Quý 1/2026'
+    return `Quý ${getQuarter(baseDate)}/${baseDate.getFullYear()}`
   }
 
   if (range === 'year') {
-    return 'Năm 2026 (YTD)'
+    return `Năm ${baseDate.getFullYear()} (YTD)`
   }
 
-  return 'Tháng 3/2026'
+  return formatMonthYearLabel(baseDate)
 }
 
-export const getRevenueComparisonLabel = (range: RevenueRange) => {
+export const getRevenueComparisonLabel = (range: RevenueRange, baseDate: Date = new Date()) => {
   if (range === 'week') {
     return 'Tuần trước (so sánh)'
   }
@@ -194,7 +401,9 @@ export const getRevenueComparisonLabel = (range: RevenueRange) => {
     return 'Năm trước (so sánh)'
   }
 
-  return 'Tháng trước (so sánh)'
+  const previousMonthDate = new Date(baseDate.getFullYear(), baseDate.getMonth() - 1, 1)
+
+  return `${formatMonthYearLabel(previousMonthDate)} (so sánh)`
 }
 
 export const pickDailyRevenueByRange = (
@@ -224,8 +433,8 @@ export const buildRevenueSummaryReportViewModel = (
     : 0
 
   const topProducts = toTopProducts(data.topProducts)
-  const profitMomentumMax = data.profitMomentum.reduce(
-    (acc, item) => Math.max(acc, item.gross, item.net),
+  const profitFlowMax = data.profitFlow.reduce(
+    (acc, item) => Math.max(acc, Math.abs(item.amount)),
     0,
   )
 
@@ -236,7 +445,9 @@ export const buildRevenueSummaryReportViewModel = (
     kpis: data.kpis.map((kpi) => ({
       id: kpi.id,
       label: kpi.label,
-      valueLabel: toCurrencyLabel(kpi.value),
+      valueLabel: kpi.id === 'net-revenue'
+        ? `${toCurrencyLabel(kpi.value)} / ${toCurrencyLabel(data.monthlyGoal.target)}`
+        : toKpiValueLabel(kpi.value, kpi.displayType),
       deltaLabel: toDeltaLabel(kpi.deltaPercent, kpi.tone),
       deltaClassName: toDeltaClassName(kpi.tone),
       note: kpi.note,
@@ -248,10 +459,14 @@ export const buildRevenueSummaryReportViewModel = (
       ...item,
       label: String(item.day),
     })),
+    costBreakdown: toCostBreakdown(data.costBreakdown),
     topProducts: topProducts.items,
     maxTopRevenue: topProducts.maxRevenue,
-    profitMomentum: data.profitMomentum,
-    profitMomentumMax,
+    profitFlow: data.profitFlow.map((item) => ({
+      ...item,
+      amountLabel: toCurrencyLabel(item.amount),
+    })),
+    profitFlowMax,
     productProfitRows: toProductProfitRows(visibleRows),
     totalProducts: data.productProfits.length,
   }

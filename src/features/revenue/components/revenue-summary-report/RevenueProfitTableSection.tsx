@@ -1,9 +1,9 @@
 import { MoveRight, TrendingDown, TrendingUp } from 'lucide-react'
 
+import { DataTable, type DataTableColumn } from '@/components/shared/DataTable'
 import { SearchInput } from '@/components/shared/SearchInput'
 import { Badge } from '@/components/ui/badge'
 import { Pagination } from '@/components/ui/pagination'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { RevenueSummaryReportViewModel } from '@/features/revenue/logic/revenueSummaryReport.logic'
 
 type RevenueProfitTableSectionProps = {
@@ -29,9 +29,103 @@ export function RevenueProfitTableSection({
   onPageChange,
   onPageSizeChange,
 }: RevenueProfitTableSectionProps) {
+  const columns: DataTableColumn<RevenueSummaryReportViewModel['productProfitRows'][number]>[] = [
+    {
+      id: 'product',
+      header: 'Sản phẩm',
+      widthClassName: 'w-[33%] px-4',
+      cellClassName: 'px-4',
+      cell: (row) => (
+        <div className="flex items-center gap-2">
+          <img src={row.imageUrl} alt={row.name} className="size-9 rounded-md object-cover" />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-slate-800">{row.name}</p>
+            <p className="text-xs text-slate-500">{row.sku}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'revenue',
+      header: 'Doanh thu',
+      accessor: (row) => row.revenueLabel,
+      sortAccessor: (row) => row.revenueValue,
+      sortable: true,
+      widthClassName: 'w-[11%] pr-4',
+      cellClassName: 'pr-4 font-mono text-sm font-semibold text-slate-700',
+      align: 'right',
+    },
+    {
+      id: 'cost',
+      header: 'Giá vốn',
+      accessor: (row) => row.costLabel,
+      sortAccessor: (row) => row.costValue,
+      sortable: true,
+      widthClassName: 'w-[11%] pr-4',
+      cellClassName: 'pr-4 font-mono text-sm text-slate-700',
+      align: 'right',
+    },
+    {
+      id: 'profit',
+      header: 'Lợi nhuận',
+      accessor: (row) => row.profitLabel,
+      sortAccessor: (row) => row.profitValue,
+      sortable: true,
+      widthClassName: 'w-[11%] pr-4',
+      cellClassName: 'pr-4 font-mono text-sm font-semibold text-slate-900',
+      align: 'right',
+    },
+    {
+      id: 'margin',
+      header: 'Biên (%)',
+      accessor: (row) => row.marginLabel,
+      sortAccessor: (row) => row.marginValue,
+      sortable: true,
+      widthClassName: 'w-[8%] pr-4',
+      cellClassName: (row) => `pr-4 font-mono text-sm font-semibold ${row.marginClassName}`,
+      align: 'right',
+    },
+    {
+      id: 'returnCancellationRate',
+      header: 'Hoàn/Huỷ (%)',
+      accessor: (row) => row.returnCancellationRateLabel,
+      sortAccessor: (row) => row.returnCancellationRateValue,
+      sortable: true,
+      widthClassName: 'w-[8%] pr-4',
+      cellClassName: (row) => `pr-4 font-mono text-sm font-semibold ${row.returnCancellationRateClassName}`,
+      align: 'right',
+    },
+    {
+      id: 'trend',
+      header: 'Xu hướng',
+      widthClassName: 'w-[6%] text-center',
+      align: 'center',
+      cell: (row) => (
+        <span className="inline-flex items-center justify-center text-sm">
+          {row.trend === 'up' ? (
+            <TrendingUp className="size-4 text-emerald-600" />
+          ) : row.trend === 'down' ? (
+            <TrendingDown className="size-4 text-rose-600" />
+          ) : (
+            <MoveRight className="size-4 text-amber-600" />
+          )}
+        </span>
+      ),
+    },
+    {
+      id: 'aiSuggestion',
+      header: 'Đề xuất AI',
+      accessor: (row) => row.aiSuggestion,
+      widthClassName: 'w-[12%]',
+      cell: (row) => (
+        <span className="inline-flex rounded-full bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700">{row.aiSuggestion}</span>
+      ),
+    },
+  ]
+
   return (
-    <section className="rounded-2xl border border-slate-100 bg-white shadow-sm">
-      <header className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
+    <section className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_24px_60px_-35px_rgba(15,23,42,0.4)]">
+      <header className="flex flex-col gap-3 border-b border-slate-100 bg-[linear-gradient(135deg,#eef2ff_0%,#ffffff_48%,#ecfeff_100%)] p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <h3 className="text-lg font-semibold text-slate-900">Lợi nhuận theo sản phẩm</h3>
           <Badge variant="secondary" className="bg-indigo-100 text-indigo-700">AI INSIGHTS</Badge>
@@ -44,65 +138,30 @@ export function RevenueProfitTableSection({
         />
       </header>
 
-      <div className="overflow-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-b border-slate-100 bg-slate-50">
-              <TableHead className="px-4 text-[11px] font-bold uppercase tracking-wide text-slate-500">Sản phẩm</TableHead>
-              <TableHead className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Doanh thu</TableHead>
-              <TableHead className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Giá vốn</TableHead>
-              <TableHead className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Lợi nhuận</TableHead>
-              <TableHead className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Biên (%)</TableHead>
-              <TableHead className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Xu hướng</TableHead>
-              <TableHead className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Đề xuất AI</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((row) => (
-              <TableRow key={row.id} className="border-b border-slate-100">
-                <TableCell className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <img src={row.imageUrl} alt={row.name} className="size-9 rounded-md object-cover" />
-                    <div>
-                      <p className="text-sm font-semibold text-slate-800">{row.name}</p>
-                      <p className="text-xs text-slate-500">{row.sku}</p>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="py-3 text-sm font-semibold text-slate-700">{row.revenueLabel}</TableCell>
-                <TableCell className="py-3 text-sm text-slate-700">{row.costLabel}</TableCell>
-                <TableCell className="py-3 text-sm font-semibold text-slate-900">{row.profitLabel}</TableCell>
-                <TableCell className={`py-3 text-sm font-semibold ${row.marginClassName}`}>{row.marginLabel}</TableCell>
-                <TableCell className="py-3">
-                  <span className="inline-flex items-center gap-1 text-sm">
-                    {row.trend === 'up' ? (
-                      <TrendingUp className="size-4 text-emerald-600" />
-                    ) : row.trend === 'down' ? (
-                      <TrendingDown className="size-4 text-rose-600" />
-                    ) : (
-                      <MoveRight className="size-4 text-amber-600" />
-                    )}
-                  </span>
-                </TableCell>
-                <TableCell className="py-3">
-                  <span className="rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700">{row.aiSuggestion}</span>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <div className="px-5 py-4">
+        <DataTable
+          rows={rows}
+          columns={columns}
+          rowKey={(row) => row.id}
+          tableClassName="w-full table-fixed [&_th]:whitespace-nowrap [&_td]:align-middle"
+          disableScroll
+          emptyText="Không có sản phẩm phù hợp với bộ lọc hiện tại."
+          initialSort={{ columnId: 'profit', direction: 'desc' }}
+        />
       </div>
 
-      <Pagination
-        currentPage={currentPage}
-        totalCount={totalCount}
-        pageSize={pageSize}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-        pageSizeOptions={[5, 10, 15]}
-      />
-
-      <div className="px-5 pb-5 text-xs text-slate-500">Hiển thị {rows.length} trên tổng {totalProducts} sản phẩm</div>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/70 px-5 py-4">
+        <p className="text-[13px] text-slate-500">Hiển thị {rows.length} trên tổng {totalProducts} sản phẩm</p>
+        <Pagination
+          currentPage={currentPage}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+          pageSizeOptions={[5, 10, 15]}
+          compact
+        />
+      </div>
     </section>
   )
 }

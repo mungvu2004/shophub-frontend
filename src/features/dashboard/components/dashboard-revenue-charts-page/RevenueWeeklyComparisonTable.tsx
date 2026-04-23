@@ -1,13 +1,18 @@
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react'
 
-import type { RevenueChartsWeeklyRowViewModel } from '@/features/dashboard/logic/dashboardRevenueCharts.types'
+import type { RevenueChartsPlatformId, RevenueChartsWeeklyRowViewModel } from '@/features/dashboard/logic/dashboardRevenueCharts.types'
 
 type RevenueWeeklyComparisonTableProps = {
   title: string
   rows: RevenueChartsWeeklyRowViewModel[]
+  selectedPlatform: RevenueChartsPlatformId
 }
 
-export function RevenueWeeklyComparisonTable({ title, rows }: RevenueWeeklyComparisonTableProps) {
+export function RevenueWeeklyComparisonTable({ title, rows, selectedPlatform }: RevenueWeeklyComparisonTableProps) {
+  const showShopee = selectedPlatform === 'all' || selectedPlatform === 'shopee'
+  const showLazada = selectedPlatform === 'all' || selectedPlatform === 'lazada'
+  const showTiktok = selectedPlatform === 'all' || selectedPlatform === 'tiktok_shop'
+
   return (
     <section className="overflow-hidden rounded-xl border border-indigo-100 bg-white shadow-sm">
       <header className="flex items-center justify-between px-6 py-5">
@@ -22,9 +27,9 @@ export function RevenueWeeklyComparisonTable({ title, rows }: RevenueWeeklyCompa
           <thead className="bg-indigo-50/60 text-[11px] uppercase tracking-[1px] text-slate-500">
             <tr>
               <th className="px-6 py-4 text-left font-bold">Thời gian</th>
-              <th className="px-6 py-4 text-left font-bold">Shopee</th>
-              <th className="px-6 py-4 text-left font-bold">Lazada</th>
-              <th className="px-6 py-4 text-left font-bold">TikTok Shop</th>
+              {showShopee && <th className="px-6 py-4 text-left font-bold">Shopee</th>}
+              {showLazada && <th className="px-6 py-4 text-left font-bold">Lazada</th>}
+              {showTiktok && <th className="px-6 py-4 text-left font-bold">TikTok Shop</th>}
               <th className="px-6 py-4 text-left font-bold">Tăng trưởng</th>
               <th className="px-6 py-4 text-right font-bold">Tổng doanh thu</th>
             </tr>
@@ -34,9 +39,9 @@ export function RevenueWeeklyComparisonTable({ title, rows }: RevenueWeeklyCompa
             {rows.map((row) => (
               <tr key={row.id} className="border-t border-indigo-100">
                 <td className="px-6 py-4 font-semibold text-slate-900">{row.weekLabel}</td>
-                <td className="px-6 py-4 font-medium text-slate-600">{row.shopeeLabel}</td>
-                <td className="px-6 py-4 font-medium text-slate-600">{row.lazadaLabel}</td>
-                <td className="px-6 py-4 font-medium text-slate-600">{row.tiktokShopLabel}</td>
+                {showShopee && <td className="px-6 py-4 font-medium text-slate-600">{row.shopeeLabel}</td>}
+                {showLazada && <td className="px-6 py-4 font-medium text-slate-600">{row.lazadaLabel}</td>}
+                {showTiktok && <td className="px-6 py-4 font-medium text-slate-600">{row.tiktokShopLabel}</td>}
                 <td className="px-6 py-4">
                   <span className={`inline-flex items-center gap-1 font-bold ${row.growthTone === 'up' ? 'text-emerald-600' : 'text-rose-600'}`}>
                     {row.growthTone === 'up' ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
@@ -52,3 +57,4 @@ export function RevenueWeeklyComparisonTable({ title, rows }: RevenueWeeklyCompa
     </section>
   )
 }
+

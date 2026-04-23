@@ -26,11 +26,22 @@ function signalColor(metric: MetricCardData) {
 }
 
 function signalPath(metric: MetricCardData) {
-  if (metric.id === 'placeholder-1') return 'M1 23L10 18L20 21L30 12L40 15L50 5L59 1'
-  if (metric.id === 'placeholder-2') return 'M1 20L10 22L20 15L30 18L40 8L50 12L59 5'
-  if (metric.id === 'placeholder-3') return 'M1 5L10 8L20 3L30 15L40 10L50 20L59 23'
-  if (metric.id === 'placeholder-4') return 'M1 1L10 5L20 3L30 12L40 10L50 18L59 23'
-  return 'M1 20L10 22L20 15L30 18L40 8L50 12L59 5'
+  const data = metric.trendData ?? []
+  if (data.length < 2) {
+    return 'M1 12H59' // Flat line fallback
+  }
+
+  const min = Math.min(...data)
+  const max = Math.max(...data)
+  const range = max - min || 1
+
+  const points = data.map((val, i) => {
+    const x = (i / (data.length - 1)) * (SIGNAL_WIDTH - 2) + 1
+    const y = SIGNAL_HEIGHT - ((val - min) / range) * (SIGNAL_HEIGHT - 4) - 2
+    return `${x.toFixed(1)} ${y.toFixed(1)}`
+  })
+
+  return `M${points.join(' L')}`
 }
 
 function SignalSparkline({ metric }: { metric: MetricCardData }) {
@@ -155,7 +166,7 @@ export function KpiCard({ metric }: KpiCardProps) {
 
   return (
     <article
-      className={`relative h-[234px] w-full max-w-[226px] overflow-hidden rounded-2xl border bg-white p-6 shadow-sm xl:max-w-none ${borderToneClass}`}
+      className={`relative min-h-[234px] w-full max-w-[226px] rounded-2xl border bg-white p-6 shadow-sm xl:max-w-none ${borderToneClass}`}
     >
       <div className="flex items-center justify-between">
         <div
@@ -176,7 +187,7 @@ export function KpiCard({ metric }: KpiCardProps) {
 
       <div className="mt-5 space-y-1">
         <p className="text-xs font-bold tracking-[0.12em] text-slate-500">{metric.title}</p>
-        <p className={metric.isPlaceholder ? 'text-3xl font-bold text-slate-400' : 'text-3xl font-bold text-slate-900'}>{metric.value}</p>
+        <p className={metric.isPlaceholder ? 'text-3xl font-bold text-slate-400' : 'text-3xl font-bold text-slate-900 break-words'}>{metric.value}</p>
       </div>
 
       {metric.placeholderLayout === 'alert-summary' ? <AlertSummaryBreakdown metric={metric} /> : null}
