@@ -1,11 +1,14 @@
 import type { InventoryStockMovementsViewModel } from '@/features/inventory/logic/inventoryStockMovements.types'
 import { Pagination } from '@/components/ui/pagination'
+import { useState } from 'react'
 
 import { InventoryStockMovementsFilters } from '@/features/inventory/components/inventory-stock-movements/InventoryStockMovementsFilters'
 import { InventoryStockMovementsHeader } from '@/features/inventory/components/inventory-stock-movements/InventoryStockMovementsHeader'
 import { InventoryStockMovementsSidebar } from '@/features/inventory/components/inventory-stock-movements/InventoryStockMovementsSidebar'
 import { InventoryStockMovementsSummaryCards } from '@/features/inventory/components/inventory-stock-movements/InventoryStockMovementsSummaryCards'
 import { InventoryStockMovementsTimeline } from '@/features/inventory/components/inventory-stock-movements/InventoryStockMovementsTimeline'
+import { StockMovementsChart } from '@/features/inventory/components/inventory-stock-movements/StockMovementsChart'
+import { InventoryStockMovementDetailDrawer } from '@/features/inventory/components/inventory-stock-movements/InventoryStockMovementDetailDrawer'
 
 type InventoryStockMovementsViewProps = {
   model: InventoryStockMovementsViewModel
@@ -14,6 +17,9 @@ type InventoryStockMovementsViewProps = {
   onPlatformChange: (value: InventoryStockMovementsViewModel['query']['platform']) => void
   onMovementGroupChange: (value: InventoryStockMovementsViewModel['query']['movementGroup']) => void
   onWarehouseChange: (value: string) => void
+  onPerformerChange: (value: string) => void
+  onRefresh: () => void
+  onExport: () => void
   selectedMovementId: string | null
   onSelectMovement: (movementId: string) => void
   onPageChange: (page: number) => void
@@ -27,11 +33,21 @@ export function InventoryStockMovementsView({
   onPlatformChange,
   onMovementGroupChange,
   onWarehouseChange,
+  onPerformerChange,
+  onRefresh,
+  onExport,
   selectedMovementId,
   onSelectMovement,
   onPageChange,
   onPageSizeChange,
 }: InventoryStockMovementsViewProps) {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const handleSelect = (id: string) => {
+    onSelectMovement(id);
+    setIsDrawerOpen(true);
+  };
+
   return (
     <div className="space-y-6 pb-8 pt-1">
       <InventoryStockMovementsHeader
@@ -39,22 +55,35 @@ export function InventoryStockMovementsView({
         subtitle={model.subtitle}
         updatedAtLabel={model.updatedAtLabel}
         suggestedActionLabel={model.suggestedActionLabel}
+        onRefresh={onRefresh}
+        onExport={onExport}
+        isRefreshing={isRefreshing}
       />
 
-      <InventoryStockMovementsSummaryCards cards={model.summaryCards} />
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <div className="xl:col-span-8">
+           <StockMovementsChart data={model.chartData} />
+        </div>
+        <div className="xl:col-span-4">
+           <InventoryStockMovementsSummaryCards cards={model.summaryCards} />
+        </div>
+      </div>
 
       <InventoryStockMovementsFilters
         search={model.query.search}
         platform={model.query.platform}
         movementGroup={model.query.movementGroup}
         warehouseId={model.query.warehouseId}
+        performerId={model.query.performerId}
         platformOptions={model.platformOptions}
         groupOptions={model.groupOptions}
         warehouseOptions={model.warehouseOptions}
+        performerOptions={model.performerOptions}
         onSearchChange={onSearchChange}
         onPlatformChange={onPlatformChange}
         onMovementGroupChange={onMovementGroupChange}
         onWarehouseChange={onWarehouseChange}
+        onPerformerChange={onPerformerChange}
       />
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
@@ -73,7 +102,7 @@ export function InventoryStockMovementsView({
           <InventoryStockMovementsTimeline
             groups={model.movementGroups}
             selectedMovementId={selectedMovementId}
-            onSelectMovement={onSelectMovement}
+            onSelectMovement={handleSelect}
           />
 
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-[22px] border border-slate-100 bg-white px-5 py-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)]">
@@ -102,6 +131,12 @@ export function InventoryStockMovementsView({
           />
         </div>
       </section>
+
+      <InventoryStockMovementDetailDrawer 
+        movement={model.selectedMovement}
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+      />
     </div>
   )
 }

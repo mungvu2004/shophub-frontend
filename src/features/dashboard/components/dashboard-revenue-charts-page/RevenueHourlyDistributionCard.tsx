@@ -1,22 +1,33 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from 'recharts'
-import type { RevenueChartsHourlyPointViewModel } from '@/features/dashboard/logic/dashboardRevenueCharts.types'
+
+import { ChartExportMenu } from '@/features/dashboard/components/dashboard-revenue-charts-page/ChartExportMenu'
+import type { RevenueChartExportFormat, RevenueChartsHourlyPointViewModel } from '@/features/dashboard/logic/dashboardRevenueCharts.types'
 
 type RevenueHourlyDistributionCardProps = {
   title: string
   peakHoursLabel: string
   points: RevenueChartsHourlyPointViewModel[]
+  onExport: (format: RevenueChartExportFormat) => void
 }
 
 const formatCurrency = (value: number) => `${new Intl.NumberFormat('vi-VN').format(Math.round(value))}₫`
 
-export function RevenueHourlyDistributionCard({ title, peakHoursLabel, points }: RevenueHourlyDistributionCardProps) {
+export function RevenueHourlyDistributionCard({
+  title,
+  peakHoursLabel,
+  points,
+  onExport,
+}: RevenueHourlyDistributionCardProps) {
   return (
     <section className="h-full rounded-2xl border border-secondary-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
       <header className="mb-6 flex items-center justify-between gap-3">
         <h3 className="text-xl font-bold text-secondary-900 tracking-tight">{title}</h3>
-        <span className="rounded-full bg-primary-50 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-primary-600 border border-primary-100">
-          {peakHoursLabel}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="rounded-full bg-primary-50 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-primary-600 border border-primary-100">
+            {peakHoursLabel}
+          </span>
+          <ChartExportMenu label="Xuất giờ" onExport={onExport} />
+        </div>
       </header>
 
       <div className="h-[280px] w-full">

@@ -7,6 +7,7 @@ import { SKUInventorySearch } from '@/features/inventory/components/inventory-sk
 import { SKUInventoryFilters } from '@/features/inventory/components/inventory-sku-stock-page/SKUInventoryFilters'
 import { SKULowStockAlert } from '@/features/inventory/components/inventory-sku-stock-page/SKULowStockAlert'
 import { SKUInventorySection } from '@/features/inventory/components/inventory-sku-stock-page/SKUInventorySection'
+import { BulkImportModal } from '@/features/inventory/components/inventory-sku-stock-page/BulkImportModal'
 import type { useInventorySKUStockPage } from '@/features/inventory/hooks/useInventorySKUStockPage'
 
 export type InventorySKUStockPageViewProps = {
@@ -18,6 +19,7 @@ export function InventorySKUStockPageView({ model }: InventorySKUStockPageViewPr
     viewMode,
     filters,
     lowStockAlert,
+    bulkImport,
     handleFilterChange,
     handleViewModeChange,
     handleAdjustStock,
@@ -55,6 +57,8 @@ export function InventorySKUStockPageView({ model }: InventorySKUStockPageViewPr
 
   return (
     <div className="space-y-5">
+      <BulkImportModal model={bulkImport} />
+      
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white">
         <div className="relative isolate px-5 py-5 md:px-7 md:py-7">
           <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,_rgba(14,116,144,0.14),_transparent_45%),radial-gradient(circle_at_top_left,_rgba(79,70,229,0.12),_transparent_42%)]" />

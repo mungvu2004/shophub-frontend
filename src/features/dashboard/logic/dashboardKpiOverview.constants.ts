@@ -3,11 +3,26 @@ import type { MetricCardData, MonthlyGoalData, PlatformTab } from '@/features/da
 export const DEFAULT_NO_DATA_HINT = ''
 
 export const PLACEHOLDER_TABS: PlatformTab[] = [
-  { id: 'all', label: 'Tất cả', count: '(--)' },
-  { id: 'shopee', label: 'Shopee', count: '(--)', dotColor: '#F97316' },
-  { id: 'lazada', label: 'Lazada', count: '(--)', dotColor: '#2563EB' },
-  { id: 'tiktok', label: 'TikTok Shop', count: '(--)', dotColor: '#0F172A' },
+  { id: 'all', label: 'Tất cả', count: '(0)' },
+  { id: 'shopee', label: 'Shopee', count: '(0)', dotColor: '#F97316' },
+  { id: 'lazada', label: 'Lazada', count: '(0)', dotColor: '#2563EB' },
+  { id: 'tiktok', label: 'TikTok Shop', count: '(0)', dotColor: '#0F172A' },
 ]
+
+/**
+ * Mục tiêu doanh thu mặc định (Mock data/Config)
+ * Thực tế có thể lấy từ API Settings hoặc Dashboard Config
+ */
+export const MONTHLY_REVENUE_GOAL_TARGET = 5000000000 // 5 tỷ VND
+
+export const EXPORT_MESSAGES = {
+  PDF_PREPARING: 'Đang chuẩn bị bản in PDF...',
+  PDF_INSTRUCTION: 'Vui lòng chọn "Lưu dưới dạng PDF" trong cửa sổ in.',
+  PNG_LOADING: 'Đang tạo hình ảnh Dashboard...',
+  PNG_SUCCESS: 'Đã chuẩn bị xong hình ảnh!',
+  PNG_ERROR: 'Không thể tạo hình ảnh lúc này.',
+} as const
+
 
 export const PLACEHOLDER_MONTHLY_GOAL: MonthlyGoalData = {
   label: 'Mục tiêu tháng',

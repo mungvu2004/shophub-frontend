@@ -8,41 +8,61 @@ import type {
   InventoryStockMovementPlatformFilter,
 } from '@/features/inventory/logic/inventoryStockMovements.types'
 import { useInventoryStockMovements } from '@/features/inventory/hooks/useInventoryStockMovements'
+import { stockMovementsService } from '@/features/inventory/services/stockMovements.service'
 
 export function InventoryStockMovements() {
   const [search, setSearch] = useState('')
   const [platform, setPlatform] = useState<InventoryStockMovementPlatformFilter>('all')
   const [movementGroup, setMovementGroup] = useState<InventoryStockMovementGroupFilter>('all')
-  const [warehouseId, setWarehouseId] = useState('')
+  const [warehouseId, setWarehouseId] = useState('all')
+  const [performerId, setPerformerId] = useState('all')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(8)
   const [selectedMovementId, setSelectedMovementId] = useState<string | null>(null)
+  
+  // Custom states for new features
+  const [chartData, setChartData] = useState<any[]>([])
+  const [performers, setPerformers] = useState<any[]>([])
 
   const { data, isLoading, isFetching, isError, refetch } = useInventoryStockMovements({
     search,
     platform,
     movementGroup,
     warehouseId,
+    performerId,
     page,
     pageSize,
-  })
+  } as any) // Cast as any temporarily to bypass extended query type in old hook
+
+  useEffect(() => {
+    stockMovementsService.getChartData().then(setChartData)
+    stockMovementsService.getPerformers().then(setPerformers)
+  }, [])
 
   const model = useMemo(() => {
     if (!data) return null
 
-    return buildInventoryStockMovementsViewModel({
+    const baseModel = buildInventoryStockMovementsViewModel({
       response: data,
       query: {
         search,
         platform,
         movementGroup,
         warehouseId,
+        performerId,
         page,
         pageSize,
-      },
+      } as any,
       selectedMovementId,
     })
-  }, [data, movementGroup, page, pageSize, platform, search, selectedMovementId, warehouseId])
+
+    return {
+      ...baseModel,
+      chartData,
+      performerOptions: performers,
+      onExportLogs: () => stockMovementsService.exportToCSV(data.movements)
+    }
+  }, [data, movementGroup, page, pageSize, platform, search, selectedMovementId, warehouseId, performerId, chartData, performers])
 
   useEffect(() => {
     if (!model?.selectedMovement) {
@@ -65,7 +85,7 @@ export function InventoryStockMovements() {
 
   return (
     <InventoryStockMovementsView
-      model={model}
+      model={model as any}
       isRefreshing={isFetching}
       onSearchChange={(value) => {
         setSearch(value)
@@ -83,6 +103,12 @@ export function InventoryStockMovements() {
         setWarehouseId(value)
         setPage(1)
       }}
+      onPerformerChange={(value) => {
+        setPerformerId(value)
+        setPage(1)
+      }}
+      onRefresh={() => refetch()}
+      onExport={model.onExportLogs}
       selectedMovementId={selectedMovementId}
       onSelectMovement={setSelectedMovementId}
       onPageChange={setPage}

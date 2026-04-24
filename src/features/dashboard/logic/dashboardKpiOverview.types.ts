@@ -42,6 +42,8 @@ export type MetricCardData = {
   trendData?: number[]
 }
 
+export type ComparisonPeriod = 'yesterday' | 'last-week' | 'last-month'
+
 export type DashboardKPIOverviewPageProps = {
   title?: string
   description?: string
@@ -54,6 +56,9 @@ export type DashboardKPIOverviewPageProps = {
   showMonthlyGoal?: boolean
   onRefresh?: () => void
   isRefreshing?: boolean
+  onReorderMetrics?: (metrics: MetricCardData[]) => void
+  comparisonPeriod?: ComparisonPeriod
+  onPeriodChange?: (period: ComparisonPeriod) => void
 }
 
 export type DashboardKPIOverviewViewModel = {
@@ -69,4 +74,7 @@ export type DashboardKPIOverviewViewModel = {
   hasRealMetrics: boolean
   onRefresh?: () => void
   isRefreshing?: boolean
+  onReorderMetrics?: (metrics: MetricCardData[]) => void
+  comparisonPeriod: ComparisonPeriod
+  onPeriodChange?: (period: ComparisonPeriod) => void
 }

@@ -1,12 +1,16 @@
 import { Download, RefreshCw, Sparkles } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 type InventoryStockMovementsHeaderProps = {
   title: string
   subtitle: string
   updatedAtLabel: string
   suggestedActionLabel: string
+  onRefresh?: () => void
+  onExport?: () => void
+  isRefreshing?: boolean
 }
 
 export function InventoryStockMovementsHeader({
@@ -14,6 +18,9 @@ export function InventoryStockMovementsHeader({
   subtitle,
   updatedAtLabel,
   suggestedActionLabel,
+  onRefresh,
+  onExport,
+  isRefreshing,
 }: InventoryStockMovementsHeaderProps) {
   return (
     <header className="rounded-[28px] border border-white/70 bg-gradient-to-br from-white via-[#f8faff] to-[#eff3ff] p-6 shadow-[0_16px_40px_rgba(15,23,42,0.08)] xl:p-8">
@@ -39,15 +46,18 @@ export function InventoryStockMovementsHeader({
           <Button
             type="button"
             variant="outline"
-            className="h-11 rounded-xl border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-50"
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            className="h-11 rounded-xl border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-50 disabled:opacity-50"
           >
-            <RefreshCw className="mr-2 size-4" />
+            <RefreshCw className={cn('mr-2 size-4', isRefreshing && 'animate-spin')} />
             Làm mới
           </Button>
 
           <Button
             type="button"
             variant="outline"
+            onClick={onExport}
             className="h-11 rounded-xl border-[#d9e3ff] bg-[#eef2ff] px-4 text-sm font-semibold text-[#3525cd] shadow-none hover:bg-[#e6ebff]"
           >
             <Download className="mr-2 size-4" />

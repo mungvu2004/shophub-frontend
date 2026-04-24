@@ -31,10 +31,26 @@ function createResponse(overrides?: Partial<RevenueChartsResponse>): RevenueChar
         lazada: 8000000,
         tiktokShop: 9000000,
         previousTotal: 24000000,
+        voucherRevenue: 1800000,
+        promotionRevenue: 2200000,
       },
     ],
     hourlyDistribution: [{ hour: 20, revenue: 5000000 }],
-    categoryBreakdown: [{ id: 'c1', label: 'A', revenue: 20000000 }],
+    categoryBreakdown: [
+      {
+        id: 'c1',
+        label: 'A',
+        revenue: 20000000,
+        products: [
+          {
+            id: 'p1',
+            name: 'Product A',
+            revenue: 15000000,
+            orders: 120,
+          },
+        ],
+      },
+    ],
     weeklyComparison: [
       {
         id: 'w1',
@@ -48,6 +64,22 @@ function createResponse(overrides?: Partial<RevenueChartsResponse>): RevenueChar
       },
     ],
     peakHoursLabel: '19h - 22h',
+    timelineEvents: [
+      {
+        id: 'e1',
+        date: '2026-03-01',
+        label: 'Flash',
+        type: 'flash_sale',
+        impactPercent: 10,
+      },
+    ],
+    hourlyHeatmap: [
+      {
+        dayIndex: 0,
+        hour: 10,
+        orderCount: 30,
+      },
+    ],
     ...overrides,
   }
 }

@@ -1,5 +1,7 @@
 export type RevenueChartsPlatformId = 'all' | 'shopee' | 'lazada' | 'tiktok_shop'
 export type RevenueChartsRangeDays = 7 | 30
+export type RevenueChartExportTarget = 'daily-trend' | 'hourly-distribution' | 'category-breakdown' | 'order-heatmap'
+export type RevenueChartExportFormat = 'csv' | 'excel'
 
 export type RevenueChartsResponse = {
   updatedAt: string
@@ -27,6 +29,8 @@ export type RevenueChartsResponse = {
     lazada: number
     tiktokShop: number
     previousTotal: number
+    voucherRevenue: number
+    promotionRevenue: number
   }>
   hourlyDistribution: Array<{
     hour: number
@@ -36,6 +40,12 @@ export type RevenueChartsResponse = {
     id: string
     label: string
     revenue: number
+    products: Array<{
+      id: string
+      name: string
+      revenue: number
+      orders: number
+    }>
   }>
   weeklyComparison: Array<{
     id: string
@@ -48,6 +58,18 @@ export type RevenueChartsResponse = {
     growthPercent: number
   }>
   peakHoursLabel: string
+  timelineEvents: Array<{
+    id: string
+    date: string
+    label: string
+    type: 'flash_sale' | 'holiday'
+    impactPercent: number
+  }>
+  hourlyHeatmap: Array<{
+    dayIndex: number
+    hour: number
+    orderCount: number
+  }>
 }
 
 export type RevenueChartsSummaryCardViewModel = {
@@ -61,11 +83,23 @@ export type RevenueChartsSummaryCardViewModel = {
 
 export type RevenueChartsDailyTrendPointViewModel = {
   dateLabel: string
+  isoDate: string
   shopee: number
   lazada: number
   tiktokShop: number
   total: number
   previousTotal: number
+  voucherRevenue: number
+  promotionRevenue: number
+}
+
+export type RevenueChartsTimelineEventViewModel = {
+  id: string
+  dateLabel: string
+  isoDate: string
+  label: string
+  type: 'flash_sale' | 'holiday'
+  impactLabel: string
 }
 
 export type RevenueChartsHourlyPointViewModel = {
@@ -77,9 +111,25 @@ export type RevenueChartsHourlyPointViewModel = {
 export type RevenueChartsCategoryItemViewModel = {
   id: string
   label: string
+  revenue: number
   valueLabel: string
   ratioPercent: number
   barColor: string
+  products: Array<{
+    id: string
+    name: string
+    revenueLabel: string
+    ordersLabel: string
+  }>
+}
+
+export type RevenueChartsHeatmapCellViewModel = {
+  id: string
+  dayLabel: string
+  hourLabel: string
+  hour: number
+  orderCount: number
+  intensity: number
 }
 
 export type RevenueChartsWeeklyRowViewModel = {
@@ -106,9 +156,12 @@ export type RevenueChartsViewModel = {
   goalProgressLabel: string
   dailyChartTitle: string
   dailyChartPoints: RevenueChartsDailyTrendPointViewModel[]
+  timelineEvents: RevenueChartsTimelineEventViewModel[]
   hourlyChartTitle: string
   peakHoursLabel: string
   hourlyPoints: RevenueChartsHourlyPointViewModel[]
+  heatmapTitle: string
+  heatmapCells: RevenueChartsHeatmapCellViewModel[]
   categoryChartTitle: string
   categoryItems: RevenueChartsCategoryItemViewModel[]
   weeklyTableTitle: string

@@ -30,6 +30,8 @@ const formatDateLabel = (value: string) => {
   return `${day}/${month}`
 }
 
+const dayLabels = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
+
 const toGrowthTone = (value: number): 'up' | 'down' | 'neutral' => {
   if (value > 0) return 'up'
   if (value < 0) return 'down'
@@ -94,11 +96,23 @@ export const buildDashboardRevenueChartsViewModel = (input: {
 
   const dailyChartPoints = data.dailySeries.map((item) => ({
     dateLabel: formatDateLabel(item.date),
+    isoDate: item.date,
     shopee: item.shopee,
     lazada: item.lazada,
     tiktokShop: item.tiktokShop,
     total: item.shopee + item.lazada + item.tiktokShop,
     previousTotal: item.previousTotal,
+    voucherRevenue: item.voucherRevenue,
+    promotionRevenue: item.promotionRevenue,
+  }))
+
+  const timelineEvents = data.timelineEvents.map((event) => ({
+    id: event.id,
+    dateLabel: formatDateLabel(event.date),
+    isoDate: event.date,
+    label: event.label,
+    type: event.type,
+    impactLabel: `${Math.abs(event.impactPercent)}%`,
   }))
 
   const maxCategoryRevenue = data.categoryBreakdown.reduce((max, item) => Math.max(max, item.revenue), 0)
@@ -106,15 +120,32 @@ export const buildDashboardRevenueChartsViewModel = (input: {
   const categoryItems = data.categoryBreakdown.map((item, index) => ({
     id: item.id,
     label: item.label,
+    revenue: item.revenue,
     valueLabel: formatCompactCurrency(item.revenue),
     ratioPercent: maxCategoryRevenue > 0 ? Math.round((item.revenue / maxCategoryRevenue) * 100) : 0,
     barColor: categoryColors[index % categoryColors.length],
+    products: item.products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      revenueLabel: formatCurrency(product.revenue),
+      ordersLabel: `${currencyFormatter.format(product.orders)} đơn`,
+    })),
   }))
 
   const hourlyPoints = data.hourlyDistribution.map((item) => ({
     hourLabel: `${`${item.hour}`.padStart(2, '0')}h`,
     revenue: item.revenue,
     isPeak: item.hour >= 19 && item.hour <= 22,
+  }))
+
+  const maxHeatValue = data.hourlyHeatmap.reduce((max, cell) => Math.max(max, cell.orderCount), 0)
+  const heatmapCells = data.hourlyHeatmap.map((cell) => ({
+    id: `${cell.dayIndex}-${cell.hour}`,
+    dayLabel: dayLabels[cell.dayIndex] ?? `${cell.dayIndex}`,
+    hourLabel: `${`${cell.hour}`.padStart(2, '0')}h`,
+    hour: cell.hour,
+    orderCount: cell.orderCount,
+    intensity: maxHeatValue > 0 ? Number((cell.orderCount / maxHeatValue).toFixed(2)) : 0,
   }))
 
   const weeklyRows = data.weeklyComparison.map((item) => {
@@ -148,9 +179,12 @@ export const buildDashboardRevenueChartsViewModel = (input: {
     goalProgressLabel: 'Tiến độ',
     dailyChartTitle: 'Doanh thu theo ngày',
     dailyChartPoints,
+    timelineEvents,
     hourlyChartTitle: 'Phân bổ doanh thu theo giờ',
     peakHoursLabel: `Peak: ${data.peakHoursLabel}`,
     hourlyPoints,
+    heatmapTitle: 'Mật độ đơn hàng theo ngày/giờ',
+    heatmapCells,
     categoryChartTitle: 'Doanh thu theo danh mục',
     categoryItems,
     weeklyTableTitle: 'So sánh doanh thu theo tuần',

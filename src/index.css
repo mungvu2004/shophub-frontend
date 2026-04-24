@@ -114,6 +114,47 @@
   }
 }
 
+@media print {
+  /* Hide navigation and controls */
+  nav, 
+  aside, 
+  header,
+  .no-print,
+  button,
+  [role="tablist"],
+  .sonner-toast {
+    display: none !important;
+  }
+
+  /* Reset layout offsets */
+  main, 
+  .ml-\[240px\],
+  .pt-16 {
+    margin-left: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  /* Ensure full width and background white */
+  body, 
+  .bg-secondary-50 {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  /* Force grid columns for layout consistency */
+  .grid {
+    display: grid !important;
+  }
+
+  /* Prevent page breaks inside cards */
+  article, 
+  section, 
+  .rounded-2xl {
+    break-inside: avoid;
+    border: 1px solid #e2e8f0 !important;
+  }
+}
+
 @layer utilities {
   /* Custom scrollbar styling for notifications */
   .scrollbar-thin-custom {

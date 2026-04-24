@@ -1,4 +1,10 @@
-import type { RevenueChartsViewModel, RevenueChartsPlatformId, RevenueChartsRangeDays } from '@/features/dashboard/logic/dashboardRevenueCharts.types'
+import type {
+  RevenueChartExportFormat,
+  RevenueChartExportTarget,
+  RevenueChartsViewModel,
+  RevenueChartsPlatformId,
+  RevenueChartsRangeDays,
+} from '@/features/dashboard/logic/dashboardRevenueCharts.types'
 import { RevenueHeroSection } from './parts/RevenueHeroSection'
 import { RevenuePlatformSelector } from './parts/RevenuePlatformSelector'
 import { RevenueStatsGrid } from './parts/RevenueStatsGrid'
@@ -7,12 +13,16 @@ import { RevenueComparisonCard } from './parts/RevenueComparisonCard'
 import { RevenueHourlyDistributionCard } from './RevenueHourlyDistributionCard'
 import { RevenueCategoryBreakdownCard } from './RevenueCategoryBreakdownCard'
 import { RevenueGoalBanner } from './RevenueGoalBanner'
+import { RevenueOrderHeatmapCard } from './RevenueOrderHeatmapCard'
 
 type DashboardRevenueChartsViewProps = {
   model: RevenueChartsViewModel
   isRefreshing: boolean
   onPlatformChange: (platform: RevenueChartsPlatformId) => void
   onRangeChange: (range: RevenueChartsRangeDays) => void
+  onCategorySelect: (categoryId: string) => void
+  selectedCategoryId: string | null
+  onExportChart: (target: RevenueChartExportTarget, format: RevenueChartExportFormat) => void
 }
 
 export function DashboardRevenueChartsView({
@@ -20,6 +30,9 @@ export function DashboardRevenueChartsView({
   isRefreshing,
   onPlatformChange,
   onRangeChange,
+  onCategorySelect,
+  selectedCategoryId,
+  onExportChart,
 }: DashboardRevenueChartsViewProps) {
   return (
     <div className="min-h-screen bg-secondary-50 pb-12 font-sans">
@@ -58,7 +71,9 @@ export function DashboardRevenueChartsView({
               <RevenueTrendCard 
                 title={model.dailyChartTitle} 
                 points={model.dailyChartPoints} 
-                selectedPlatform={model.selectedPlatform} 
+                selectedPlatform={model.selectedPlatform}
+                timelineEvents={model.timelineEvents}
+                onExport={(format) => onExportChart('daily-trend', format)}
               />
             </div>
 
@@ -68,6 +83,7 @@ export function DashboardRevenueChartsView({
                 title={model.hourlyChartTitle} 
                 peakHoursLabel={model.peakHoursLabel} 
                 points={model.hourlyPoints} 
+                onExport={(format) => onExportChart('hourly-distribution', format)}
               />
             </div>
 
@@ -76,6 +92,17 @@ export function DashboardRevenueChartsView({
               <RevenueCategoryBreakdownCard 
                 title={model.categoryChartTitle} 
                 items={model.categoryItems} 
+                selectedCategoryId={selectedCategoryId}
+                onCategorySelect={onCategorySelect}
+                onExport={(format) => onExportChart('category-breakdown', format)}
+              />
+            </div>
+
+            <div className="xl:col-span-4">
+              <RevenueOrderHeatmapCard
+                title={model.heatmapTitle}
+                cells={model.heatmapCells}
+                onExport={(format) => onExportChart('order-heatmap', format)}
               />
             </div>
 

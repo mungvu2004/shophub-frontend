@@ -10,6 +10,7 @@ export type InventoryStockMovementsQueryState = {
   platform: InventoryStockMovementPlatformFilter
   movementGroup: InventoryStockMovementGroupFilter
   warehouseId: string
+  performerId: string // New filter for audit trail
   page: number
   pageSize: number
 }
@@ -66,10 +67,19 @@ export type InventoryStockMovementRecord = {
   qtyAfter: number
   reason?: string
   note?: string
+  attachments?: string[] // Document attachments (URLs)
+  isAnomaly?: boolean // Unusual large/frequent adjustment
+  performerName?: string // Person who performed the action
   createdAt: string
   createdAtLabel: string
   createdByLabel: string
   refOrderItemId?: string
+}
+
+export type InventoryStockMovementChartEntry = {
+  date: string
+  inbound: number
+  outbound: number
 }
 
 export type InventoryStockMovementDayGroup = {
@@ -120,6 +130,7 @@ export type InventoryStockMovementsViewModel = {
   groupStats: InventoryStockMovementGroupViewModel[]
   warehouseStats: InventoryStockMovementWarehouseViewModel[]
   movementGroups: InventoryStockMovementDayGroup[]
+  chartData: InventoryStockMovementChartEntry[] // Data for the line chart
   totalCount: number
   page: number
   pageSize: number
@@ -128,4 +139,6 @@ export type InventoryStockMovementsViewModel = {
   warehouseOptions: Array<{ id: string; label: string }>
   platformOptions: Array<{ id: InventoryStockMovementPlatformFilter; label: string }>
   groupOptions: Array<{ id: InventoryStockMovementGroupFilter; label: string }>
+  performerOptions: Array<{ id: string; label: string }> // Options for performer filter
+  onExportLogs: () => void // Action to export CSV
 }

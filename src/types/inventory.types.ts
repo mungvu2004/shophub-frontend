@@ -34,6 +34,39 @@ export interface StockLevel {
   updatedAt: string; // Source: StockLevels.UpdatedAt | nullable: no
 }
 
+export interface StockBatch {
+  id: string;
+  sku: string;
+  batchNumber: string;
+  quantity: number;
+  expiryDate?: string;
+  productionDate?: string;
+  receivedDate: string;
+  costPrice: number;
+  warehouseId: string;
+  note?: string;
+}
+
+export interface CostHistoryEntry {
+  id: string;
+  sku: string;
+  date: string;
+  costPrice: number;
+  method: "FIFO" | "WEIGHTED_AVERAGE";
+  sourceType: "IMPORT" | "ADJUSTMENT" | "RETURN";
+  sourceId: string;
+}
+
+export interface ReorderConfig {
+  sku: string;
+  minThreshold: number;
+  maxThreshold?: number;
+  reorderQty: number;
+  isAutoReorder: boolean;
+  preferredSupplierId?: string;
+}
+
+
 export type MovementType =
   | "ORDER_RESERVE"
   | "ORDER_RELEASE"
@@ -56,6 +89,10 @@ export interface StockMovement {
   refOrderItemId?: string; // Source: StockMovements.RefOrderItemId | nullable: yes
   reason?: string; // Source: StockMovements.Reason | nullable: yes
   note?: string; // Source: StockMovements.Note | nullable: yes
+  attachments?: string[]; // URLs or IDs of attached documents (images/PDF)
+  isAnomaly?: boolean; // Flag for suspicious/large adjustments
+  performerId?: string; // ID of the person who performed the action
+  performerName?: string; // Name of the person for audit trail
   createdAt: string; // Source: StockMovements.CreatedAt | nullable: no
   createdBy: string; // Source: StockMovements.CreatedBy | nullable: no
 }

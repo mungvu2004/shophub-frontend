@@ -2,8 +2,8 @@ import { DataTable, type DataTableColumn, type DataTableSortState } from '@/comp
 import { Pagination } from '@/components/ui/pagination'
 import { Button } from '@/components/ui/button'
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton'
-import type { InventoryTableViewModel } from '@/features/inventory/logic/inventoryTable.types'
-import { ChevronRight, Edit2, Trash2 } from 'lucide-react'
+import type { InventoryTableViewModel, InventoryTableRow } from '@/features/inventory/logic/inventoryTable.types'
+import { ChevronRight, Edit2, Trash2, QrCode, Package, BellRing, DollarSign } from 'lucide-react'
 import { useMemo } from 'react'
 
 type InventoryTableProps = {
@@ -175,6 +175,17 @@ export function InventoryTable({ model }: InventoryTableProps) {
           }
         }
 
+        if (col.id === 'warehouseHN' || col.id === 'warehouseHCM' || col.id === 'warehouseDN') {
+          return {
+            id: col.id,
+            header: col.label,
+            align: 'right',
+            headerClassName: headerClassName + ' bg-slate-50/50',
+            cellClassName: 'font-mono text-sm text-slate-600 bg-slate-50/30',
+            accessor: (row) => (row as InventoryTableRow)[col.id as keyof InventoryTableRow] as string | number,
+          }
+        }
+
         if (col.id === 'marketplaceStock') {
           return {
             id: col.id,
@@ -304,11 +315,56 @@ export function InventoryTable({ model }: InventoryTableProps) {
         id: 'actions',
         header: 'Hành động',
         align: 'right',
-        widthClassName: 'min-w-[110px]',
-        headerClassName: 'text-right text-xs font-bold uppercase text-slate-600 min-w-[110px]',
+        widthClassName: 'min-w-[180px]',
+        headerClassName: 'text-right text-xs font-bold uppercase text-slate-600 min-w-[180px]',
         cellClassName: 'text-right',
         cell: (row) => (
           <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button 
+              type="button" 
+              className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-indigo-600"
+              onClick={(event) => {
+                event.stopPropagation()
+                model.onOpenQRCode?.(row.sku, row.productName)
+              }}
+              title="Mã QR"
+            >
+              <QrCode className="w-4 h-4" />
+            </button>
+            <button 
+              type="button" 
+              className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-sky-600"
+              onClick={(event) => {
+                event.stopPropagation()
+                model.onOpenBatchManagement?.(row.sku, row.productName)
+              }}
+              title="Quản lý lô & HSD"
+            >
+              <Package className="w-4 h-4" />
+            </button>
+            <button 
+              type="button" 
+              className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-orange-600"
+              onClick={(event) => {
+                event.stopPropagation()
+                model.onOpenReorderConfig?.(row.sku, row.productName)
+              }}
+              title="Reorder Point"
+            >
+              <BellRing className="w-4 h-4" />
+            </button>
+            <button 
+              type="button" 
+              className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-emerald-600"
+              onClick={(event) => {
+                event.stopPropagation()
+                model.onOpenCostHistory?.(row.sku, row.productName)
+              }}
+              title="Giá vốn"
+            >
+              <DollarSign className="w-4 h-4" />
+            </button>
+            <div className="w-px h-4 bg-slate-200 mx-1" />
             <button 
               type="button" 
               className="p-1 hover:bg-slate-100 rounded"

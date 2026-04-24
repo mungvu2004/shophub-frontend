@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight, MoveRight } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, MoveRight, FileText, AlertTriangle, User } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import type { InventoryStockMovementRecord } from '@/features/inventory/logic/inventoryStockMovements.types'
@@ -53,12 +53,18 @@ export function InventoryStockMovementCard({ movement, isSelected, onSelect }: I
 
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${platformToneClassMap[movement.platform]}`}>
+              <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${platformToneClassMap[movement.platform as keyof typeof platformToneClassMap] || 'bg-slate-100 text-slate-600'}`}>
                 {movement.platformLabel}
               </span>
               <span className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${toneClassMap[movement.movementTone]}`}>
                 {metadata.movementTypeLabel}
               </span>
+              {movement.isAnomaly && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-rose-700 animate-pulse">
+                  <AlertTriangle className="size-3" />
+                  Bất thường
+                </span>
+              )}
             </div>
 
             <div>
@@ -68,7 +74,16 @@ export function InventoryStockMovementCard({ movement, isSelected, onSelect }: I
 
             <div className="flex flex-wrap gap-2 text-xs text-slate-500">
               <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium">{movement.warehouseName}</span>
-              <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium">{movement.createdByLabel}</span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 font-medium">
+                <User className="size-3" />
+                {movement.performerName || movement.createdByLabel}
+              </span>
+              {movement.attachments && movement.attachments.length > 0 && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-1 font-medium text-indigo-600">
+                  <FileText className="size-3" />
+                  {movement.attachments.length} chứng từ
+                </span>
+              )}
               {movement.refOrderItemId ? <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium">{movement.refOrderItemId}</span> : null}
             </div>
           </div>

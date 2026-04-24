@@ -1,19 +1,46 @@
-import { CartesianGrid, Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Line, ComposedChart } from 'recharts'
-import type { RevenueChartsDailyTrendPointViewModel, RevenueChartsPlatformId } from '@/features/dashboard/logic/dashboardRevenueCharts.types'
+import {
+  CartesianGrid,
+  Area,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  Line,
+  ComposedChart,
+  ReferenceLine,
+} from 'recharts'
+
+import { ChartExportMenu } from '@/features/dashboard/components/dashboard-revenue-charts-page/ChartExportMenu'
+import type {
+  RevenueChartExportFormat,
+  RevenueChartsDailyTrendPointViewModel,
+  RevenueChartsPlatformId,
+  RevenueChartsTimelineEventViewModel,
+} from '@/features/dashboard/logic/dashboardRevenueCharts.types'
 
 type RevenueTrendCardProps = {
   title: string
   points: RevenueChartsDailyTrendPointViewModel[]
   selectedPlatform: RevenueChartsPlatformId
+  timelineEvents: RevenueChartsTimelineEventViewModel[]
+  onExport: (format: RevenueChartExportFormat) => void
 }
 
 const formatCurrency = (value: number) => `${new Intl.NumberFormat('vi-VN').format(Math.round(value))}₫`
 
-export function RevenueTrendCard({ title, points, selectedPlatform }: RevenueTrendCardProps) {
+export function RevenueTrendCard({
+  title,
+  points,
+  selectedPlatform,
+  timelineEvents,
+  onExport,
+}: RevenueTrendCardProps) {
   const showAll = selectedPlatform === 'all'
   const showShopee = showAll || selectedPlatform === 'shopee'
   const showLazada = showAll || selectedPlatform === 'lazada'
   const showTiktok = showAll || selectedPlatform === 'tiktok_shop'
+
+  const visibleEvents = timelineEvents.filter((event) => points.some((point) => point.isoDate === event.isoDate))
 
   return (
     <section className="rounded-2xl border border-secondary-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
@@ -23,7 +50,7 @@ export function RevenueTrendCard({ title, points, selectedPlatform }: RevenueTre
           <p className="mt-2 text-sm font-medium text-secondary-500 text-pretty">Phân tích xu hướng doanh thu tích hợp đa kênh.</p>
         </div>
         
-        <div className="flex flex-wrap items-center gap-6 rounded-2xl bg-slate-50 px-6 py-3 border border-slate-100">
+        <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
           <div className="flex items-center gap-2">
             <span className="h-3 w-3 rounded-full bg-indigo-600 ring-4 ring-indigo-500/10" />
             <span className="text-[11px] font-black uppercase tracking-wider text-slate-700">Tổng hiện tại</span>
@@ -32,6 +59,15 @@ export function RevenueTrendCard({ title, points, selectedPlatform }: RevenueTre
             <span className="h-[2px] w-5 border-b-2 border-dashed border-slate-400" />
             <span className="text-[11px] font-black uppercase tracking-wider text-secondary-500">Tổng kỳ trước</span>
           </div>
+          <div className="flex items-center gap-2">
+            <span className="h-[2px] w-5 border-b-2 border-[#16A34A]" />
+            <span className="text-[11px] font-black uppercase tracking-wider text-secondary-500">Voucher</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="h-[2px] w-5 border-b-2 border-[#D97706]" />
+            <span className="text-[11px] font-black uppercase tracking-wider text-secondary-500">Khuyến mãi</span>
+          </div>
+          <ChartExportMenu label="Xuất trend" onExport={onExport} />
         </div>
       </header>
 
@@ -67,6 +103,22 @@ export function RevenueTrendCard({ title, points, selectedPlatform }: RevenueTre
               labelStyle={{ fontSize: '11px', color: '#64748b', marginBottom: '8px', fontWeight: 'black', textTransform: 'uppercase', letterSpacing: '1px' }}
               formatter={(value: number) => [formatCurrency(value), '']}
             />
+
+            {visibleEvents.map((event) => (
+              <ReferenceLine
+                key={event.id}
+                x={event.dateLabel}
+                stroke={event.type === 'flash_sale' ? '#EA580C' : '#0EA5E9'}
+                strokeDasharray="4 4"
+                label={{
+                  value: `${event.label} (+${event.impactLabel})`,
+                  position: 'top',
+                  fill: event.type === 'flash_sale' ? '#C2410C' : '#0369A1',
+                  fontSize: 11,
+                  fontWeight: 700,
+                }}
+              />
+            ))}
             
             {showShopee && (
               <Area type="monotone" dataKey="shopee" name="Shopee" stroke="none" fillOpacity={1} fill="url(#colorShopee)" />
@@ -87,6 +139,24 @@ export function RevenueTrendCard({ title, points, selectedPlatform }: RevenueTre
               strokeDasharray="8 5" 
               dot={false} 
               activeDot={false}
+            />
+            <Line
+              type="monotone"
+              dataKey="voucherRevenue"
+              name="Doanh thu từ voucher"
+              stroke="#16A34A"
+              strokeWidth={2.2}
+              dot={false}
+              activeDot={{ r: 4, strokeWidth: 0 }}
+            />
+            <Line
+              type="monotone"
+              dataKey="promotionRevenue"
+              name="Doanh thu khuyến mãi"
+              stroke="#D97706"
+              strokeWidth={2.2}
+              dot={false}
+              activeDot={{ r: 4, strokeWidth: 0 }}
             />
             <Line 
               type="monotone" 

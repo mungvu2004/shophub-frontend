@@ -1,5 +1,5 @@
 import { DollarSign, ShoppingCart, AlertCircle, BarChart3 } from 'lucide-react'
-import type { MetricCardData } from '@/features/dashboard/logic/dashboardKpiOverview.types'
+import type { MetricCardData, ComparisonPeriod } from '@/features/dashboard/logic/dashboardKpiOverview.types'
 
 const SIGNAL_WIDTH = 60
 const SIGNAL_HEIGHT = 24
@@ -16,8 +16,9 @@ const iconMap: Record<string, typeof DollarSign> = {
 }
 
 function toneStyles(tone?: MetricCardData['changeTone']) {
-  if (tone === 'positive') return 'bg-emerald-50 text-emerald-600'
-  if (tone === 'warning') return 'bg-orange-50 text-orange-600'
+  if (tone === 'positive') return 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+  if (tone === 'warning') return 'bg-orange-50 text-orange-600 border border-orange-100'
+  if (tone === 'neutral') return 'bg-slate-50 text-slate-400 border border-slate-200'
   return 'bg-slate-100 text-slate-600'
 }
 
@@ -157,37 +158,73 @@ function RateCompareBreakdown({
 
 type KpiCardProps = {
   metric: MetricCardData & { isPlaceholder?: boolean }
+  draggable?: boolean
+  onDragStart?: (e: React.DragEvent) => void
+  onDragOver?: (e: React.DragEvent) => void
+  onDragEnd?: (e: React.DragEvent) => void
+  isDragging?: boolean
+  isOver?: boolean
+  comparisonPeriod?: ComparisonPeriod
 }
 
-export function KpiCard({ metric }: KpiCardProps) {
-  const borderToneClass = metric.borderTone === 'warning' ? 'border-orange-100' : 'border-slate-100'
+export function KpiCard({
+  metric,
+  draggable,
+  onDragStart,
+  onDragOver,
+  onDragEnd,
+  isDragging,
+  isOver,
+  comparisonPeriod = 'yesterday',
+}: KpiCardProps) {
+  const borderToneClass = metric.borderTone === 'warning' ? 'border-orange-200' : 'border-slate-200'
   const IconComponent = metric.iconName ? iconMap[metric.iconName] : null
   const isRefundRateCard = metric.id === 'refund-rate'
+  
+  const periodLabel = comparisonPeriod === 'yesterday' 
+    ? 'hôm qua' 
+    : comparisonPeriod === 'last-week' 
+    ? 'tuần trước' 
+    : 'tháng trước'
 
   return (
     <article
-      className={`relative min-h-[234px] w-full max-w-[226px] rounded-2xl border bg-white p-6 shadow-sm xl:max-w-none ${borderToneClass}`}
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDragEnd={onDragEnd}
+      aria-grabbed={isDragging}
+      className={`relative min-h-[234px] w-full rounded-2xl border bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-indigo-100 ${
+        isDragging ? 'opacity-20 scale-95 cursor-grabbing shadow-none' : 'opacity-100 cursor-grab'
+      } ${isOver ? 'ring-2 ring-indigo-500 ring-offset-4 z-10' : ''} ${
+        borderToneClass
+      }`}
     >
       <div className="flex items-center justify-between">
         <div
-          className="flex h-10 w-10 items-center justify-center rounded-xl"
+          className="flex h-10 w-10 items-center justify-center rounded-xl shadow-inner"
           style={{ backgroundColor: metric.accentColor ?? '#EEF2FF' }}
         >
           {IconComponent ? (
-            <IconComponent className="h-5 w-5 text-slate-700" />
+            <IconComponent className="h-5 w-5 text-slate-700" aria-hidden="true" />
           ) : null}
         </div>
 
         {metric.changeLabel ? (
-          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${toneStyles(metric.changeTone)}`}>
-            {metric.changeLabel}
-          </span>
+          <div className="flex flex-col items-end gap-1.5">
+            <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold tracking-tight shadow-sm ${toneStyles(metric.changeTone)}`}>
+              {metric.changeLabel}
+            </span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.05em]">vs {periodLabel}</span>
+          </div>
         ) : null}
       </div>
 
       <div className="mt-5 space-y-1">
-        <p className="text-xs font-bold tracking-[0.12em] text-slate-500">{metric.title}</p>
-        <p className={metric.isPlaceholder ? 'text-3xl font-bold text-slate-400' : 'text-3xl font-bold text-slate-900 break-words'}>{metric.value}</p>
+        <h3 className="text-[10px] font-bold tracking-[0.15em] text-slate-400 uppercase">{metric.title}</h3>
+        <p className={`font-mono ${metric.isPlaceholder ? 'text-3xl font-bold text-slate-200' : 'text-3xl font-bold text-slate-900 break-words'}`}>
+          {metric.value}
+        </p>
       </div>
 
       {metric.placeholderLayout === 'alert-summary' ? <AlertSummaryBreakdown metric={metric} /> : null}

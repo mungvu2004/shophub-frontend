@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useInventoryAlerts, useInventorySKUs } from '@/features/inventory/hooks/useInventoryData'
 import type { ViewMode } from '@/features/inventory/logic/inventoryPageHeader.types'
+import { useBulkImport } from '@/features/inventory/hooks/useBulkImport'
 import { toast } from 'sonner'
 
 export interface InventorySKUStockPageFilters {
@@ -13,6 +14,7 @@ export interface InventorySKUStockPageFilters {
 
 export function useInventorySKUStockPage() {
   const navigate = useNavigate()
+  const bulkImport = useBulkImport()
   const [showAlert, setShowAlert] = useState(true)
   const [viewMode, setViewMode] = useState<ViewMode>('table')
   const [filters, setFilters] = useState<InventorySKUStockPageFilters>({
@@ -72,17 +74,27 @@ export function useInventorySKUStockPage() {
       return
     }
 
-    const csvHeader = ['SKU', 'Tên sản phẩm', 'Danh mục', 'Tồn thực tế', 'Tồn khả dụng', 'Shopee', 'TikTok', 'Lazada']
-    const csvRows = items.map((item) => [
-      item.sku,
-      item.productName || item.variantName || '',
-      item.category || '',
-      String(item.physicalQty || 0),
-      String(item.availableQty || 0),
-      String(item.channelStock?.shopee || 0),
-      String(item.channelStock?.tiktok || 0),
-      String(item.channelStock?.lazada || 0),
-    ])
+    const csvHeader = ['SKU', 'Tên sản phẩm', 'Danh mục', 'Kho HN', 'Kho HCM', 'Kho ĐN', 'Tồn thực tế', 'Tồn khả dụng', 'Shopee', 'TikTok', 'Lazada']
+    const csvRows = items.map((item) => {
+      const actual = item.physicalQty || 0
+      const hn = Math.floor(actual * 0.4)
+      const hcm = Math.floor(actual * 0.4)
+      const dn = actual - hn - hcm
+      
+      return [
+        item.sku,
+        item.productName || item.variantName || '',
+        item.category || '',
+        String(hn),
+        String(hcm),
+        String(dn),
+        String(actual),
+        String(item.availableQty || 0),
+        String(item.channelStock?.shopee || 0),
+        String(item.channelStock?.tiktok || 0),
+        String(item.channelStock?.lazada || 0),
+      ]
+    })
 
     const csv = [csvHeader, ...csvRows]
       .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
@@ -102,18 +114,7 @@ export function useInventorySKUStockPage() {
   }
 
   const handleImportData = () => {
-    const fileInput = document.createElement('input')
-    fileInput.type = 'file'
-    fileInput.accept = '.csv'
-    fileInput.onchange = () => {
-      const selectedFile = fileInput.files?.[0]
-      if (!selectedFile) {
-        toast.warning('Bạn chưa chọn file import.')
-        return
-      }
-      toast.success(`Đã nhận file ${selectedFile.name}. Sẵn sàng xử lý nhập kho.`)
-    }
-    fileInput.click()
+    bulkImport.openModal()
   }
 
   return {
@@ -121,6 +122,7 @@ export function useInventorySKUStockPage() {
     filters,
     showAlert,
     lowStockAlert,
+    bulkImport,
     handleFilterChange,
     handleViewModeChange,
     handleAdjustStock,
@@ -128,3 +130,4 @@ export function useInventorySKUStockPage() {
     handleImportData,
   }
 }
+

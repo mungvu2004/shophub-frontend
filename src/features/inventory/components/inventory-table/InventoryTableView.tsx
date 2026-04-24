@@ -7,6 +7,13 @@ import { mapStockLevelToTableRow } from '@/features/inventory/logic/inventoryTab
 import { mockStockLevels } from '@/mocks/data/inventory'
 import { toast } from 'sonner'
 
+// New imports
+import { SKUQRCodeModal } from '@/features/inventory/components/inventory-sku-stock-page/SKUQRCodeModal'
+import { SKUBatchManagement } from '@/features/inventory/components/inventory-sku-stock-page/SKUBatchManagement'
+import { SKUReorderPointConfig } from '@/features/inventory/components/inventory-sku-stock-page/SKUReorderPointConfig'
+import { SKUCostHistoryChart } from '@/features/inventory/components/inventory-sku-stock-page/SKUCostHistoryChart'
+import { useSKUExtendedDetails } from '@/features/inventory/hooks/useSKUExtendedDetails'
+
 type InventoryTableViewProps = {
   filters?: {
     search?: string
@@ -27,6 +34,12 @@ export function InventoryTableView({ filters }: InventoryTableViewProps) {
     direction: 'desc',
   })
 
+  // Modal states
+  const [activeSKU, setActiveSKU] = useState<{ sku: string; name: string } | null>(null)
+  const [modalType, setModalType] = useState<'QR' | 'BATCH' | 'REORDER' | 'COST' | null>(null)
+
+  const extendedDetails = useSKUExtendedDetails(activeSKU?.sku || '');
+
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
@@ -42,10 +55,6 @@ export function InventoryTableView({ filters }: InventoryTableViewProps) {
     offset: (currentPage - 1) * pageSize,
   })
 
-  // Determine which data to display:
-  // - If loading: show empty array (allows loading skeleton to display)
-  // - If data exists: use API data (even if empty array)
-  // - Otherwise: use mock data as last resort fallback
   const displayData = isLoading ? [] : (data?.items ?? mockStockLevels)
 
   const rows: InventoryTableRow[] = useMemo(() => {
@@ -60,6 +69,9 @@ export function InventoryTableView({ filters }: InventoryTableViewProps) {
         { id: 'sku', label: 'SKU' },
         { id: 'category', label: 'Phân loại' },
         { id: 'platformType', label: 'Loại sàn' },
+        { id: 'warehouseHN', label: 'Kho HN', align: 'right' },
+        { id: 'warehouseHCM', label: 'Kho HCM', align: 'right' },
+        { id: 'warehouseDN', label: 'Kho ĐN', align: 'right' },
         { id: 'marketplaceStock', label: 'Tồn trên sàn', align: 'right' },
         { id: 'actualStock', label: 'Tồn thực tế', align: 'right' },
         { id: 'onOrder', label: 'Đã đặt', align: 'right' },
@@ -104,8 +116,8 @@ export function InventoryTableView({ filters }: InventoryTableViewProps) {
         setCurrentPage(1)
       },
       pageSizeOptions: [10, 20, 50, 100],
-      onOpenProductDetail: (_rowId, _productId) => {
-        const selectedRow = rows.find((row) => row.id === _rowId)
+      onOpenProductDetail: (rowId) => {
+        const selectedRow = rows.find((row) => row.id === rowId)
         if (!selectedRow) {
           return
         }
@@ -117,8 +129,66 @@ export function InventoryTableView({ filters }: InventoryTableViewProps) {
           },
         })
       },
+      onOpenQRCode: (sku, name) => {
+        setActiveSKU({ sku, name });
+        setModalType('QR');
+      },
+      onOpenBatchManagement: (sku, name) => {
+        setActiveSKU({ sku, name });
+        setModalType('BATCH');
+        extendedDetails.fetchBatches();
+      },
+      onOpenReorderConfig: (sku, name) => {
+        setActiveSKU({ sku, name });
+        setModalType('REORDER');
+        extendedDetails.fetchReorderConfig();
+      },
+      onOpenCostHistory: (sku, name) => {
+        setActiveSKU({ sku, name });
+        setModalType('COST');
+        extendedDetails.fetchCostHistory();
+      },
     }
-  }, [rows, selectedRows, isLoading, sortState, currentPage, pageSize, data?.totalCount, navigate, location.pathname, location.search])
+  }, [rows, selectedRows, isLoading, sortState, currentPage, pageSize, data?.totalCount, navigate, location.pathname, location.search, extendedDetails])
 
-  return <InventoryTable model={model} />
+  return (
+    <>
+      <InventoryTable model={model} />
+      
+      {activeSKU && (
+        <>
+          <SKUQRCodeModal 
+            isOpen={modalType === 'QR'} 
+            onClose={() => setModalType(null)} 
+            sku={activeSKU.sku} 
+            productName={activeSKU.name} 
+          />
+          <SKUBatchManagement 
+            isOpen={modalType === 'BATCH'} 
+            onClose={() => setModalType(null)} 
+            sku={activeSKU.sku} 
+            productName={activeSKU.name} 
+            batches={extendedDetails.batches}
+            isLoading={extendedDetails.isLoading}
+          />
+          <SKUReorderPointConfig 
+            isOpen={modalType === 'REORDER'} 
+            onClose={() => setModalType(null)} 
+            sku={activeSKU.sku} 
+            productName={activeSKU.name} 
+            initialConfig={extendedDetails.reorderConfig}
+            onSave={extendedDetails.updateReorderConfig}
+          />
+          <SKUCostHistoryChart 
+            isOpen={modalType === 'COST'} 
+            onClose={() => setModalType(null)} 
+            sku={activeSKU.sku} 
+            productName={activeSKU.name} 
+            history={extendedDetails.costHistory}
+            isLoading={extendedDetails.isLoading}
+          />
+        </>
+      )}
+    </>
+  );
 }

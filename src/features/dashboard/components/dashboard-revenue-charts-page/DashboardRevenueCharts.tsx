@@ -3,6 +3,10 @@ import { useRevenueChartsController } from './useRevenueChartsController'
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { PageSkeleton } from '@/components/PageSkeleton'
 
+export function shouldShowBlockingRevenueChartsError(input: { isError: boolean; hasModel: boolean }) {
+  return input.isError && !input.hasModel
+}
+
 export function DashboardRevenueCharts() {
   const { 
     model, 
@@ -11,6 +15,9 @@ export function DashboardRevenueCharts() {
     isRefreshing, 
     onPlatformChange, 
     onRangeChange, 
+    onCategorySelect,
+    selectedCategoryId,
+    onExportChart,
     refetch 
   } = useRevenueChartsController()
 
@@ -18,7 +25,7 @@ export function DashboardRevenueCharts() {
     return <PageSkeleton />
   }
 
-  if (isError && !model) {
+  if (shouldShowBlockingRevenueChartsError({ isError, hasModel: Boolean(model) })) {
     return (
       <DataLoadErrorState
         title="Không thể tải dữ liệu doanh thu"
@@ -43,6 +50,9 @@ export function DashboardRevenueCharts() {
         isRefreshing={isRefreshing}
         onPlatformChange={onPlatformChange}
         onRangeChange={onRangeChange}
+        onCategorySelect={onCategorySelect}
+        selectedCategoryId={selectedCategoryId}
+        onExportChart={onExportChart}
       />
     </div>
   )

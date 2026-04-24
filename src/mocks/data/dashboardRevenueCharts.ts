@@ -20,6 +20,26 @@ export type RevenueChartsCategoryPoint = {
   id: string;
   label: string;
   revenue: number;
+  products: Array<{
+    id: string;
+    name: string;
+    revenue: number;
+    orders: number;
+  }>;
+};
+
+export type RevenueTimelineEvent = {
+  id: string;
+  date: string;
+  label: string;
+  type: "flash_sale" | "holiday";
+  impactPercent: number;
+};
+
+export type RevenueHourlyHeatmapPoint = {
+  dayIndex: number;
+  hour: number;
+  orderCount: number;
 };
 
 export type RevenueChartsWeeklyPoint = {
@@ -59,11 +79,15 @@ export type DashboardRevenueChartsPayload = {
     lazada: number;
     tiktokShop: number;
     previousTotal: number;
+    voucherRevenue: number;
+    promotionRevenue: number;
   }>;
   hourlyDistribution: RevenueChartsHourlyPoint[];
   categoryBreakdown: RevenueChartsCategoryPoint[];
   weeklyComparison: RevenueChartsWeeklyPoint[];
   peakHoursLabel: string;
+  timelineEvents: RevenueTimelineEvent[];
+  hourlyHeatmap: RevenueHourlyHeatmapPoint[];
 };
 
 const baseDate = new Date("2026-03-01T00:00:00Z");
@@ -121,11 +145,80 @@ const scaleHourlyPattern = (platform: RevenueChartsPlatform) => {
 };
 
 const categoryBase = [
-  { id: "ao-thun", label: "Áo thun", allRevenue: 420_000_000 },
-  { id: "quan-vay", label: "Quần & Váy", allRevenue: 315_000_000 },
-  { id: "phu-kien", label: "Phụ kiện", allRevenue: 180_000_000 },
-  { id: "giay-dep", label: "Giày dép", allRevenue: 110_000_000 },
-  { id: "khac", label: "Khác", allRevenue: 45_000_000 },
+  {
+    id: "ao-thun",
+    label: "Áo thun",
+    allRevenue: 420_000_000,
+    products: [
+      { id: "tee-oversize", name: "Áo thun Oversize Fit", revenue: 138_000_000, orders: 1210 },
+      { id: "tee-basic", name: "Áo thun Basic Cotton", revenue: 112_000_000, orders: 980 },
+      { id: "tee-premium", name: "Áo thun Premium CoolTouch", revenue: 84_000_000, orders: 560 },
+    ],
+  },
+  {
+    id: "quan-vay",
+    label: "Quần & Váy",
+    allRevenue: 315_000_000,
+    products: [
+      { id: "jeans-wide", name: "Quần jeans ống rộng", revenue: 96_000_000, orders: 640 },
+      { id: "skirt-midi", name: "Chân váy midi xếp ly", revenue: 74_000_000, orders: 510 },
+      { id: "pants-linen", name: "Quần linen công sở", revenue: 68_000_000, orders: 450 },
+    ],
+  },
+  {
+    id: "phu-kien",
+    label: "Phụ kiện",
+    allRevenue: 180_000_000,
+    products: [
+      { id: "belt-leather", name: "Thắt lưng da thật", revenue: 58_000_000, orders: 760 },
+      { id: "bag-mini", name: "Túi đeo chéo mini", revenue: 54_000_000, orders: 430 },
+      { id: "cap-sport", name: "Nón lưỡi trai sport", revenue: 32_000_000, orders: 620 },
+    ],
+  },
+  {
+    id: "giay-dep",
+    label: "Giày dép",
+    allRevenue: 110_000_000,
+    products: [
+      { id: "sneaker-lite", name: "Sneaker Lite Daily", revenue: 44_000_000, orders: 280 },
+      { id: "sandal-soft", name: "Sandal Soft Walk", revenue: 31_000_000, orders: 300 },
+      { id: "loafer-form", name: "Giày lười Form 2.0", revenue: 22_000_000, orders: 170 },
+    ],
+  },
+  {
+    id: "khac",
+    label: "Khác",
+    allRevenue: 45_000_000,
+    products: [
+      { id: "sock-pack", name: "Set vớ 5 đôi", revenue: 15_000_000, orders: 410 },
+      { id: "care-kit", name: "Bộ chăm sóc quần áo", revenue: 11_000_000, orders: 170 },
+      { id: "gift-box", name: "Hộp quà premium", revenue: 8_000_000, orders: 120 },
+    ],
+  },
+];
+
+const timelineEventsBase: RevenueTimelineEvent[] = [
+  {
+    id: "flash-1503",
+    date: "2026-03-15",
+    label: "Flash Sale 3.15",
+    type: "flash_sale",
+    impactPercent: 26.4,
+  },
+  {
+    id: "holiday-0803",
+    date: "2026-03-08",
+    label: "Lễ 8/3",
+    type: "holiday",
+    impactPercent: 18.1,
+  },
+  {
+    id: "flash-2503",
+    date: "2026-03-25",
+    label: "Mega Flash Night",
+    type: "flash_sale",
+    impactPercent: 31.7,
+  },
 ];
 
 const weeklyBase: RevenueChartsWeeklyPoint[] = [
@@ -225,7 +318,69 @@ const toCategoryBreakdown = (platform: RevenueChartsPlatform): RevenueChartsCate
     id: item.id,
     label: item.label,
     revenue: Math.round(item.allRevenue * ratio),
+    products: item.products.map((product) => ({
+      ...product,
+      revenue: Math.round(product.revenue * ratio),
+      orders: Math.max(1, Math.round(product.orders * ratio)),
+    })),
   }));
+};
+
+const toVoucherPromotion = (
+  point: { shopee: number; lazada: number; tiktokShop: number },
+  dateIndex: number,
+  platform: RevenueChartsPlatform,
+) => {
+  const total = point.shopee + point.lazada + point.tiktokShop;
+  const promoBase = 0.09 + (dateIndex % 4) * 0.008;
+  const voucherBase = 0.06 + (dateIndex % 3) * 0.006;
+
+  const scopeFactor =
+    platform === "all"
+      ? 1
+      : platform === "shopee"
+        ? 0.88
+        : platform === "lazada"
+          ? 0.84
+          : 0.82;
+
+  return {
+    voucherRevenue: Math.round(total * voucherBase * scopeFactor),
+    promotionRevenue: Math.round(total * promoBase * scopeFactor),
+  };
+};
+
+const dayWeights = [0.82, 0.9, 0.96, 1.02, 1.08, 1.24, 1.16];
+
+const toHourlyHeatmap = (platform: RevenueChartsPlatform): RevenueHourlyHeatmapPoint[] => {
+  const platformFactor =
+    platform === "all"
+      ? 1
+      : platform === "shopee"
+        ? 0.46
+        : platform === "lazada"
+          ? 0.31
+          : 0.28;
+
+  return Array.from({ length: 7 }, (_, dayIndex) =>
+    Array.from({ length: 24 }, (_, hour) => {
+      const base = hourlyPatternAll[hour] * dayWeights[dayIndex] * platformFactor;
+      const variance = ((dayIndex + 1) * (hour + 3)) % 9;
+
+      return {
+        dayIndex,
+        hour,
+        orderCount: Math.max(2, Math.round(base * 1.75 + variance * 2)),
+      };
+    }),
+  ).flat();
+};
+
+const toTimelineEvents = (rangeDays: RevenueChartsRange): RevenueTimelineEvent[] => {
+  const visibleStartOffset = 30 - rangeDays;
+  const visibleStartDate = toDate(visibleStartOffset);
+
+  return timelineEventsBase.filter((event) => event.date >= visibleStartDate);
 };
 
 const toWeeklyComparison = (platform: RevenueChartsPlatform): RevenueChartsWeeklyPoint[] => {
@@ -308,7 +463,15 @@ export const getDashboardRevenueChartsPayload = (params: {
   platform: RevenueChartsPlatform;
   rangeDays: RevenueChartsRange;
 }): DashboardRevenueChartsPayload => {
-  const fullSeries = dailyBase.map((point) => toScopedRevenue(point, params.platform));
+  const fullSeries = dailyBase.map((point, index) => {
+    const scoped = toScopedRevenue(point, params.platform);
+    const overlays = toVoucherPromotion(scoped, index, params.platform);
+
+    return {
+      ...scoped,
+      ...overlays,
+    };
+  });
   const dailySeries = fullSeries.slice(-params.rangeDays);
   const summary = toSummary(dailySeries);
 
@@ -330,5 +493,7 @@ export const getDashboardRevenueChartsPayload = (params: {
     categoryBreakdown: toCategoryBreakdown(params.platform),
     weeklyComparison: toWeeklyComparison(params.platform),
     peakHoursLabel: "19h - 22h",
+    timelineEvents: toTimelineEvents(params.rangeDays),
+    hourlyHeatmap: toHourlyHeatmap(params.platform),
   };
 };

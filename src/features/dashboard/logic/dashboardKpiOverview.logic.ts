@@ -59,15 +59,19 @@ function buildPriorityText(metric: MetricCardData): string {
   return `Ưu tiên xử lý đơn ${highest.platform}`
 }
 
-function buildComparisonText(metric: MetricCardData): string {
+function buildComparisonText(metric: MetricCardData, period: ComparisonPeriod = 'yesterday'): string {
+  const periodText = period === 'yesterday' ? 'HÔM QUA' : period === 'last-week' ? 'TUẦN TRƯỚC' : 'THÁNG TRƯỚC'
+  if (metric.comparisonPercent === undefined) {
+    return `CHƯA CÓ DỮ LIỆU SO VỚI ${periodText}`
+  }
   const percent = metric.comparisonPercent ?? 0
   const direction = metric.comparisonDirection === 'up' ? 'CAO' : 'THẤP'
-  return `${direction} HƠN ${percent}% SO VỚI HÔM QUA`
+  return `${direction} HƠN ${percent}% SO VỚI ${periodText}`
 }
 
-export function calculatePlatformMetrics(orders: RevenueOrderItem[]): MetricCardData[] {
+export function calculatePlatformMetrics(orders: RevenueOrderItem[], period: ComparisonPeriod = 'yesterday'): MetricCardData[] {
   if (!orders.length) return []
-  return calculatePlatformMetricsAt(orders)
+  return calculatePlatformMetricsAt(orders, { period })
 }
 
 function getMetricValueAtDate(orders: RevenueOrderItem[], dateKey: string, metricId: string): number {
@@ -91,17 +95,26 @@ function getMetricValueAtDate(orders: RevenueOrderItem[], dateKey: string, metri
 
 export function calculatePlatformMetricsAt(
   orders: RevenueOrderItem[],
-  options?: { now?: Date },
+  options?: { now?: Date; period?: ComparisonPeriod },
 ): MetricCardData[] {
   if (!orders.length) return []
 
   const now = options?.now ?? new Date()
+  const period = options?.period ?? 'yesterday'
 
   // Compare by local day to avoid UTC date drift.
   const today = toLocalDateKey(now)
-  const yesterdayDate = new Date(now)
-  yesterdayDate.setDate(yesterdayDate.getDate() - 1)
-  const yesterday = toLocalDateKey(yesterdayDate)
+  
+  // Calculate reference date based on period
+  const refDate = new Date(now)
+  if (period === 'yesterday') {
+    refDate.setDate(refDate.getDate() - 1)
+  } else if (period === 'last-week') {
+    refDate.setDate(refDate.getDate() - 7)
+  } else if (period === 'last-month') {
+    refDate.setMonth(refDate.getMonth() - 1)
+  }
+  const reference = toLocalDateKey(refDate)
 
   // Calculate trends for the last 7 days
   const last7Days: string[] = []
@@ -111,30 +124,42 @@ export function calculatePlatformMetricsAt(
     last7Days.push(toLocalDateKey(d))
   }
 
+  // Helper tính Delta an toàn
+  const calculateSafeDelta = (current: number, ref: number) => {
+    if (ref <= 0) return { delta: 0, percent: undefined, direction: 'up' as const }
+    const delta = ((current - ref) / ref) * 100
+    return { 
+      delta, 
+      percent: Math.abs(Math.round(delta)), 
+      direction: delta >= 0 ? 'up' as const : 'down' as const 
+    }
+  }
+
   // Calculate metrics
   const todayRevenue = getMetricValueAtDate(orders, today, 'today-revenue')
-  const yesterdayRevenue = getMetricValueAtDate(orders, yesterday, 'today-revenue')
-  const revenueDelta = yesterdayRevenue > 0 ? ((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100 : 0
+  const refRevenue = getMetricValueAtDate(orders, reference, 'today-revenue')
+  const revRes = calculateSafeDelta(todayRevenue, refRevenue)
   const revenueTrend = last7Days.map((date) => getMetricValueAtDate(orders, date, 'today-revenue'))
 
   const todayOrdersCount = getMetricValueAtDate(orders, today, 'total-orders')
-  const yesterdayOrdersCount = getMetricValueAtDate(orders, yesterday, 'total-orders')
-  const ordersDelta = yesterdayOrdersCount > 0 ? ((todayOrdersCount - yesterdayOrdersCount) / yesterdayOrdersCount) * 100 : 0
+  const refOrdersCount = getMetricValueAtDate(orders, reference, 'total-orders')
+  const ordRes = calculateSafeDelta(todayOrdersCount, refOrdersCount)
   const ordersTrend = last7Days.map((date) => getMetricValueAtDate(orders, date, 'total-orders'))
 
   const todayUrgent = getMetricValueAtDate(orders, today, 'urgent-orders')
-  const yesterdayUrgent = getMetricValueAtDate(orders, yesterday, 'urgent-orders')
-  const urgentDelta = todayUrgent - yesterdayUrgent
+  const refUrgent = getMetricValueAtDate(orders, reference, 'urgent-orders')
+  const urgentDelta = todayUrgent - refUrgent
   const urgentTrend = last7Days.map((date) => getMetricValueAtDate(orders, date, 'urgent-orders'))
 
   const todayRefundRate = getMetricValueAtDate(orders, today, 'refund-rate')
-  const yesterdayRefundRate = getMetricValueAtDate(orders, yesterday, 'refund-rate')
-  const refundRateDelta = Number((todayRefundRate - yesterdayRefundRate).toFixed(1))
+  const refRefundRate = getMetricValueAtDate(orders, reference, 'refund-rate')
+  const refRateRes = calculateSafeDelta(todayRefundRate, refRefundRate)
   const refundTrend = last7Days.map((date) => getMetricValueAtDate(orders, date, 'refund-rate'))
 
-  const formatDelta = (delta: number) => {
+  const formatDelta = (delta: number, percent: number | undefined) => {
+    if (percent === undefined) return '--'
     if (delta === 0) return '0.0%'
-    return `${delta > 0 ? '+' : '-'}${Math.abs(delta).toFixed(1)}%`
+    return `${delta > 0 ? '+' : '-'}${percent}%`
   }
 
   const platformBreakdown = ['shopee', 'lazada', 'tiktok'].map((platform) => {
@@ -154,22 +179,24 @@ export function calculatePlatformMetricsAt(
       id: 'today-revenue',
       title: 'DOANH THU HÔM NAY',
       value: (todayRevenue / 1000000).toFixed(2) + 'M',
-      changeLabel: formatDelta(revenueDelta),
-      changeTone: revenueDelta >= 0 ? 'positive' : 'warning',
-      signalTone: revenueDelta >= 0 ? 'good' : 'bad',
+      changeLabel: formatDelta(revRes.delta, revRes.percent),
+      changeTone: revRes.percent === undefined ? 'neutral' : revRes.delta >= 0 ? 'positive' : 'warning',
+      signalTone: revRes.delta >= 0 ? 'good' : 'bad',
       accentColor: '#EDE9FE',
       placeholderLayout: 'platform-split',
       breakdown: platformBreakdown,
       iconName: 'DollarSign',
       trendData: revenueTrend,
+      comparisonPercent: revRes.percent,
+      comparisonDirection: revRes.direction,
     },
     {
       id: 'total-orders',
       title: 'TỔNG ĐƠN HÀNG HÔM NAY',
       value: todayOrdersCount.toString(),
-      changeLabel: formatDelta(ordersDelta),
-      changeTone: ordersDelta >= 0 ? 'positive' : 'warning',
-      signalTone: ordersDelta >= 0 ? 'good' : 'bad',
+      changeLabel: formatDelta(ordRes.delta, ordRes.percent),
+      changeTone: ordRes.percent === undefined ? 'neutral' : ordRes.delta >= 0 ? 'positive' : 'warning',
+      signalTone: ordRes.delta >= 0 ? 'good' : 'bad',
       accentColor: '#E2E8F0',
       placeholderLayout: 'platform-split',
       breakdown: [
@@ -194,6 +221,8 @@ export function calculatePlatformMetricsAt(
       ],
       iconName: 'ShoppingCart',
       trendData: ordersTrend,
+      comparisonPercent: ordRes.percent,
+      comparisonDirection: ordRes.direction,
     },
     {
       id: 'urgent-orders',
@@ -208,19 +237,21 @@ export function calculatePlatformMetricsAt(
       breakdown: [{ label: '', value: `Cần xử lý ${todayUrgent} đơn hủy` }],
       iconName: 'AlertCircle',
       trendData: urgentTrend,
+      comparisonPercent: Math.abs(urgentDelta),
+      comparisonDirection: urgentDelta >= 0 ? 'up' : 'down',
     },
     {
       id: 'refund-rate',
       title: 'TỶ LỆ HOÀN/HỦY HÔM NAY',
       value: `${todayRefundRate.toFixed(1)}%`,
-      changeLabel: formatDelta(refundRateDelta),
-      changeTone: refundRateDelta <= 0 ? 'positive' : 'warning',
+      changeLabel: formatDelta(refRateRes.delta, refRateRes.percent),
+      changeTone: refRateRes.percent === undefined ? 'neutral' : refRateRes.delta <= 0 ? 'positive' : 'warning',
       signalTone: todayRefundRate < 5 ? 'good' : 'bad',
       accentColor: '#E2E8F0',
       placeholderLayout: 'rate-compare',
       ratioPercent: Math.min(todayRefundRate, 100),
-      comparisonPercent: Math.abs(refundRateDelta),
-      comparisonDirection: refundRateDelta > 0 ? 'up' : 'down',
+      comparisonPercent: refRateRes.percent,
+      comparisonDirection: refRateRes.direction,
       iconName: 'BarChart3',
       trendData: refundTrend,
     },
@@ -229,7 +260,7 @@ export function calculatePlatformMetricsAt(
   return metrics
 }
 
-function normalizeMetric(metric: MetricCardData, isPlaceholderMode: boolean): MetricCardData & { isPlaceholder?: boolean } {
+function normalizeMetric(metric: MetricCardData, isPlaceholderMode: boolean, period: ComparisonPeriod = 'yesterday'): MetricCardData & { isPlaceholder?: boolean } {
   const normalized: MetricCardData & { isPlaceholder?: boolean } = {
     ...metric,
     signalTone: resolveSignalTone(metric),
@@ -245,7 +276,7 @@ function normalizeMetric(metric: MetricCardData, isPlaceholderMode: boolean): Me
 
   if (metric.placeholderLayout === 'rate-compare') {
     normalized.ratioPercent = clampPercent(metric.ratioPercent ?? 0)
-    normalized.breakdown = [{ label: 'SO VỚI HÔM QUA', value: buildComparisonText(metric) }]
+    normalized.breakdown = [{ label: 'SO VỚI HÔM QUA', value: buildComparisonText(metric, period) }]
   }
 
   return normalized
@@ -263,6 +294,9 @@ export function buildDashboardKPIOverviewViewModel({
   showMonthlyGoal = true,
   onRefresh,
   isRefreshing,
+  onReorderMetrics,
+  comparisonPeriod = 'yesterday',
+  onPeriodChange,
 }: DashboardKPIOverviewPageProps): DashboardKPIOverviewViewModel {
   const resolvedTabs = tabs.length ? tabs : PLACEHOLDER_TABS
   const resolvedSelectedTabId = selectedTabId ?? resolvedTabs[0]?.id ?? 'all'
@@ -281,10 +315,13 @@ export function buildDashboardKPIOverviewViewModel({
       isPlaceholder: !monthlyGoal,
     },
     showMonthlyGoal,
-    metrics: resolvedMetrics.map((metric) => normalizeMetric(metric, !metrics.length)),
+    metrics: resolvedMetrics.map((metric) => normalizeMetric(metric, !metrics.length, comparisonPeriod)),
     noDataHint,
     hasRealMetrics: metrics.length > 0,
     onRefresh,
     isRefreshing,
+    onReorderMetrics,
+    comparisonPeriod,
+    onPeriodChange,
   }
 }

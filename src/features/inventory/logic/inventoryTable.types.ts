@@ -26,6 +26,9 @@ export interface InventoryTableRow {
   shopeeStock: number
   tiktokStock: number
   lazadaStock: number
+  warehouseHN: number
+  warehouseHCM: number
+  warehouseDN: number
   actualStock: number
   onOrder: number
   available: number
@@ -58,4 +61,8 @@ export interface InventoryTableViewModel {
   onPageSizeChange: (pageSize: number) => void
   pageSizeOptions?: number[]
   onOpenProductDetail?: (rowId: string, productId?: string) => void
+  onOpenQRCode?: (sku: string, productName: string) => void
+  onOpenBatchManagement?: (sku: string, productName: string) => void
+  onOpenReorderConfig?: (sku: string, productName: string) => void
+  onOpenCostHistory?: (sku: string, productName: string) => void
 }

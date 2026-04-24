@@ -60,6 +60,8 @@ const toResponse = (
       categoryBreakdown: [],
       weeklyComparison: [],
       peakHoursLabel: '--',
+      timelineEvents: [],
+      hourlyHeatmap: [],
     }
   }
 
@@ -99,6 +101,8 @@ const toResponse = (
               lazada: asNumber(point.lazada),
               tiktokShop: asNumber(point.tiktokShop),
               previousTotal: asNumber(point.previousTotal),
+                voucherRevenue: asNumber(point.voucherRevenue),
+                promotionRevenue: asNumber(point.promotionRevenue),
             }
           })
           .filter((item): item is RevenueChartsResponse['dailySeries'][number] => Boolean(item))
@@ -126,6 +130,24 @@ const toResponse = (
               id: asString(row.id, ''),
               label: asString(row.label, 'Khác'),
               revenue: asNumber(row.revenue),
+              products: Array.isArray(row.products)
+                ? row.products
+                    .map((product) => {
+                      if (!product || typeof product !== 'object') return null
+                      const productRow = product as Record<string, unknown>
+
+                      return {
+                        id: asString(productRow.id, ''),
+                        name: asString(productRow.name, 'Sản phẩm'),
+                        revenue: asNumber(productRow.revenue),
+                        orders: asNumber(productRow.orders),
+                      }
+                    })
+                    .filter(
+                      (product): product is RevenueChartsResponse['categoryBreakdown'][number]['products'][number] =>
+                        Boolean(product),
+                    )
+                : [],
             }
           })
           .filter((item): item is RevenueChartsResponse['categoryBreakdown'][number] => Boolean(item))
@@ -150,6 +172,37 @@ const toResponse = (
           .filter((item): item is RevenueChartsResponse['weeklyComparison'][number] => Boolean(item))
       : [],
     peakHoursLabel: asString(payload.peakHoursLabel, '--'),
+    timelineEvents: Array.isArray(payload.timelineEvents)
+      ? payload.timelineEvents
+          .map((item) => {
+            if (!item || typeof item !== 'object') return null
+            const row = item as Record<string, unknown>
+            const typeRaw = row.type
+
+            return {
+              id: asString(row.id, ''),
+              date: asString(row.date, ''),
+              label: asString(row.label, '--'),
+              type: typeRaw === 'holiday' ? 'holiday' : 'flash_sale',
+              impactPercent: asNumber(row.impactPercent),
+            }
+          })
+          .filter((item): item is RevenueChartsResponse['timelineEvents'][number] => Boolean(item))
+      : [],
+    hourlyHeatmap: Array.isArray(payload.hourlyHeatmap)
+      ? payload.hourlyHeatmap
+          .map((item) => {
+            if (!item || typeof item !== 'object') return null
+            const row = item as Record<string, unknown>
+
+            return {
+              dayIndex: asNumber(row.dayIndex),
+              hour: asNumber(row.hour),
+              orderCount: asNumber(row.orderCount),
+            }
+          })
+          .filter((item): item is RevenueChartsResponse['hourlyHeatmap'][number] => Boolean(item))
+      : [],
   }
 }
 
