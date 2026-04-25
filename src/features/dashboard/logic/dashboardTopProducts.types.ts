@@ -15,6 +15,8 @@ export type DashboardTopProductItem = {
   avgPrice: number
   returnRate: number
   trendPercent: number
+  rankChange?: number
+  last7DaysSales?: number[]
 }
 
 export type DashboardTopProductsResponse = {
@@ -72,20 +74,34 @@ export type TopProductsPodiumCardViewModel = {
   }>
 }
 
+export type ProductLabelType = 'hero' | 'long_tail' | 'rising_star' | 'new_entry'
+
+export type ProductTagViewModel = {
+  type: ProductLabelType
+  label: string
+}
+
 export type TopProductsRankingRowViewModel = {
   id: string
   rankLabel: string
+  rankChange?: number
   name: string
   sku: string
   platformLabel: string
   platformTone: TopProductsPlatformBadge
   imageUrl: string
   soldLabel: string
+  soldValue: number
   revenueLabel: string
+  revenueValue: number
   avgPriceLabel: string
+  avgPriceValue: number
   returnRateLabel: string
+  returnRateValue: number
   trendTone: 'up' | 'down'
   trendBars: number[]
+  sparklineData: Array<{ value: number }>
+  tags: ProductTagViewModel[]
 }
 
 export type TopProductsInsightViewModel = {

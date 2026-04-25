@@ -1,3 +1,4 @@
+import { CATEGORY_CHART_COLORS, HOURLY_PEAK_THRESHOLD } from '@/features/dashboard/logic/dashboardRevenueCharts.constants'
 import type {
   RevenueChartsPlatformId,
   RevenueChartsResponse,
@@ -123,7 +124,7 @@ export const buildDashboardRevenueChartsViewModel = (input: {
     revenue: item.revenue,
     valueLabel: formatCompactCurrency(item.revenue),
     ratioPercent: maxCategoryRevenue > 0 ? Math.round((item.revenue / maxCategoryRevenue) * 100) : 0,
-    barColor: categoryColors[index % categoryColors.length],
+    barColor: CATEGORY_CHART_COLORS[index % CATEGORY_CHART_COLORS.length],
     products: item.products.map((product) => ({
       id: product.id,
       name: product.name,
@@ -135,7 +136,7 @@ export const buildDashboardRevenueChartsViewModel = (input: {
   const hourlyPoints = data.hourlyDistribution.map((item) => ({
     hourLabel: `${`${item.hour}`.padStart(2, '0')}h`,
     revenue: item.revenue,
-    isPeak: item.hour >= 19 && item.hour <= 22,
+    isPeak: item.hour >= HOURLY_PEAK_THRESHOLD.START && item.hour <= HOURLY_PEAK_THRESHOLD.END,
   }))
 
   const maxHeatValue = data.hourlyHeatmap.reduce((max, cell) => Math.max(max, cell.orderCount), 0)

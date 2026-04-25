@@ -6,12 +6,15 @@ export const inventoryStockMovementsHandlers = [
   http.get('/api/inventory/stock-movements', ({ request }) => {
     const url = new URL(request.url)
 
+    const platform = url.searchParams.get('platform')
+    const movementGroup = url.searchParams.get('movementGroup')
+    const warehouseId = url.searchParams.get('warehouseId')
+
     const payload = buildInventoryStockMovementsResponse({
       search: url.searchParams.get('search') ?? undefined,
-      platform: (url.searchParams.get('platform') as 'lazada' | 'shopee' | 'tiktok_shop' | undefined) ?? undefined,
-      movementGroup:
-        (url.searchParams.get('movementGroup') as 'all' | 'inbound' | 'outbound' | 'transfer' | 'order' | 'adjustment' | 'loss' | undefined) ?? undefined,
-      warehouseId: url.searchParams.get('warehouseId') ?? undefined,
+      platform: (platform === 'all' ? undefined : platform as any) ?? undefined,
+      movementGroup: (movementGroup === 'all' ? undefined : movementGroup as any) ?? undefined,
+      warehouseId: (warehouseId === 'all' ? undefined : warehouseId) ?? undefined,
       page: Number(url.searchParams.get('page') ?? 1),
       pageSize: Number(url.searchParams.get('pageSize') ?? 10),
     })

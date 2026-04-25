@@ -21,6 +21,16 @@ export const assetsHandlers = [
     })
   }),
 
+  // Handle local assets to prevent passthrough failures
+  http.get(/\/src\/assets\/.*/, () => {
+    return new HttpResponse(svgPlaceholder('Asset'), {
+      status: 200,
+      headers: {
+        'Content-Type': 'image/svg+xml; charset=utf-8',
+      },
+    })
+  }),
+
   http.get(/https:\/\/images\.unsplash\.com\/.*/, () => {
     return new HttpResponse(svgPlaceholder('Unsplash'), {
       status: 200,

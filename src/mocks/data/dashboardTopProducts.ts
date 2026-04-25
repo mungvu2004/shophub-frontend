@@ -157,13 +157,27 @@ const applyRangeFactor = (rows: DashboardTopProductRecord[], rangeDays: Dashboar
 const withMetricOrder = (rows: DashboardTopProductRecord[], metric: DashboardTopProductsMetric) => {
   const sorted = [...rows].sort((a, b) => toMetricValue(b, metric) - toMetricValue(a, metric));
 
-  return sorted.map((item, index) => ({
-    ...item,
-    trendPercent:
-      metric === "returnRate"
-        ? Number((item.trendPercent * -1).toFixed(1))
-        : Number((item.trendPercent + (3 - (index % 6))).toFixed(1)),
-  }));
+  return sorted.map((item, index) => {
+    // Giả lập thay đổi thứ hạng: hạng cao thường ổn định, hạng thấp biến động
+    const rankChange = index < 3 ? 0 : (index % 5) - 2;
+    
+    // Giả lập dữ liệu bán hàng 7 ngày (Sparkline)
+    const baseVal = metric === 'quantity' ? item.soldQty / 10 : item.revenue / 1000000;
+    const last7DaysSales = Array.from({ length: 7 }, (_, i) => {
+      const volatility = 1 + (Math.sin(i + index) * 0.3);
+      return Math.round(baseVal * volatility);
+    });
+
+    return {
+      ...item,
+      rankChange,
+      last7DaysSales,
+      trendPercent:
+        metric === "returnRate"
+          ? Number((item.trendPercent * -1).toFixed(1))
+          : Number((item.trendPercent + (3 - (index % 6))).toFixed(1)),
+    };
+  });
 };
 
 const buildInsights = (ranking: DashboardTopProductRecord[], metric: DashboardTopProductsMetric) => {

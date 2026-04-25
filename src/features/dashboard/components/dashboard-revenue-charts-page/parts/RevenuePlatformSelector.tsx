@@ -8,15 +8,16 @@ type RevenuePlatformSelectorProps = {
 
 export function RevenuePlatformSelector({ selectedPlatform, onChange, platforms }: RevenuePlatformSelectorProps) {
   return (
-    <div className="flex rounded-xl bg-secondary-100 p-1">
+    <div className="flex flex-wrap gap-1 rounded-xl bg-secondary-100 p-1">
       {platforms.map((p) => {
         const isSelected = selectedPlatform === p.id
         return (
           <button
             key={p.id}
+            type="button"
             onClick={() => onChange(p.id)}
             className={`
-              flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition-all
+              inline-flex items-center gap-2 whitespace-nowrap rounded-lg px-3.5 py-2 text-sm font-bold transition-all sm:px-4
               ${isSelected ? 'bg-white text-secondary-900 shadow-sm' : 'text-secondary-500 hover:text-secondary-800'}
             `}
           >

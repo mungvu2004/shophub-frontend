@@ -6,14 +6,17 @@ import { PageSkeleton } from '@/components/ui/PageSkeleton'
 
 import { Navbar } from './Navbar'
 import { Sidebar } from './Sidebar'
+import { useGlobalAlertsMonitor } from '@/features/dashboard/hooks/useGlobalAlertsMonitor'
 
 export function AppShell() {
+  useGlobalAlertsMonitor()
+
   return (
     <div className="min-h-screen bg-secondary-50 text-foreground xl:pl-60">
       <Sidebar />
       <div className="flex min-h-screen flex-col">
         <Navbar />
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-6">
           <Suspense fallback={<PageSkeleton />}>
             <Outlet />
           </Suspense>

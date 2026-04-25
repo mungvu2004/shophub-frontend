@@ -4,7 +4,13 @@ import {
   dashboardRevenue30d,
   dashboardRevenueByPlatform,
 } from "@/mocks/data/dashboard";
-import { dashboardAlertsNotificationsMock } from "@/mocks/data/dashboardAlertsNotifications";
+import { 
+  dashboardAlertsNotificationsMock,
+  alertHistoryMock,
+  alertThresholdsMock,
+  alertFrequencyMock,
+  mockAssignees
+} from "@/mocks/data/dashboardAlertsNotifications";
 import {
   getDashboardTopProductsPayload,
   type DashboardTopProductsMetric,
@@ -142,6 +148,119 @@ export const dashboardHandlers = [
       {
         success: true,
         message: "All alerts marked as read",
+      },
+      { status: 200 },
+    );
+  }),
+
+  http.post("/api/dashboard/alerts-notifications/:id/dismiss", ({ params }) => {
+    const { id } = params;
+    const alert = dashboardAlertsNotificationsMock.alerts.find(a => a.id === id);
+    if (alert) {
+      alert.severity = 'resolved'; // Move to history instead of deleting for demo
+    }
+
+    return HttpResponse.json(
+      {
+        success: true,
+        message: `Alert ${id} dismissed`,
+      },
+      { status: 200 },
+    );
+  }),
+
+  http.post("/api/dashboard/alerts-notifications/:id/undismiss", ({ params }) => {
+    const { id } = params;
+    const alert = dashboardAlertsNotificationsMock.alerts.find(a => a.id === id);
+    if (alert) {
+      alert.severity = 'action'; // Revert to action
+    }
+
+    return HttpResponse.json(
+      {
+        success: true,
+        message: `Alert ${id} restored`,
+      },
+      { status: 200 },
+    );
+  }),
+
+  http.get("/api/dashboard/alerts-notifications/history", () => {
+    const history = dashboardAlertsNotificationsMock.alerts.filter(a => a.severity === 'resolved');
+    return HttpResponse.json(
+      {
+        success: true,
+        data: history.length > 0 ? history : alertHistoryMock,
+      },
+      { status: 200 },
+    );
+  }),
+
+  http.get("/api/dashboard/alerts-notifications/thresholds", () => {
+    return HttpResponse.json(
+      {
+        success: true,
+        data: alertThresholdsMock,
+      },
+      { status: 200 },
+    );
+  }),
+
+  http.put("/api/dashboard/alerts-notifications/thresholds", async ({ request }) => {
+    const body = await request.json() as AlertThreshold;
+    const index = alertThresholdsMock.findIndex(t => t.id === body.id);
+    if (index !== -1) {
+      alertThresholdsMock[index] = body;
+    }
+    return HttpResponse.json(
+      {
+        success: true,
+        data: body,
+      },
+      { status: 200 },
+    );
+  }),
+
+  http.post("/api/dashboard/alerts-notifications/:id/assign", async ({ params, request }) => {
+    const { id } = params;
+    const body = await request.json() as { userId: string | null };
+    const alert = dashboardAlertsNotificationsMock.alerts.find(a => a.id === id);
+    
+    if (alert) {
+      if (body.userId === null) {
+        alert.assignedTo = undefined;
+      } else {
+        const user = mockAssignees.find(u => u.id === body.userId);
+        if (user) {
+          alert.assignedTo = user;
+        }
+      }
+    }
+
+    return HttpResponse.json(
+      {
+        success: true,
+        message: body.userId ? `Alert ${id} assigned` : `Alert ${id} unassigned`,
+      },
+      { status: 200 },
+    );
+  }),
+
+  http.get("/api/dashboard/alerts-notifications/frequency", () => {
+    return HttpResponse.json(
+      {
+        success: true,
+        data: alertFrequencyMock,
+      },
+      { status: 200 },
+    );
+  }),
+
+  http.get("/api/users/staff", () => {
+    return HttpResponse.json(
+      {
+        success: true,
+        data: mockAssignees,
       },
       { status: 200 },
     );

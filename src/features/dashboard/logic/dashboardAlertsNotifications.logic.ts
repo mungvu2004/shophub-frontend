@@ -15,7 +15,7 @@ const severityLabel: Record<AlertsSeverity, string> = {
   critical: 'Khẩn cấp',
   action: 'Cần xử lý',
   info: 'Thông tin',
-  resolved: 'Đã xử lý',
+  resolved: 'Đã giải quyết',
 }
 
 const platformLabel: Record<DashboardAlertRecord['platform'], string> = {
@@ -25,9 +25,9 @@ const platformLabel: Record<DashboardAlertRecord['platform'], string> = {
 }
 
 const sectionMeta: Record<'critical' | 'action' | 'info', string> = {
-  critical: 'Khẩn cấp - Cần hành động ngay',
-  action: 'Cần xử lý - Trong ngày hôm nay',
-  info: 'Thông tin tổng quan - Theo dõi chung',
+  critical: 'Rủi ro vận hành - Cần xử lý ngay lập tức',
+  action: 'Công việc tồn đọng - Xử lý trong hôm nay',
+  info: 'Thông tin hệ thống - Cập nhật định kỳ',
 }
 
 const tabDefinitions: Array<{ id: AlertsTabId; label: string }> = [
@@ -37,30 +37,43 @@ const tabDefinitions: Array<{ id: AlertsTabId; label: string }> = [
   { id: 'inventory', label: 'Kho hàng' },
   { id: 'revenue', label: 'Doanh thu' },
   { id: 'system', label: 'Hệ thống' },
+  { id: 'history', label: 'Lịch sử' },
 ]
 
-const toCountdownLabel = (value?: number) => {
-  if (!Number.isFinite(value) || value === undefined || value <= 0) return undefined
-
-  const hours = Math.floor(value / 60)
-  const minutes = value % 60
+const toCountdownLabel = (expiresAt?: string) => {
+  if (!expiresAt) return undefined
+  
+  const diff = new Date(expiresAt).getTime() - Date.now()
+  if (diff <= 0) return '00:00'
+  
+  const totalSeconds = Math.floor(diff / 1000)
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
 
   if (hours <= 0) {
-    return `00:${String(minutes).padStart(2, '0')}`
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
   }
 
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
 const matchesTab = (alert: DashboardAlertRecord, tab: AlertsTabId): boolean => {
-  if (tab === 'all') return true
+  if (tab === 'all') return alert.severity !== 'resolved'
   if (tab === 'critical') return alert.severity === 'critical'
-  return alert.category === tab
+  if (tab === 'history') return alert.severity === 'resolved'
+  return alert.category === tab && alert.severity !== 'resolved'
 }
 
 const matchesSeverity = (alert: DashboardAlertRecord, selected: AlertsSeverity[]) => {
   if (!selected.length) return true
   return selected.includes(alert.severity)
+}
+
+const priorityLabelMap: Record<string, string> = {
+  P1: 'Ưu tiên: Rất cao',
+  P2: 'Ưu tiên: Cao',
+  P3: 'Ưu tiên: Trung bình',
 }
 
 const toCard = (alert: DashboardAlertRecord): DashboardAlertCardModel => {
@@ -74,10 +87,12 @@ const toCard = (alert: DashboardAlertRecord): DashboardAlertCardModel => {
     timeAgo: alert.timeAgo,
     platformLabel: platformLabel[alert.platform],
     platform: alert.platform,
-    priorityLabel: `Độ ưu tiên: ${alert.priority}`,
-    countdownLabel: toCountdownLabel(alert.countdownMinutes),
+    priorityLabel: priorityLabelMap[alert.priority] || `Ưu tiên: ${alert.priority}`,
+    countdownLabel: toCountdownLabel(alert.expiresAt),
+    expiresAt: alert.expiresAt,
     quote: alert.quote,
     actions: alert.actions,
+    assignedTo: alert.assignedTo,
   }
 }
 
@@ -101,7 +116,7 @@ const buildSections = (alerts: DashboardAlertRecord[]): DashboardAlertsSectionMo
 const buildTabs = (alerts: DashboardAlertRecord[]) => {
   return tabDefinitions.map((item) => {
     if (item.id === 'all') {
-      return { ...item, count: alerts.length }
+      return { ...item, count: alerts.filter(a => a.severity !== 'resolved').length }
     }
 
     if (item.id === 'critical') {
@@ -111,9 +126,16 @@ const buildTabs = (alerts: DashboardAlertRecord[]) => {
       }
     }
 
+    if (item.id === 'history') {
+      return {
+        ...item,
+        count: alerts.filter((row) => row.severity === 'resolved').length,
+      }
+    }
+
     return {
       ...item,
-      count: alerts.filter((row) => row.category === item.id).length,
+      count: alerts.filter((row) => row.category === item.id && row.severity !== 'resolved').length,
     }
   })
 }
@@ -141,9 +163,14 @@ export const buildDashboardAlertsNotificationsViewModel = ({
 
   return {
     title: 'Cảnh báo & Thông báo',
-    subtitle: `${severityCounts.critical} mục cần hành động ngay`,
-    autoRefreshLabel: `${Math.max(5, data.autoRefreshSeconds)}s tự làm mới`,
+    subtitle: `Hệ thống ghi nhận ${severityCounts.critical} mục khẩn cấp cần hành động ngay`,
+    autoRefreshLabel: `Tự làm mới sau ${Math.max(5, data.autoRefreshSeconds)}s`,
     updatedAtLabel: data.updatedAt,
+    markAllReadLabel: 'Đánh dấu tất cả đã đọc',
+    settingsTooltip: 'Cài đặt thông báo',
+    filterLabel: 'Lọc mức độ',
+    clearFilterLabel: 'Bỏ lọc',
+    emptyMessage: 'Không có cảnh báo phù hợp với bộ lọc hiện tại.',
     tabs: buildTabs(data.alerts),
     summaryChips: severityOrder.map((severity) => ({
       severity,

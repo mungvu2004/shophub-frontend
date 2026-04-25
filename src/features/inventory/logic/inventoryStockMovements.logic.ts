@@ -243,12 +243,12 @@ export function buildInventoryStockMovementsViewModel(args: {
   selectedMovementId: string | null
 }): InventoryStockMovementsViewModel {
   const { response, query, selectedMovementId } = args
-  const filtered = filterList(response.movements, query)
-  const paged = paginate(filtered, query.page, query.pageSize)
+  
+  // Tin tưởng dữ liệu từ API (đã được lọc và phân trang ở Server/Mock)
+  const displayMovements = response.movements
+  
   const selectedMovement =
-    paged.find((item) => String(item.id) === selectedMovementId) ?? paged[0] ?? filtered[0] ?? null
-
-  const ordered = [...paged].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    displayMovements.find((item) => String(item.id) === selectedMovementId) ?? displayMovements[0] ?? null
 
   return {
     title: response.title,
@@ -256,31 +256,12 @@ export function buildInventoryStockMovementsViewModel(args: {
     updatedAtLabel: `Cập nhật ${response.updatedAt}`,
     suggestedActionLabel: response.suggestedActionLabel,
     lazadaNote: response.lazadaNote,
-    summaryCards: toSummaryCards({
-      ...response,
-      summary: {
-        ...response.summary,
-        totalMovements: filtered.length,
-        lazadaMovements: filtered.filter((item) => item.platform === 'lazada').length,
-      },
-    }),
-    platformStats: buildPlatformStats({
-      ...response,
-      summary: {
-        ...response.summary,
-        totalMovements: filtered.length,
-      },
-    }),
+    summaryCards: toSummaryCards(response),
+    platformStats: buildPlatformStats(response),
     groupStats: response.groupBreakdown,
-    warehouseStats: buildWarehouseStats({
-      ...response,
-      summary: {
-        ...response.summary,
-        totalMovements: filtered.length,
-      },
-    }),
-    movementGroups: buildDayGroups(ordered),
-    totalCount: filtered.length,
+    warehouseStats: buildWarehouseStats(response),
+    movementGroups: buildDayGroups(displayMovements),
+    totalCount: response.totalCount,
     page: query.page,
     pageSize: query.pageSize,
     query,

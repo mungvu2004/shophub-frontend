@@ -46,7 +46,7 @@ export function OrdersReturnsView({
 
       <OrdersReturnsSummaryCards cards={model.statCards} />
 
-      <section className="space-y-3 rounded-xl bg-white px-6 pb-4 pt-4 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
+      <section className="space-y-3 rounded-xl border border-slate-100 bg-white px-6 pb-4 pt-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <OrdersReturnsFilters
             search={model.filters.search}

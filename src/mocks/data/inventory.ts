@@ -87,7 +87,7 @@ export const mockStockLevels: (StockLevel & { avgDailySales?: number; forecastDa
     variantName: `${sku} - Size ${['XS', 'S', 'M', 'L', 'XL'][n % 5]}`,
     productName,
     category,
-    productImage: `https://via.placeholder.com/100?text=${sku}`,
+    productImage: `https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=100&auto=format&fit=crop&text=${sku}`,
     warehouseId: n % 2 === 0 ? "wh-001" : "wh-002",
     warehouseName: n % 2 === 0 ? "Main Warehouse" : "Backup Warehouse",
     physicalQty,
@@ -148,6 +148,10 @@ export const mockStockMovements: StockMovement[] = Array.from(
     const n = idx + 1;
     const qtyBefore = 100 + n;
     const delta = n % 2 === 0 ? -(n % 5) - 1 : (n % 7) + 1;
+    const today = new Date();
+    const createdAt = new Date(today);
+    createdAt.setHours(today.getHours() - idx, today.getMinutes() - (idx * 5));
+
     return {
       id: n,
       variantId: `var-${String((n % 12) + 1).padStart(3, "0")}-1`,
@@ -157,9 +161,9 @@ export const mockStockMovements: StockMovement[] = Array.from(
       qtyBefore,
       qtyAfter: qtyBefore + delta,
       refOrderItemId: n % 3 === 0 ? `item-${String((n % 12) + 1).padStart(3, "0")}-1` : undefined,
-      reason: n % 2 === 0 ? "Order flow" : "Manual stock operation",
-      note: `Movement note ${n}`,
-      createdAt: `2026-03-${String((n % 28) + 1).padStart(2, "0")}T08:00:00Z`,
+      reason: n % 2 === 0 ? "Bán hàng kênh Ecommerce" : "Nhập hàng bổ sung từ NCC",
+      note: `Ghi chú biến động số ${n}`,
+      createdAt: createdAt.toISOString(),
       createdBy: n % 2 === 0 ? "system" : "staff-001",
     };
   },

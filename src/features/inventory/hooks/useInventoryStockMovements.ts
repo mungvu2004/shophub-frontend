@@ -12,6 +12,7 @@ export function useInventoryStockMovements(params: {
   platform: InventoryStockMovementPlatformFilter
   movementGroup: InventoryStockMovementGroupFilter
   warehouseId: string
+  performerId: string
   page: number
   pageSize: number
 }) {
@@ -20,12 +21,13 @@ export function useInventoryStockMovements(params: {
     platform: params.platform,
     movementGroup: params.movementGroup,
     warehouseId: params.warehouseId,
+    performerId: params.performerId,
     page: params.page,
     pageSize: params.pageSize,
   }
 
   const query = useQuery({
-    queryKey: ['inventory', 'stock-movements', params.search, params.platform, params.movementGroup, params.warehouseId, params.page, params.pageSize] as const,
+    queryKey: ['inventory', 'stock-movements', params.search, params.platform, params.movementGroup, params.warehouseId, params.performerId, params.page, params.pageSize] as const,
     queryFn: (): Promise<InventoryStockMovementsResponse> => inventoryStockMovementsService.getMovements(serviceParams),
     staleTime: 2 * 60 * 1000,
     placeholderData: keepPreviousData,

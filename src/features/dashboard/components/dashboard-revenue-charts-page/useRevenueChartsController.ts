@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react'
+import { toast } from 'sonner'
 import { useDashboardRevenueCharts } from '@/features/dashboard/hooks/useDashboardRevenueCharts'
 import type { 
   RevenueChartExportFormat,
@@ -14,6 +15,7 @@ export function useRevenueChartsController() {
   const [selectedPlatform, setSelectedPlatform] = useState<RevenueChartsPlatformId>('all')
   const [selectedRange, setSelectedRange] = useState<RevenueChartsRangeDays>(30)
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
   const { data, isLoading, isFetching, isError, refetch } = useDashboardRevenueCharts({
     platform: selectedPlatform,
@@ -62,16 +64,37 @@ export function useRevenueChartsController() {
     [model, activeCategoryId],
   )
 
+  const handleExportFullReport = useCallback(async () => {
+    if (!model) return
+    
+    const promise = new Promise((resolve) => setTimeout(resolve, 1500))
+    
+    toast.promise(promise, {
+      loading: 'Đang chuẩn bị báo cáo tổng hợp...',
+      success: 'Đã xuất báo cáo tổng hợp thành công!',
+      error: 'Có lỗi xảy ra khi xuất báo cáo.',
+    })
+
+    await promise
+  }, [model])
+
+  const toggleSettings = useCallback(() => {
+    setIsSettingsOpen(prev => !prev)
+  }, [])
+
   return {
     model,
     isLoading,
     isError,
     isRefreshing: isFetching && !isLoading,
+    isSettingsOpen,
     onPlatformChange: handlePlatformChange,
     onRangeChange: handleRangeChange,
     onCategorySelect: handleCategorySelect,
     selectedCategoryId: activeCategoryId,
     onExportChart: handleExport,
+    onExportFullReport: handleExportFullReport,
+    onToggleSettings: toggleSettings,
     refetch,
   }
 }

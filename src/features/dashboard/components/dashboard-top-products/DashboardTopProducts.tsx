@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
+import { DashboardTopProductsSkeleton } from '@/features/dashboard/components/dashboard-top-products/DashboardTopProductsSkeleton'
 import { DashboardTopProductsView } from '@/features/dashboard/components/dashboard-top-products/DashboardTopProductsView'
 import { useDashboardTopProducts } from '@/features/dashboard/hooks/useDashboardTopProducts'
 import { buildDashboardTopProductsViewModel } from '@/features/dashboard/logic/dashboardTopProducts.logic'
@@ -52,7 +53,7 @@ export function DashboardTopProducts() {
   }
 
   if (isLoading && !model) {
-    return <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-500">Đang tải dữ liệu top sản phẩm...</div>
+    return <DashboardTopProductsSkeleton />
   }
 
   if (isError || !model) {

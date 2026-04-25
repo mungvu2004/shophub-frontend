@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 
+import type { DataTableSortState } from '@/components/shared/DataTable'
 import { OrdersAllBulkActions } from '@/features/orders/components/orders-all/OrdersAllBulkActions'
 import { OrdersAllFilters } from '@/features/orders/components/orders-all/OrdersAllFilters'
 import { OrdersAllHeader } from '@/features/orders/components/orders-all/OrdersAllHeader'
@@ -43,6 +44,8 @@ type OrdersAllViewProps = {
   onPrintSelectedWaybills: () => void
   onPushSelectedWarehouse: () => void
   onClearSelection: () => void
+  sortState: DataTableSortState
+  onSortChange: (sort: DataTableSortState) => void
   onPageChange: (page: number) => void
   onPageSizeChange: (pageSize: number) => void
 }
@@ -140,6 +143,8 @@ export function OrdersAllView({
   onPrintSelectedWaybills,
   onPushSelectedWarehouse,
   onClearSelection,
+  sortState,
+  onSortChange,
   onPageChange,
   onPageSizeChange,
 }: OrdersAllViewProps) {
@@ -226,6 +231,8 @@ export function OrdersAllView({
             onToggleOne={onToggleOne}
             onOpenDetail={onOpenDetail}
             onExportData={onExportVisibleCsv}
+            sortState={sortState}
+            onSortChange={onSortChange}
             onPageChange={onPageChange}
             onPageSizeChange={onPageSizeChange}
           />

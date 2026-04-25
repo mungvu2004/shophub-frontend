@@ -12,15 +12,7 @@ export type ApiError = {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
 const normalizeApiPath = (url: string): string => {
-  if (API_BASE_URL !== "/api") {
-    return url;
-  }
-
-  if (!url.startsWith("/api")) {
-    return url;
-  }
-
-  return url === "/api" ? "/" : url.replace(/^\/api/, "");
+  return url;
 };
 
 const toApiError = (error: unknown): ApiError => {

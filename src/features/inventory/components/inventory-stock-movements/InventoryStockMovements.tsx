@@ -9,6 +9,7 @@ import type {
 } from '@/features/inventory/logic/inventoryStockMovements.types'
 import { useInventoryStockMovements } from '@/features/inventory/hooks/useInventoryStockMovements'
 import { stockMovementsService } from '@/features/inventory/services/stockMovements.service'
+import { useCreateMovement } from '@/features/inventory/hooks/useCreateMovement'
 
 export function InventoryStockMovements() {
   const [search, setSearch] = useState('')
@@ -32,10 +33,22 @@ export function InventoryStockMovements() {
     performerId,
     page,
     pageSize,
-  } as any) // Cast as any temporarily to bypass extended query type in old hook
+  })
+
+  const createMovementController = useCreateMovement(() => {
+    refetch()
+  })
 
   useEffect(() => {
-    stockMovementsService.getChartData().then(setChartData)
+    stockMovementsService.getChartData({
+      platform,
+      movementGroup,
+      warehouseId,
+      performerId
+    }).then(setChartData)
+  }, [platform, movementGroup, warehouseId, performerId])
+
+  useEffect(() => {
     stockMovementsService.getPerformers().then(setPerformers)
   }, [])
 
@@ -116,6 +129,7 @@ export function InventoryStockMovements() {
         setPageSize(value)
         setPage(1)
       }}
+      createMovementController={createMovementController}
     />
   )
 }

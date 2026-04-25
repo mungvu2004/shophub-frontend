@@ -11,11 +11,9 @@ async function enableMocking() {
 
   const { worker } = await import('@/mocks/browser')
   await worker.start({
-    onUnhandledRequest: (request, print) => {
-      const url = new URL(request.url)
-      if (url.pathname.startsWith('/api/')) {
-        print.warning()
-      }
+    onUnhandledRequest: 'bypass', // Bỏ qua hoàn toàn các request không có handler để tránh lỗi passthrough
+    serviceWorker: {
+      url: '/mockServiceWorker.js',
     },
   })
 }

@@ -1,4 +1,5 @@
-import { AlertTriangle, Brain, Lightbulb } from 'lucide-react'
+import { useMemo } from 'react'
+import { AlertTriangle, Brain, Lightbulb, Info } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
@@ -18,7 +19,7 @@ const insightToneClassMap = {
 
 export function buildTopProductsContributionBackground(segments: DashboardTopProductsViewModel['contribution']) {
   if (segments.length === 0) {
-    return '#e2e8f0'
+    return '#cbd5e1' // slate-300
   }
 
   const total = segments.reduce((sum, item) => sum + item.percent, 0) || 1
@@ -41,17 +42,23 @@ function InsightIcon({ tone }: { tone: 'positive' | 'info' | 'warning' }) {
 }
 
 function DonutChart({ segments, totalLabel }: { segments: DashboardTopProductsViewModel['contribution']; totalLabel: string }) {
+  const background = useMemo(() => buildTopProductsContributionBackground(segments), [segments])
+  const ariaLabel = useMemo(() => 
+    `Biểu đồ phân bổ: ${segments.map(s => `${s.label} ${s.percent}%`).join(', ')}`,
+    [segments]
+  )
+
   return (
     <div
       className="relative mx-auto h-40 w-40 rounded-full"
-      style={{
-        background: buildTopProductsContributionBackground(segments),
-      }}
+      style={{ background }}
+      role="img"
+      aria-label={ariaLabel}
     >
       <div className="absolute inset-4 flex items-center justify-center rounded-full bg-white">
         <div className="text-center">
-          <p className="text-[28px] font-bold leading-7 text-[#111c2d]">{totalLabel}</p>
-          <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#64748b]">Sản phẩm</p>
+          <p className="text-[28px] font-bold leading-7 text-slate-900">{totalLabel}</p>
+          <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-slate-500">Sản phẩm</p>
         </div>
       </div>
     </div>
@@ -61,14 +68,14 @@ function DonutChart({ segments, totalLabel }: { segments: DashboardTopProductsVi
 export function TopProductsInsightsSection({ insights, contribution, totalLabel }: TopProductsInsightsSectionProps) {
   return (
     <section className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-      <article className="rounded-2xl border border-[#e7eeff] bg-white p-5 shadow-sm lg:col-span-3">
+      <article className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm lg:col-span-3">
         <header className="flex items-center gap-2">
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#eef2ff]">
-            <Brain className="h-4 w-4 text-[#4338ca]" />
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-50">
+            <Brain className="h-4 w-4 text-primary-600" />
           </span>
-          <h4 className="text-sm font-bold text-[#111c2d]">AI Gợi ý tối ưu</h4>
+          <h4 className="text-sm font-bold text-slate-900">AI Gợi ý tối ưu</h4>
         </header>
-        <p className="mt-1 text-xs text-[#64748b]">Dựa trên hành vi gần nhất từ dữ liệu top sản phẩm</p>
+        <p className="mt-1 text-xs text-slate-500">Dựa trên hành vi gần nhất từ dữ liệu top sản phẩm</p>
 
         <div className="mt-4 space-y-3">
           {insights.map((insight) => (
@@ -76,8 +83,8 @@ export function TopProductsInsightsSection({ insights, contribution, totalLabel 
               <div className="flex items-start gap-2">
                 <InsightIcon tone={insight.tone} />
                 <div>
-                  <p className="text-sm font-semibold text-[#111c2d]">{insight.title}</p>
-                  <p className="mt-1 text-xs leading-5 text-[#475569]">{insight.description}</p>
+                  <p className="text-sm font-semibold text-slate-900">{insight.title}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-600">{insight.description}</p>
                 </div>
               </div>
             </article>
@@ -85,10 +92,12 @@ export function TopProductsInsightsSection({ insights, contribution, totalLabel 
         </div>
       </article>
 
-      <article className="rounded-2xl border border-[#e7eeff] bg-white p-5 shadow-sm lg:col-span-2">
+      <article className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm lg:col-span-2">
         <header className="flex items-center justify-between">
-          <h4 className="text-sm font-bold text-[#111c2d]">Phân bổ Top {totalLabel}</h4>
-          <span className="text-xs text-[#64748b]">i</span>
+          <h4 className="text-sm font-bold text-slate-900">Phân bổ Top {totalLabel}</h4>
+          <span className="text-xs text-slate-400">
+            <Info className="h-3.5 w-3.5" />
+          </span>
         </header>
 
         <div className="mt-4">
@@ -98,11 +107,11 @@ export function TopProductsInsightsSection({ insights, contribution, totalLabel 
         <div className="mt-4 grid grid-cols-2 gap-2">
           {contribution.map((item) => (
             <div key={item.id} className="flex items-center justify-between rounded-md px-2 py-1">
-              <span className="inline-flex items-center gap-1 text-xs text-[#334155]">
+              <span className="inline-flex items-center gap-1 text-xs text-slate-700">
                 <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
                 {item.label}
               </span>
-              <span className="font-mono text-xs font-semibold text-[#111c2d]">{item.percent}%</span>
+              <span className="font-mono text-xs font-semibold text-slate-900">{item.percent}%</span>
             </div>
           ))}
         </div>

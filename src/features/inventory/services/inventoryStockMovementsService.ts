@@ -33,6 +33,7 @@ export type GetInventoryStockMovementsParams = Pick<InventoryStockMovementsQuery
   platform?: InventoryStockMovementPlatformFilter
   movementGroup?: InventoryStockMovementGroupFilter
   warehouseId?: string
+  performerId?: string
 }
 
 const emptyResponse: InventoryStockMovementsResponse = {
@@ -63,7 +64,8 @@ class InventoryStockMovementsService {
         search: params.search,
         platform: params.platform && params.platform !== 'all' ? params.platform : undefined,
         movementGroup: params.movementGroup && params.movementGroup !== 'all' ? params.movementGroup : undefined,
-        warehouseId: params.warehouseId || undefined,
+        warehouseId: params.warehouseId && params.warehouseId !== 'all' ? params.warehouseId : undefined,
+        performerId: params.performerId && params.performerId !== 'all' ? params.performerId : undefined,
         page: params.page,
         pageSize: params.pageSize,
       },

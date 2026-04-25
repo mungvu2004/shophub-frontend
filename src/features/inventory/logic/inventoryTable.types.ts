@@ -65,4 +65,6 @@ export interface InventoryTableViewModel {
   onOpenBatchManagement?: (sku: string, productName: string) => void
   onOpenReorderConfig?: (sku: string, productName: string) => void
   onOpenCostHistory?: (sku: string, productName: string) => void
+  activeActionMenuId?: string | null
+  setActiveActionMenuId?: (id: string | null) => void
 }

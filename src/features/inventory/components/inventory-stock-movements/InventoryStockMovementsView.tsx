@@ -1,21 +1,28 @@
+import { ArrowLeftRight, Search } from 'lucide-react'
 import type { InventoryStockMovementsViewModel } from '@/features/inventory/logic/inventoryStockMovements.types'
 import { Pagination } from '@/components/ui/pagination'
 import { useState } from 'react'
 
-import { InventoryStockMovementsFilters } from '@/features/inventory/components/inventory-stock-movements/InventoryStockMovementsFilters'
 import { InventoryStockMovementsHeader } from '@/features/inventory/components/inventory-stock-movements/InventoryStockMovementsHeader'
+import { InventoryStockMovementsFilters } from '@/features/inventory/components/inventory-stock-movements/InventoryStockMovementsFilters'
 import { InventoryStockMovementsSidebar } from '@/features/inventory/components/inventory-stock-movements/InventoryStockMovementsSidebar'
 import { InventoryStockMovementsSummaryCards } from '@/features/inventory/components/inventory-stock-movements/InventoryStockMovementsSummaryCards'
 import { InventoryStockMovementsTimeline } from '@/features/inventory/components/inventory-stock-movements/InventoryStockMovementsTimeline'
 import { StockMovementsChart } from '@/features/inventory/components/inventory-stock-movements/StockMovementsChart'
 import { InventoryStockMovementDetailDrawer } from '@/features/inventory/components/inventory-stock-movements/InventoryStockMovementDetailDrawer'
+import { StockMovementActionButtons } from '@/features/inventory/components/inventory-stock-movements/StockMovementActionButtons'
+import { CreateMovementDialog } from '@/features/inventory/components/inventory-stock-movements/CreateMovementDialog'
+import type { useCreateMovement } from '@/features/inventory/hooks/useCreateMovement'
 
-type InventoryStockMovementsViewProps = {
-  model: InventoryStockMovementsViewModel
+interface InventoryStockMovementsViewProps {
+  model: InventoryStockMovementsViewModel & { 
+    chartData: any[]; 
+    performerOptions: any[];
+  }
   isRefreshing: boolean
   onSearchChange: (value: string) => void
-  onPlatformChange: (value: InventoryStockMovementsViewModel['query']['platform']) => void
-  onMovementGroupChange: (value: InventoryStockMovementsViewModel['query']['movementGroup']) => void
+  onPlatformChange: (value: any) => void
+  onMovementGroupChange: (value: any) => void
   onWarehouseChange: (value: string) => void
   onPerformerChange: (value: string) => void
   onRefresh: () => void
@@ -24,6 +31,34 @@ type InventoryStockMovementsViewProps = {
   onSelectMovement: (movementId: string) => void
   onPageChange: (page: number) => void
   onPageSizeChange: (pageSize: number) => void
+  createMovementController: ReturnType<typeof useCreateMovement>
+}
+
+function TimelineHeader({ count, isRefreshing }: { count: number; isRefreshing: boolean }) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-2 px-2">
+      <div className="flex items-center gap-3">
+        <div className="size-2 rounded-full bg-primary-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]" />
+        <h2 className="text-xs font-black uppercase tracking-[0.2em] text-secondary-900">Dòng sự kiện</h2>
+      </div>
+      <div className="flex items-center gap-2">
+        {isRefreshing && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest animate-pulse">Đang đồng bộ...</span>}
+        <span className="text-[10px] font-bold text-secondary-400 uppercase tracking-widest">{count} biến động kho</span>
+      </div>
+    </div>
+  )
+}
+
+function EmptyTimelineState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-32 bg-white rounded-[32px] border border-secondary-100 border-dashed transition-all hover:bg-secondary-50/30">
+      <div className="size-20 bg-secondary-50 rounded-full flex items-center justify-center mb-6 shadow-inner">
+        <Search className="size-8 text-secondary-200" />
+      </div>
+      <h3 className="text-base font-bold text-secondary-900 italic underline decoration-primary-300 decoration-2 underline-offset-4">Không tìm thấy dữ liệu</h3>
+      <p className="text-sm font-medium text-secondary-400 mt-3 max-w-xs text-center">Hãy thử thay đổi từ khóa tìm kiếm hoặc điều chỉnh lại các bộ lọc ngày tháng.</p>
+    </div>
+  )
 }
 
 export function InventoryStockMovementsView({
@@ -40,6 +75,7 @@ export function InventoryStockMovementsView({
   onSelectMovement,
   onPageChange,
   onPageSizeChange,
+  createMovementController,
 }: InventoryStockMovementsViewProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -49,7 +85,7 @@ export function InventoryStockMovementsView({
   };
 
   return (
-    <div className="space-y-6 pb-8 pt-1">
+    <div className="space-y-12 pb-24 pt-2 animate-in fade-in slide-in-from-bottom-4 duration-1000 ease-out max-w-[1600px] mx-auto">
       <InventoryStockMovementsHeader
         title={model.title}
         subtitle={model.subtitle}
@@ -57,10 +93,31 @@ export function InventoryStockMovementsView({
         suggestedActionLabel={model.suggestedActionLabel}
         onRefresh={onRefresh}
         onExport={onExport}
+        onQuickImport={createMovementController.openImport}
+        onQuickExport={createMovementController.openExport}
         isRefreshing={isRefreshing}
       />
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+      <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 fill-mode-both">
+        <InventoryStockMovementsFilters
+          search={model.query.search}
+          platform={model.query.platform}
+          movementGroup={model.query.movementGroup}
+          warehouseId={model.query.warehouseId}
+          performerId={model.query.performerId}
+          platformOptions={model.platformOptions}
+          groupOptions={model.groupOptions}
+          warehouseOptions={model.warehouseOptions}
+          performerOptions={model.performerOptions}
+          onSearchChange={onSearchChange}
+          onPlatformChange={onPlatformChange}
+          onMovementGroupChange={onMovementGroupChange}
+          onWarehouseChange={onWarehouseChange}
+          onPerformerChange={onPerformerChange}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-8 xl:grid-cols-12 items-stretch animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 fill-mode-both">
         <div className="xl:col-span-8">
            <StockMovementsChart data={model.chartData} />
         </div>
@@ -69,35 +126,9 @@ export function InventoryStockMovementsView({
         </div>
       </div>
 
-      <InventoryStockMovementsFilters
-        search={model.query.search}
-        platform={model.query.platform}
-        movementGroup={model.query.movementGroup}
-        warehouseId={model.query.warehouseId}
-        performerId={model.query.performerId}
-        platformOptions={model.platformOptions}
-        groupOptions={model.groupOptions}
-        warehouseOptions={model.warehouseOptions}
-        performerOptions={model.performerOptions}
-        onSearchChange={onSearchChange}
-        onPlatformChange={onPlatformChange}
-        onMovementGroupChange={onMovementGroupChange}
-        onWarehouseChange={onWarehouseChange}
-        onPerformerChange={onPerformerChange}
-      />
-
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-        <div className="space-y-4 xl:col-span-8">
-          <div className="flex items-center justify-between gap-4 rounded-[22px] border border-slate-100 bg-white px-5 py-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)]">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.16em] text-slate-400">Dòng sự kiện</p>
-              <p className="mt-1 text-sm text-slate-500">Mỗi card là một lần nhập, xuất hoặc điều chỉnh tồn kho.</p>
-            </div>
-            <div className="flex items-center gap-2">
-              {isRefreshing ? <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">Đang đồng bộ...</span> : null}
-              <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-[#3525cd]">{model.totalCount} sự kiện</span>
-            </div>
-          </div>
+      <section className="grid grid-cols-1 gap-12 xl:grid-cols-12 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500 fill-mode-both">
+        <div className="space-y-10 xl:col-span-8">
+          <TimelineHeader count={model.totalCount} isRefreshing={isRefreshing} />
 
           <InventoryStockMovementsTimeline
             groups={model.movementGroups}
@@ -105,9 +136,11 @@ export function InventoryStockMovementsView({
             onSelectMovement={handleSelect}
           />
 
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-[22px] border border-slate-100 bg-white px-5 py-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)]">
-            <p className="text-sm text-slate-500">
-              Hiển thị {(model.page - 1) * model.pageSize + 1}-{Math.min(model.page * model.pageSize, model.totalCount)} trên tổng số {model.totalCount} biến động
+          {model.movementGroups.length === 0 && !isRefreshing && <EmptyTimelineState />}
+
+          <div className="flex flex-wrap items-center justify-between gap-6 px-4 pt-4">
+            <p className="text-[10px] font-black text-secondary-300 uppercase tracking-[0.2em] italic italic underline decoration-secondary-100 underline-offset-8">
+              Hiện {(model.page - 1) * model.pageSize + 1}-{Math.min(model.page * model.pageSize, model.totalCount)} trong {model.totalCount}
             </p>
 
             <Pagination
@@ -122,7 +155,7 @@ export function InventoryStockMovementsView({
           </div>
         </div>
 
-        <div className="xl:col-span-4">
+        <div className="xl:col-span-4 sticky top-24 self-start">
           <InventoryStockMovementsSidebar
             selectedMovement={model.selectedMovement}
             platformStats={model.platformStats}
@@ -137,6 +170,8 @@ export function InventoryStockMovementsView({
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
       />
+
+      <CreateMovementDialog controller={createMovementController} />
     </div>
   )
 }

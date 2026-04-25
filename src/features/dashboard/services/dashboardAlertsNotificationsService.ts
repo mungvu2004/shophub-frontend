@@ -9,6 +9,9 @@ import type {
   DashboardAlertAction,
   DashboardAlertRecord,
   DashboardAlertsNotificationsResponse,
+  AlertThreshold,
+  AlertFrequencyDataPoint,
+  Assignee,
 } from '@/features/dashboard/logic/dashboardAlertsNotifications.types'
 
 type DashboardAlertsApiEnvelope = {
@@ -68,7 +71,7 @@ const toAlert = (value: unknown, index: number): DashboardAlertRecord | null => 
     category: parseCategory(row.category),
     platform: parsePlatform(row.platform),
     priority: parsePriority(row.priority),
-    countdownMinutes: typeof row.countdownMinutes === 'number' ? row.countdownMinutes : undefined,
+    expiresAt: typeof row.expiresAt === 'string' ? row.expiresAt : undefined,
     quote: typeof row.quote === 'string' ? row.quote : undefined,
     actions: Array.isArray(row.actions)
       ? row.actions.map(toAction).filter((item): item is DashboardAlertAction => Boolean(item))
@@ -132,6 +135,44 @@ class DashboardAlertsNotificationsService {
 
   async markAllAsRead(): Promise<void> {
     await apiClient.post('/dashboard/alerts-notifications/read-all')
+  }
+
+  async dismissAlert(alertId: string): Promise<void> {
+    await apiClient.post(`/dashboard/alerts-notifications/${alertId}/dismiss`)
+  }
+
+  async undismissAlert(alertId: string): Promise<void> {
+    await apiClient.post(`/dashboard/alerts-notifications/${alertId}/undismiss`)
+  }
+
+  async getAlertHistory(): Promise<DashboardAlertRecord[]> {
+    const response = await apiClient.get<DashboardAlertsApiEnvelope>('/dashboard/alerts-notifications/history')
+    return Array.isArray(response.data?.data) 
+      ? response.data.data.map(toAlert).filter((item): item is DashboardAlertRecord => Boolean(item))
+      : []
+  }
+
+  async getThresholds(): Promise<AlertThreshold[]> {
+    const response = await apiClient.get<DashboardAlertsApiEnvelope>('/dashboard/alerts-notifications/thresholds')
+    return Array.isArray(response.data?.data) ? response.data.data : []
+  }
+
+  async updateThreshold(threshold: AlertThreshold): Promise<void> {
+    await apiClient.put('/dashboard/alerts-notifications/thresholds', threshold)
+  }
+
+  async assignAlert(alertId: string, userId: string | null): Promise<void> {
+    await apiClient.post(`/dashboard/alerts-notifications/${alertId}/assign`, { userId })
+  }
+
+  async getFrequencyData(): Promise<AlertFrequencyDataPoint[]> {
+    const response = await apiClient.get<DashboardAlertsApiEnvelope>('/dashboard/alerts-notifications/frequency')
+    return Array.isArray(response.data?.data) ? response.data.data : []
+  }
+
+  async getStaffList(): Promise<Assignee[]> {
+    const response = await apiClient.get<DashboardAlertsApiEnvelope>('/users/staff')
+    return Array.isArray(response.data?.data) ? response.data.data : []
   }
 }
 

@@ -27,6 +27,8 @@ type GetOrdersAllParams = {
   dateTo?: string
   minAmount?: number
   maxAmount?: number
+  sortBy?: string
+  sortDirection?: 'asc' | 'desc'
 }
 
 export type { GetOrdersAllParams }
@@ -119,6 +121,8 @@ class OrdersAllService {
         dateTo: params.dateTo,
         minAmount: params.minAmount,
         maxAmount: params.maxAmount,
+        sortBy: params.sortBy,
+        sortDirection: params.sortDirection,
       },
     })
 

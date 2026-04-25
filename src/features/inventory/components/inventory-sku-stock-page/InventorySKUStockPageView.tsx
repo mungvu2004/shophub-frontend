@@ -8,7 +8,11 @@ import { SKUInventoryFilters } from '@/features/inventory/components/inventory-s
 import { SKULowStockAlert } from '@/features/inventory/components/inventory-sku-stock-page/SKULowStockAlert'
 import { SKUInventorySection } from '@/features/inventory/components/inventory-sku-stock-page/SKUInventorySection'
 import { BulkImportModal } from '@/features/inventory/components/inventory-sku-stock-page/BulkImportModal'
+import { Button } from '@/components/ui/button'
+import { Plus, Package } from 'lucide-react'
 import type { useInventorySKUStockPage } from '@/features/inventory/hooks/useInventorySKUStockPage'
+
+import { PLATFORM_OPTIONS, STATUS_OPTIONS } from '../../logic/inventory.constants'
 
 export type InventorySKUStockPageViewProps = {
   model: ReturnType<typeof useInventorySKUStockPage>
@@ -20,142 +24,124 @@ export function InventorySKUStockPageView({ model }: InventorySKUStockPageViewPr
     filters,
     lowStockAlert,
     bulkImport,
+    totalSKUs,
+    lowStockCount,
+    totalValue,
+    lastUpdated,
+    categoryOptions,
     handleFilterChange,
     handleViewModeChange,
     handleAdjustStock,
     handleExportData,
     handleImportData,
+    handleAddSKU,
   } = model
 
-  const categoryOptions = [
-    { value: 'electronics', label: 'Điện tử' },
-    { value: 'clothing', label: 'Thời trang' },
-    { value: 'home', label: 'Nhà cửa' },
-  ]
-
-  const platformOptions = [
-    { value: 'shopee', label: 'Shopee' },
-    { value: 'tiktok', label: 'TikTok' },
-    { value: 'lazada', label: 'Lazada' },
-  ]
-
-  const statusOptions = [
-    { value: 'in-stock', label: 'Còn hàng' },
-    { value: 'low-stock', label: 'Tồn kho thấp' },
-    { value: 'out-of-stock', label: 'Hết hàng' },
-  ]
-
-  const activeFilterCount = Object.values(filters).filter(Boolean).length
-  const totalSKUs = 1254
+  const activeFilterCount = Object.values(filters).filter(Boolean).flat().length
 
   const filterPayload = {
     search: filters.search,
-    status: filters.status,
-    category: filters.category,
-    platform: filters.platform,
+    status: filters.status?.join(','),
+    category: filters.category?.join(','),
+    platform: filters.platform?.join(','),
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6 pb-10">
       <BulkImportModal model={bulkImport} />
       
-      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white">
-        <div className="relative isolate px-5 py-5 md:px-7 md:py-7">
-          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,_rgba(14,116,144,0.14),_transparent_45%),radial-gradient(circle_at_top_left,_rgba(79,70,229,0.12),_transparent_42%)]" />
-
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="max-w-2xl space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge className="border border-indigo-200 bg-indigo-50 text-indigo-700">Kho vận</Badge>
-                <Badge className="border border-sky-200 bg-sky-50 text-sky-700">Trang SKU Stock</Badge>
-              </div>
-
-              <div>
-                <h1 className="text-2xl font-black leading-tight text-slate-900 md:text-4xl">Quản lý Tồn kho SKU</h1>
-                <p className="mt-2 text-sm text-slate-600">
-                  Theo dõi sức khỏe tồn kho toàn kênh, phát hiện SKU rủi ro sớm và thực hiện điều chỉnh nhanh theo từng nhóm sản phẩm.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 rounded-2xl border border-slate-200 bg-white/90 p-3 text-xs text-slate-700">
-              <div>
-                <p className="text-[11px] uppercase tracking-wide text-slate-500">SKU đang theo dõi</p>
-                <p className="mt-1 text-lg font-bold text-slate-900">{totalSKUs}</p>
-              </div>
-              <div>
-                <p className="text-[11px] uppercase tracking-wide text-slate-500">Bộ lọc áp dụng</p>
-                <p className="mt-1 text-lg font-bold text-slate-900">{activeFilterCount}</p>
-              </div>
+      {/* Page Header - Đồng bộ với Revenue Summary */}
+      <header className="rounded-xl border border-secondary-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-[28px] font-bold tracking-tight text-secondary-900 leading-tight">Quản lý Tồn kho SKU</h1>
+            <p className="text-sm text-secondary-500 font-medium">Theo dõi sức khỏe tồn kho đa kênh và dự báo rủi ro hàng hóa</p>
+            
+            <div className="flex items-center gap-3 pt-3">
+              <Button 
+                onClick={handleAddSKU}
+                className="bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-lg px-6 shadow-sm shadow-primary-200"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Thêm SKU mới
+              </Button>
             </div>
           </div>
 
-          <div className="mt-4">
-            <SKUInventoryHeader
-              totalSKUs={totalSKUs}
-              lowStockCount={lowStockAlert?.count ?? 0}
-              totalValue="₫ 125,480,000"
-              lastUpdated="10:30 AM"
+          <div className="flex items-stretch gap-4">
+            <div className="bg-secondary-50 px-5 py-4 rounded-xl border border-secondary-100 min-w-[140px] text-center">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-secondary-400 mb-1">SKU theo dõi</p>
+              <p className="text-2xl font-bold text-secondary-900 font-mono tracking-tight">{totalSKUs.toLocaleString()}</p>
+            </div>
+            <div className="bg-secondary-50 px-5 py-4 rounded-xl border border-secondary-100 min-w-[140px] text-center">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-secondary-400 mb-1">Bộ lọc active</p>
+              <div className="flex items-baseline justify-center gap-1">
+                <p className="text-2xl font-bold text-secondary-900 font-mono tracking-tight">{activeFilterCount}</p>
+                <span className="text-[10px] font-bold text-secondary-500 uppercase">Mục</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 pt-6 border-t border-secondary-100">
+          <SKUInventoryHeader
+            totalSKUs={totalSKUs}
+            lowStockCount={lowStockCount}
+            totalValue={totalValue}
+            lastUpdated={lastUpdated}
+          />
+        </div>
+      </header>
+
+      {/* Stats & Actions Section */}
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
+        <div className="xl:col-span-3">
+          <SKUInventorySection
+            title="Thao tác nhanh"
+            description="Xuất nhập dữ liệu và đồng bộ trạng thái tồn kho."
+            tone="soft"
+          >
+            <SKUInventoryActions
+              onAdjustStock={handleAdjustStock}
+              onExportData={handleExportData}
+              onImportData={handleImportData}
             />
-          </div>
+          </SKUInventorySection>
         </div>
+
+        <div className="xl:col-span-2">
+          {lowStockAlert && lowStockAlert.count > 0 ? (
+            <SKULowStockAlert
+              count={lowStockAlert.count}
+              percentage={Math.round((lowStockAlert.count / totalSKUs) * 100)}
+              onViewAlerts={lowStockAlert.onViewAlerts}
+              onDismiss={lowStockAlert.onClose}
+            />
+          ) : (
+            <div className="h-full rounded-xl border border-success-100 bg-success-50/50 p-6 flex flex-col justify-center items-center text-center">
+              <div className="size-10 rounded-full bg-success-100 flex items-center justify-center text-success-600 mb-3">
+                <Package className="size-5" />
+              </div>
+              <h4 className="text-sm font-bold text-success-900 uppercase tracking-widest">Kho an toàn</h4>
+              <p className="text-xs text-success-700 mt-1">Không có SKU nào ở mức cảnh báo</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+
+      <section id="inventory-data-section">
+        <SKUInventorySection
+          title={viewMode === 'table' ? 'Danh sách SKU dạng bảng' : 'Danh sách SKU dạng lưới'}
+          description="Dữ liệu được cập nhật theo bộ lọc và từ khóa tìm kiếm hiện tại."
+        >
+          {viewMode === 'table' ? (
+            <InventoryTableView filters={filterPayload} />
+          ) : (
+            <InventoryGridView filters={filterPayload} />
+          )}
+        </SKUInventorySection>
       </section>
-
-      <SKUInventorySection
-        title="Thao tác nhanh"
-        description="Thực hiện điều chỉnh, xuất nhập dữ liệu và đồng bộ trạng thái tồn kho."
-        tone="soft"
-      >
-        <SKUInventoryActions
-          onAdjustStock={handleAdjustStock}
-          onExportData={handleExportData}
-          onImportData={handleImportData}
-        />
-      </SKUInventorySection>
-
-      {lowStockAlert && lowStockAlert.count > 0 && (
-        <SKULowStockAlert
-          count={lowStockAlert.count}
-          percentage={Math.round((lowStockAlert.count / totalSKUs) * 100)}
-          onViewAlerts={lowStockAlert.onViewAlerts}
-          onDismiss={lowStockAlert.onClose}
-        />
-      )}
-
-      <SKUInventorySection
-        title="Tìm kiếm và lọc dữ liệu"
-        description="Thu hẹp tập SKU theo danh mục, kênh bán và trạng thái tồn kho."
-      >
-        <div className="space-y-4">
-          <SKUInventorySearch
-            searchValue={filters.search || ''}
-            onSearchChange={(value) => handleFilterChange({ search: value })}
-            viewMode={viewMode as 'table' | 'grid'}
-            onViewModeChange={handleViewModeChange as (mode: 'table' | 'grid') => void}
-            activeFilterCount={activeFilterCount}
-          />
-
-          <SKUInventoryFilters
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            categoryOptions={categoryOptions}
-            platformOptions={platformOptions}
-            statusOptions={statusOptions}
-            activeFilterCount={activeFilterCount}
-          />
-        </div>
-      </SKUInventorySection>
-
-      <SKUInventorySection
-        title={viewMode === 'table' ? 'Danh sách SKU dạng bảng' : 'Danh sách SKU dạng lưới'}
-        description="Dữ liệu được cập nhật theo bộ lọc và từ khóa tìm kiếm hiện tại."
-      >
-        {viewMode === 'table' ? (
-          <InventoryTableView filters={filterPayload} />
-        ) : (
-          <InventoryGridView filters={filterPayload} />
-        )}
-      </SKUInventorySection>
     </div>
   )
 }

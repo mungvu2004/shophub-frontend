@@ -127,6 +127,26 @@ function formatUpdatedAtTime(isoString: string): string {
   }
 }
 
+const buildProductTags = (item: DashboardTopProductItem, index: number): DashboardTopProductsViewModel['rankingRows'][number]['tags'] => {
+  const tags: DashboardTopProductsViewModel['rankingRows'][number]['tags'] = []
+
+  if (index < 3 && item.trendPercent > 5) {
+    tags.push({ type: 'hero', label: 'Hero Product' })
+  } else if (item.trendPercent > 10) {
+    tags.push({ type: 'rising_star', label: 'Rising Star' })
+  }
+
+  if (item.soldQty < 5 && item.returnRate < 1) {
+    tags.push({ type: 'long_tail', label: 'Long Tail' })
+  }
+
+  if (item.rankChange && item.rankChange > 2) {
+    tags.push({ type: 'new_entry', label: 'New Entry' })
+  }
+
+  return tags
+}
+
 export const buildDashboardTopProductsViewModel = (params: {
   data: DashboardTopProductsResponse
   selectedMetric: TopProductsMetricId
@@ -150,17 +170,24 @@ export const buildDashboardTopProductsViewModel = (params: {
     rankingRows: data.ranking.map((item, index) => ({
       id: item.id,
       rankLabel: String(index + 1).padStart(2, '0'),
+      rankChange: item.rankChange,
       name: item.name,
       sku: item.sku,
       platformLabel: toPlatformLabel(item.platform),
       platformTone: toPlatformTone(item.platform),
       imageUrl: item.imageUrl,
       soldLabel: QUANTITY.format(item.soldQty),
+      soldValue: item.soldQty,
       revenueLabel: toMoney(item.revenue),
+      revenueValue: item.revenue,
       avgPriceLabel: `${Math.round(item.avgPrice / 1000)}k`,
+      avgPriceValue: item.avgPrice,
       returnRateLabel: `${item.returnRate.toFixed(1)}%`,
+      returnRateValue: item.returnRate,
       trendTone: item.trendPercent >= 0 ? 'up' : 'down',
       trendBars: toTrendBars(item),
+      sparklineData: (item.last7DaysSales || [0, 0, 0, 0, 0, 0, 0]).map((v) => ({ value: v })),
+      tags: buildProductTags(item, index),
     })),
     insights: data.insights,
     contribution: data.contribution.map((item, index) => ({

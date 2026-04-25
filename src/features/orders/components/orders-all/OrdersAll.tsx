@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { toast } from '@/components/ui/toast'
+import type { DataTableSortState } from '@/components/shared/DataTable'
 import { OrderDetail } from '@/features/orders/components/order-detail/OrderDetail'
 import { OrdersAllView } from '@/features/orders/components/orders-all/OrdersAllView'
 import { useOrdersAllData } from '@/features/orders/hooks/useOrdersAllData'
@@ -42,6 +43,7 @@ export function OrdersAll() {
   const [platform, setPlatform] = useState<OrderPlatformFilter>('all')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
+  const [sortState, setSortState] = useState<DataTableSortState>({ columnId: 'updated', direction: 'desc' })
   const [advancedFilters, setAdvancedFilters] = useState<OrdersAllAdvancedFilters>(EMPTY_ADVANCED_FILTERS)
   const [activeDetailId, setActiveDetailId] = useState<string | null>(null)
   const [activeDetailState, setActiveDetailState] = useState<{
@@ -64,6 +66,8 @@ export function OrdersAll() {
     dateTo: advancedFilters.dateTo,
     minAmount: advancedFilters.minAmount,
     maxAmount: advancedFilters.maxAmount,
+    sortBy: sortState.columnId,
+    sortDirection: sortState.direction,
   })
 
   const visibleOrders = data?.items ?? []
@@ -168,10 +172,12 @@ export function OrdersAll() {
         dateTo: advancedFilters.dateTo,
         minAmount: advancedFilters.minAmount,
         maxAmount: advancedFilters.maxAmount,
+        sortBy: sortState.columnId,
+        sortDirection: sortState.direction,
       },
       selectedCount,
     })
-  }, [advancedFilters, data, page, pageSize, platform, search, selectedCount, status])
+  }, [advancedFilters, data, page, pageSize, platform, search, selectedCount, sortState.columnId, sortState.direction, status])
 
   if (isLoading && !model) {
     return <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-500">Đang tải dữ liệu đơn hàng...</div>
@@ -260,6 +266,12 @@ export function OrdersAll() {
         onPrintSelectedWaybills={() => printWaybills(selectedOrders)}
         onPushSelectedWarehouse={() => pushWarehouseOrders(selectedOrders)}
         onClearSelection={clearSelection}
+        sortState={sortState}
+        onSortChange={(nextSort) => {
+          setSortState(nextSort)
+          setPage(1)
+          clearSelection()
+        }}
         onPageChange={(value) => {
           setPage(value)
           clearSelection()

@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
-import { toast } from '@/components/ui/toast'
+import { toast } from 'sonner'
 
+import { DashboardAlertsNotificationsSkeleton } from '@/features/dashboard/components/dashboard-alerts-notifications/DashboardAlertsNotificationsSkeleton'
 import { DashboardAlertsNotificationsView } from '@/features/dashboard/components/dashboard-alerts-notifications/DashboardAlertsNotificationsView'
 import { useDashboardAlertsNotifications } from '@/features/dashboard/hooks/useDashboardAlertsNotifications'
 import { buildDashboardAlertsNotificationsViewModel } from '@/features/dashboard/logic/dashboardAlertsNotifications.logic'
+import { useAlertKeyboardNavigation } from '@/features/dashboard/hooks/useAlertKeyboardNavigation'
 import type {
   AlertsSeverity,
   AlertsTabId,
@@ -15,6 +17,7 @@ export function DashboardAlertsNotifications() {
   const navigate = useNavigate()
   const [selectedTab, setSelectedTab] = useState<AlertsTabId>('all')
   const [selectedSeverities, setSelectedSeverities] = useState<AlertsSeverity[]>([])
+  const [assigningAlertId, setAssigningAlertId] = useState<string | null>(null)
 
   const {
     data,
@@ -24,6 +27,7 @@ export function DashboardAlertsNotifications() {
     refetch,
     markAllRead,
     isMarkingAllRead,
+    dismissAlert,
   } = useDashboardAlertsNotifications()
 
   const model = useMemo(() => {
@@ -37,6 +41,28 @@ export function DashboardAlertsNotifications() {
       },
     })
   }, [data, selectedSeverities, selectedTab])
+
+  const visibleAlertIds = useMemo(() => {
+    if (!model) return []
+    return model.sections.flatMap(s => s.cards.map(c => s.id === 'history' ? null : c.id)).filter((id): id is string => Boolean(id))
+  }, [model])
+
+  const { focusedAlertId } = useAlertKeyboardNavigation({
+    alertIds: visibleAlertIds,
+    onAssign: (id) => setAssigningAlertId(id),
+    onDismiss: (id) => dismissAlert(id),
+    onAction: (id) => {
+      const alert = data?.alerts.find(a => a.id === id)
+      if (alert && alert.actions.length > 0) {
+        handleAlertAction({
+          alertId: alert.id,
+          actionId: alert.actions[0].id,
+          actionLabel: alert.actions[0].label,
+          category: alert.category
+        })
+      }
+    }
+  })
 
   const toggleSeverity = (severity: AlertsSeverity) => {
     setSelectedSeverities((prev) => {
@@ -61,12 +87,11 @@ export function DashboardAlertsNotifications() {
     actionLabel: string
     category: 'orders' | 'inventory' | 'revenue' | 'system'
   }) => {
-    const { actionId, actionLabel, category } = payload
+    const { alertId, actionId, actionLabel, category } = payload
 
     switch (actionId) {
       case 'confirm-order':
         navigate('/orders/pending-actions')
-        toast.success('Mở danh sách đơn cần xác nhận.')
         return
       case 'view-order':
       case 'view-eta':
@@ -75,7 +100,7 @@ export function DashboardAlertsNotifications() {
         navigate('/orders/all')
         return
       case 'dismiss-order':
-        toast.info('Đã ghi nhận thao tác bỏ qua cảnh báo.')
+        dismissAlert(alertId)
         return
       case 'create-po':
       case 'check-skus':
@@ -107,7 +132,7 @@ export function DashboardAlertsNotifications() {
   }
 
   if (isLoading && !model) {
-    return <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-500">Đang tải cảnh báo vận hành...</div>
+    return <DashboardAlertsNotificationsSkeleton />
   }
 
   if (isError || !model) {
@@ -127,6 +152,9 @@ export function DashboardAlertsNotifications() {
       onMarkAllRead={() => markAllRead()}
       onOpenSettings={() => navigate('/settings/automation')}
       onActionClick={handleAlertAction}
+      focusedAlertId={focusedAlertId}
+      assigningAlertId={assigningAlertId}
+      onAssignAlertIdChange={setAssigningAlertId}
     />
   )
 }

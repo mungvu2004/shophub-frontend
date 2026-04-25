@@ -86,7 +86,7 @@ export function RevenueLineChartView({ model, isLoading, isError }: RevenueLineC
           <LoadingChartSkeleton />
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={model.points} margin={{ top: 6, right: 8, left: 8, bottom: 0 }}>
+            <LineChart key={model.points.length} data={model.points} margin={{ top: 6, right: 8, left: 8, bottom: 0 }}>
               <CartesianGrid vertical={false} stroke="#f8fafc" strokeWidth={1} />
               <YAxis hide />
               <XAxis
@@ -97,9 +97,42 @@ export function RevenueLineChartView({ model, isLoading, isError }: RevenueLineC
                 tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 700 }}
               />
               <Tooltip content={<RevenueChartTooltip />} cursor={{ stroke: '#E2E8F0', strokeDasharray: '3 3' }} />
-              <Line type="monotone" dataKey="shopee" name="Shopee" stroke="#F97316" strokeWidth={3.5} dot={false} />
-              <Line type="monotone" dataKey="tiktok" name="TikTok" stroke="#0F172A" strokeWidth={3.5} dot={false} />
-              <Line type="monotone" dataKey="lazada" name="Lazada" stroke="#3525CD" strokeWidth={3.5} dot={false} />
+              <Line 
+                type="monotone" 
+                dataKey="shopee" 
+                name="Shopee" 
+                stroke="#F97316" 
+                strokeWidth={3.5} 
+                dot={false}
+                activeDot={{ r: 6, strokeWidth: 0, fill: '#F97316' }}
+                animationDuration={1500}
+                animationEasing="ease-in-out"
+                isAnimationActive={true}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="tiktok" 
+                name="TikTok" 
+                stroke="#0F172A" 
+                strokeWidth={3.5} 
+                dot={false}
+                activeDot={{ r: 6, strokeWidth: 0, fill: '#0F172A' }}
+                animationDuration={1500}
+                animationEasing="ease-in-out"
+                isAnimationActive={true}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="lazada" 
+                name="Lazada" 
+                stroke="#3525CD" 
+                strokeWidth={3.5} 
+                dot={false}
+                activeDot={{ r: 6, strokeWidth: 0, fill: '#3525CD' }}
+                animationDuration={1500}
+                animationEasing="ease-in-out"
+                isAnimationActive={true}
+              />
             </LineChart>
           </ResponsiveContainer>
         )}

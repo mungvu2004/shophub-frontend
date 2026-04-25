@@ -17,7 +17,7 @@ export type DataTableColumn<T> = {
   sortable?: boolean
   accessor?: keyof T | ((row: T) => unknown)
   sortAccessor?: (row: T) => unknown
-  cell?: (row: T) => ReactNode
+  cell?: (row: T, index: number) => ReactNode
   widthClassName?: string
   headerClassName?: string
   cellClassName?: string | ((row: T) => string)
@@ -161,9 +161,9 @@ export function DataTable<T>({
     onSortChange?.(nextState)
   }
 
-  const renderCell = (row: T, column: DataTableColumn<T>) => {
+  const renderCell = (row: T, column: DataTableColumn<T>, index: number) => {
     if (column.cell) {
-      return column.cell(row)
+      return column.cell(row, index)
     }
 
     return String(resolveCellValue(row, column) ?? '')
@@ -176,8 +176,8 @@ export function DataTable<T>({
   }
 
   return (
-    <Table disableScroll={disableScroll} className={tableClassName}>
-      <TableHeader>
+    <Table disableScroll={disableScroll} className={cn(tableClassName, "relative")}>
+      <TableHeader className="sticky top-0 z-40">
         <TableRow className="h-11 border-b border-slate-100 bg-slate-50/90 hover:bg-slate-50/90">
           {columns.map((column) => {
             const alignClass = alignClassMap[column.align ?? 'left']
@@ -187,7 +187,7 @@ export function DataTable<T>({
               <TableHead
                 key={column.id}
                 className={cn(
-                  'text-[11px] font-semibold tracking-[0.2px] text-slate-500',
+                  'text-[11px] font-black tracking-widest text-slate-500 uppercase',
                   alignClass,
                   column.widthClassName,
                   column.headerClassName,
@@ -196,14 +196,14 @@ export function DataTable<T>({
                 {column.sortable ? (
                   <button
                     type="button"
-                    className={cn('inline-flex items-center gap-2', column.align === 'right' ? 'ml-auto' : '')}
+                    className={cn('inline-flex items-center gap-2 uppercase font-black', column.align === 'right' ? 'ml-auto' : '')}
                     onClick={() => updateSort(column.id)}
                   >
-                    {column.header}
+                    <span className="uppercase">{column.header}</span>
                     {getSortIcon(isSortActive, activeSort?.direction ?? 'desc')}
                   </button>
                 ) : (
-                  column.header
+                  <span className="uppercase">{column.header}</span>
                 )}
               </TableHead>
             )
@@ -233,7 +233,7 @@ export function DataTable<T>({
 
                     return (
                       <TableCell key={column.id} className={cn('py-3', alignClass, cellClass)}>
-                        {renderCell(row, column)}
+                        {renderCell(row, column, index)}
                       </TableCell>
                     )
                   })}

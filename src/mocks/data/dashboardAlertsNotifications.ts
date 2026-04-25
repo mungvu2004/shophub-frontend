@@ -1,4 +1,16 @@
-import type { DashboardAlertsNotificationsResponse } from '@/features/dashboard/logic/dashboardAlertsNotifications.types'
+import type { 
+  DashboardAlertsNotificationsResponse, 
+  AlertThreshold, 
+  AlertFrequencyDataPoint,
+  DashboardAlertRecord,
+  Assignee
+} from '@/features/dashboard/logic/dashboardAlertsNotifications.types'
+
+export const mockAssignees: Assignee[] = [
+  { id: 'user-1', name: 'Nguyễn Văn A', avatar: 'https://i.pravatar.cc/150?u=user-1' },
+  { id: 'user-2', name: 'Trần Thị B', avatar: 'https://i.pravatar.cc/150?u=user-2' },
+  { id: 'user-3', name: 'Lê Văn C', avatar: 'https://i.pravatar.cc/150?u=user-3' },
+]
 
 export const dashboardAlertsNotificationsMock: DashboardAlertsNotificationsResponse = {
   updatedAt: 'Cập nhật 09:24',
@@ -21,13 +33,14 @@ export const dashboardAlertsNotificationsMock: DashboardAlertsNotificationsRespo
       category: 'orders',
       platform: 'shopee',
       priority: 'P1',
-      countdownMinutes: 18,
+      expiresAt: new Date(Date.now() + 18 * 60 * 1000).toISOString(),
       actions: [
         { id: 'confirm-order', label: 'Xác nhận đơn ngay', variant: 'primary' },
         { id: 'view-order', label: 'Xem chi tiết', variant: 'outline' },
         { id: 'dismiss-order', label: 'Bỏ qua', variant: 'ghost' },
       ],
       isRead: false,
+      assignedTo: mockAssignees[0],
     },
     {
       id: 'alert-stock-bundle-p1',
@@ -60,6 +73,7 @@ export const dashboardAlertsNotificationsMock: DashboardAlertsNotificationsRespo
         { id: 'check-skus', label: 'Chi tiết kho', variant: 'soft' },
       ],
       isRead: false,
+      assignedTo: mockAssignees[1],
     },
     {
       id: 'alert-review-shopee',
@@ -200,3 +214,71 @@ export const dashboardAlertsNotificationsMock: DashboardAlertsNotificationsRespo
     },
   ],
 }
+
+export const alertHistoryMock: DashboardAlertRecord[] = [
+  {
+    id: 'h-1',
+    title: 'Đã xử lý hết tồn kho Shopee',
+    description: 'Cập nhật tồn kho thành công cho 12 SKU.',
+    statusLabel: 'Đã giải quyết',
+    timeAgo: '2 ngày trước',
+    severity: 'resolved',
+    category: 'inventory',
+    platform: 'shopee',
+    priority: 'P1',
+    actions: [],
+    isRead: true,
+    resolvedAt: '2024-04-23 14:20',
+  },
+  {
+    id: 'h-2',
+    title: 'Lỗi đồng bộ giá Lazada đã khắc phục',
+    description: 'Hệ thống đã tự động đồng bộ lại giá cho 50 SKU.',
+    statusLabel: 'Đã giải quyết',
+    timeAgo: '5 ngày trước',
+    severity: 'resolved',
+    category: 'system',
+    platform: 'lazada',
+    priority: 'P2',
+    actions: [],
+    isRead: true,
+    resolvedAt: '2024-04-20 09:15',
+  },
+]
+
+export const alertThresholdsMock: AlertThreshold[] = [
+  {
+    id: 't-1',
+    category: 'inventory',
+    label: 'Ngưỡng tồn thấp',
+    value: 10,
+    unit: 'sản phẩm',
+    description: 'Cảnh báo khi số lượng sản phẩm trong kho xuống dưới mức này.',
+  },
+  {
+    id: 't-2',
+    category: 'revenue',
+    label: 'Ngưỡng doanh thu thấp (giờ)',
+    value: 5000000,
+    unit: 'VNĐ',
+    description: 'Cảnh báo khi doanh thu trong 1 giờ xuống dưới mức này.',
+  },
+  {
+    id: 't-3',
+    category: 'orders',
+    label: 'Thời gian trễ SLA Shopee',
+    value: 30,
+    unit: 'phút',
+    description: 'Cảnh báo khi đơn hàng sắp hết hạn SLA Shopee.',
+  },
+]
+
+export const alertFrequencyMock: AlertFrequencyDataPoint[] = [
+  { date: '2024-04-19', count: 12, criticalCount: 2 },
+  { date: '2024-04-20', count: 15, criticalCount: 3 },
+  { date: '2024-04-21', count: 8, criticalCount: 1 },
+  { date: '2024-04-22', count: 18, criticalCount: 5 },
+  { date: '2024-04-23', count: 10, criticalCount: 2 },
+  { date: '2024-04-24', count: 14, criticalCount: 3 },
+  { date: '2024-04-25', count: 20, criticalCount: 4 },
+]

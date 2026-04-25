@@ -1,0 +1,595 @@
+
+> shophub-frontend@0.0.0 lint
+> eslint . src/features/dashboard/components/dashboard-revenue-charts-page/DashboardRevenueChartsView.tsx src/features/dashboard/components/dashboard-revenue-charts-page/RevenueCategoryBreakdownCard.tsx src/features/dashboard/components/dashboard-revenue-charts-page/RevenueHourlyDistributionCard.tsx src/features/dashboard/components/dashboard-revenue-charts-page/parts/RevenueHeroSection.tsx src/features/dashboard/components/dashboard-revenue-charts-page/parts/RevenuePlatformSelector.tsx
+
+
+F:\shophub-frontend\src\components\layout\sidebar\sidebarMenu.logic.ts
+  54:5  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `location`, but the source dependencies were [location.hash, location.pathname, location.search]. Inferred less specific property than source.
+
+F:\shophub-frontend\src\components\layout\sidebar\sidebarMenu.logic.ts:54:5
+  52 | export function useSidebarMenuState(location: SidebarLocation) {
+  53 |   const activeSectionLabels = useMemo(
+> 54 |     () => getActiveSectionLabels(location),
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Could not preserve existing manual memoization
+  55 |     [location.hash, location.pathname, location.search],
+  56 |   )
+  57 |                                                                                                                                                                                                             react-hooks/preserve-manual-memoization
+  55:5  warning  React Hook useMemo has a missing dependency: 'location'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+  68:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\components\layout\sidebar\sidebarMenu.logic.ts:68:5
+  66 |
+  67 |     const nextActive = activeSectionLabels[0]
+> 68 |     setExpandedSection((prev) => (prev === nextActive ? prev : nextActive))
+     |     ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  69 |   }, [activeSectionLabels])
+  70 |
+  71 |   const isChildActive = (childTo: SidebarNavChild['to']) => getIsChildActive(location, childTo)  react-hooks/set-state-in-effect
+
+F:\shophub-frontend\src\components\ui\badge.tsx
+  53:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+F:\shophub-frontend\src\components\ui\button.tsx
+  50:18  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+F:\shophub-frontend\src\components\ui\form.tsx
+  153:3  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+F:\shophub-frontend\src\components\ui\tabs.tsx
+  82:52  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+F:\shophub-frontend\src\components\ui\toast.tsx
+  4:19  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+F:\shophub-frontend\src\features\auth\components\ForgotPasswordForm.tsx
+  25:37  error  '_payload' is defined but never used  @typescript-eslint/no-unused-vars
+
+F:\shophub-frontend\src\features\auth\components\ProtectedRoute.tsx
+  12:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+F:\shophub-frontend\src\features\auth\hooks\useLoginController.ts
+  53:50  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+F:\shophub-frontend\src\features\auth\hooks\useLoginController.ts:53:50
+  51 |   const [captchaVerified, setCaptchaVerified] = useState(false);
+  52 |   const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
+> 53 |   const [currentTime, setCurrentTime] = useState(Date.now());
+     |                                                  ^^^^^^^^^^ Cannot call impure function
+  54 |
+  55 |   const redirectTo =
+  56 |     (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ||  react-hooks/purity
+
+F:\shophub-frontend\src\features\crm\components\customer-profiles\CRMCustomerProfilesScreen.tsx
+  33:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\crm\components\customer-profiles\CRMCustomerProfilesScreen.tsx:33:7
+  31 |
+  32 |     if (query.data.selectedCustomerId !== selectedCustomerId) {
+> 33 |       setSelectedCustomerId(query.data.selectedCustomerId)
+     |       ^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  34 |     }
+  35 |   }, [query.data?.selectedCustomerId, selectedCustomerId])
+  36 |  react-hooks/set-state-in-effect
+
+F:\shophub-frontend\src\features\crm\components\sentiment-analysis\CRMSentimentAnalysis.tsx
+  36:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\crm\components\sentiment-analysis\CRMSentimentAnalysis.tsx:36:7
+  34 |   useEffect(() => {
+  35 |     if (!model?.reviews.items.length) {
+> 36 |       setSelectedReviewId(null)
+     |       ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  37 |       setActiveReplyReviewId(null)
+  38 |       return
+  39 |     }  react-hooks/set-state-in-effect
+
+F:\shophub-frontend\src\features\crm\components\sentiment-analysis\SentimentAnalysisReplyComposer.tsx
+  27:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\crm\components\sentiment-analysis\SentimentAnalysisReplyComposer.tsx:27:5
+  25 |
+  26 |   useEffect(() => {
+> 27 |     setDraft('')
+     |     ^^^^^^^^ Avoid calling setState() directly within an effect
+  28 |   }, [reviewId])
+  29 |
+  30 |   return (  react-hooks/set-state-in-effect
+
+F:\shophub-frontend\src\features\dashboard\components\AiInsightBlock.tsx
+  29:3  error  'type' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+F:\shophub-frontend\src\features\dashboard\components\dashboard-kpi-overview\DashboardExportActions.tsx
+  1:10  error  'Download' is defined but never used                                                                                            @typescript-eslint/no-unused-vars
+  5:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+F:\shophub-frontend\src\features\dashboard\components\dashboard-revenue-charts-page\DashboardRevenueCharts.tsx
+  6:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+F:\shophub-frontend\src\features\dashboard\components\dashboard-revenue-charts-page\RevenueCategoryBreakdownCard.tsx
+  71:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  71:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+F:\shophub-frontend\src\features\dashboard\components\dashboard-revenue-charts-page\RevenueSummaryStrip.tsx
+  13:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+F:\shophub-frontend\src\features\dashboard\components\dashboard-top-products\TopProductsInsightsSection.tsx
+  19:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+F:\shophub-frontend\src\features\dashboard\components\dashboard-top-products\TopProductsRankingTable.tsx
+  50:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  54:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  58:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+F:\shophub-frontend\src\features\footer\components\app-footer\AppFooterView.tsx
+  12:40  error  'isRefreshing' is defined but never used  @typescript-eslint/no-unused-vars
+
+F:\shophub-frontend\src\features\inventory\components\inventory-adjustment-dialog\InventoryStockAdjustmentDialog.tsx
+  122:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\inventory\components\inventory-adjustment-dialog\InventoryStockAdjustmentDialog.tsx:122:5
+  120 |     }
+  121 |
+> 122 |     setForm(getInitialState(defaultWarehouseId))
+      |     ^^^^^^^ Avoid calling setState() directly within an effect
+  123 |     setErrors({})
+  124 |   }, [defaultWarehouseId, open])
+  125 |                      react-hooks/set-state-in-effect
+  131:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\inventory\components\inventory-adjustment-dialog\InventoryStockAdjustmentDialog.tsx:131:5
+  129 |     }
+  130 |
+> 131 |     setForm((current) => {
+      |     ^^^^^^^ Avoid calling setState() directly within an effect
+  132 |       if (current.warehouseId === selectedItem.warehouseId) {
+  133 |         return current
+  134 |       }  react-hooks/set-state-in-effect
+
+F:\shophub-frontend\src\features\inventory\components\inventory-grid\InventoryGridView.tsx
+  39:9   warning  The 'displayData' conditional could make the dependencies of useMemo Hook (at line 43) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'displayData' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+  47:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\inventory\components\inventory-grid\InventoryGridView.tsx:47:5
+  45 |   // Reset to page 1 when filters change
+  46 |   useEffect(() => {
+> 47 |     setCurrentPage(1)
+     |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  48 |   }, [filters?.search, filters?.status, filters?.category, filters?.platform])
+  49 |
+  50 |   const model: InventoryGridViewModel = useMemo(() => {  react-hooks/set-state-in-effect
+  88:37  error    '_productId' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+
+F:\shophub-frontend\src\features\inventory\components\inventory-sku-stock-page\BulkImportModal.tsx
+  6:15  error  'BulkImportRow' is defined but never used  @typescript-eslint/no-unused-vars
+
+F:\shophub-frontend\src\features\inventory\components\inventory-sku-stock-page\InventorySKUStockPageView.tsx
+  13:10  error  'CATEGORY_OPTIONS' is defined but never used  @typescript-eslint/no-unused-vars
+  13:28  error  'PLATFORM_OPTIONS' is defined but never used  @typescript-eslint/no-unused-vars
+  13:46  error  'STATUS_OPTIONS' is defined but never used    @typescript-eslint/no-unused-vars
+
+F:\shophub-frontend\src\features\inventory\components\inventory-stock-movements\InventoryStockMovements.tsx
+  24:46  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+  25:48  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+  35:8   error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+  55:12  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+  69:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\inventory\components\inventory-stock-movements\InventoryStockMovements.tsx:69:7
+  67 |   useEffect(() => {
+  68 |     if (!model?.selectedMovement) {
+> 69 |       setSelectedMovementId(null)
+     |       ^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  70 |       return
+  71 |     }
+  72 |  react-hooks/set-state-in-effect
+  88:23  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+
+F:\shophub-frontend\src\features\inventory\components\inventory-table\InventoryTable.tsx
+    5:40  error  'InventoryTableRow' is defined but never used  @typescript-eslint/no-unused-vars
+  197:42  error  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+F:\shophub-frontend\src\features\inventory\components\inventory-table\InventoryTableView.tsx
+  45:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\inventory\components\inventory-table\InventoryTableView.tsx:45:5
+  43 |   // Reset to page 1 when filters change
+  44 |   useEffect(() => {
+> 45 |     setCurrentPage(1)
+     |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  46 |   }, [filters?.search, filters?.status, filters?.category, filters?.platform])
+  47 |
+  48 |   // Fetch inventory data from API  react-hooks/set-state-in-effect
+  58:9  warning  The 'displayData' conditional could make the dependencies of useMemo Hook (at line 62) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'displayData' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             react-hooks/exhaustive-deps
+
+F:\shophub-frontend\src\features\inventory\hooks\useInventoryStockAdjustmentPage.ts
+  84:9  warning  The 'inventoryItems' logical expression could make the dependencies of useMemo Hook (at line 106) change on every render. To fix this, wrap the initialization of 'inventoryItems' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  84:9  warning  The 'inventoryItems' logical expression could make the dependencies of useMemo Hook (at line 124) change on every render. To fix this, wrap the initialization of 'inventoryItems' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  84:9  warning  The 'inventoryItems' logical expression could make the dependencies of useMemo Hook (at line 184) change on every render. To fix this, wrap the initialization of 'inventoryItems' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+F:\shophub-frontend\src\features\inventory\hooks\useStockMovements.ts
+   1:44  error  'useMemo' is defined but never used  @typescript-eslint/no-unused-vars
+  31:14  error  'error' is defined but never used    @typescript-eslint/no-unused-vars
+
+F:\shophub-frontend\src\features\inventory\services\stockMovements.service.ts
+   9:22  error  'query' is defined but never used         @typescript-eslint/no-unused-vars
+  44:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+F:\shophub-frontend\src\features\orders\components\orders-all\OrdersAll.tsx
+  69:9  warning  The 'visibleOrders' logical expression could make the dependencies of useMemo Hook (at line 72) change on every render. To fix this, wrap the initialization of 'visibleOrders' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+F:\shophub-frontend\src\features\orders\components\orders-all\OrdersAllFilters.tsx
+   68:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\orders\components\orders-all\OrdersAllFilters.tsx:68:7
+  66 |     const parsed = new Date(`${value}T00:00:00`)
+  67 |     if (!Number.isNaN(parsed.getTime())) {
+> 68 |       setCalendarMonth(parsed)
+     |       ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  69 |     }
+  70 |   }, [isOpen, value])
+  71 |  react-hooks/set-state-in-effect
+  206:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\orders\components\orders-all\OrdersAllFilters.tsx:206:7
+  204 |   useEffect(() => {
+  205 |     if (isAdvancedOpen) {
+> 206 |       setDraftFilters(advancedFilters)
+      |       ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  207 |     }
+  208 |   }, [advancedFilters, isAdvancedOpen])
+  209 |               react-hooks/set-state-in-effect
+
+F:\shophub-frontend\src\features\orders\components\orders-all\OrdersAllTable.tsx
+  151:5  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `openOrderDetail`, but the source dependencies were [isAllSelected, onToggleAll, selectedIds, onToggleOne, isPrinted, renderStatus]. Inferred different dependency than source.
+
+F:\shophub-frontend\src\features\orders\components\orders-all\OrdersAllTable.tsx:151:5
+  149 |
+  150 |   const columns: DataTableColumn<OrdersAllTableRowModel>[] = useMemo(
+> 151 |     () => [
+      |     ^^^^^^^
+> 152 |       {
+      | ^^^^^^^
+> 153 |         id: 'select',
+      ΓÇª
+      | ^^^^^^^
+> 321 |       },
+      | ^^^^^^^
+> 322 |     ],
+      | ^^^^^^ Could not preserve existing manual memoization
+  323 |     [isAllSelected, onToggleAll, selectedIds, onToggleOne, isPrinted, renderStatus],
+  324 |   )
+  325 |    react-hooks/preserve-manual-memoization
+  151:5  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `togglePrintStatus`, but the source dependencies were [isAllSelected, onToggleAll, selectedIds, onToggleOne, isPrinted, renderStatus]. Inferred different dependency than source.
+
+F:\shophub-frontend\src\features\orders\components\orders-all\OrdersAllTable.tsx:151:5
+  149 |
+  150 |   const columns: DataTableColumn<OrdersAllTableRowModel>[] = useMemo(
+> 151 |     () => [
+      |     ^^^^^^^
+> 152 |       {
+      | ^^^^^^^
+> 153 |         id: 'select',
+      ΓÇª
+      | ^^^^^^^
+> 321 |       },
+      | ^^^^^^^
+> 322 |     ],
+      | ^^^^^^ Could not preserve existing manual memoization
+  323 |     [isAllSelected, onToggleAll, selectedIds, onToggleOne, isPrinted, renderStatus],
+  324 |   )
+  325 |  react-hooks/preserve-manual-memoization
+  151:5  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `openOrderDetail`, but the source dependencies were [isAllSelected, onToggleAll, selectedIds, onToggleOne, isPrinted, renderStatus]. Inferred different dependency than source.
+
+F:\shophub-frontend\src\features\orders\components\orders-all\OrdersAllTable.tsx:151:5
+  149 |
+  150 |   const columns: DataTableColumn<OrdersAllTableRowModel>[] = useMemo(
+> 151 |     () => [
+      |     ^^^^^^^
+> 152 |       {
+      | ^^^^^^^
+> 153 |         id: 'select',
+      ΓÇª
+      | ^^^^^^^
+> 321 |       },
+      | ^^^^^^^
+> 322 |     ],
+      | ^^^^^^ Could not preserve existing manual memoization
+  323 |     [isAllSelected, onToggleAll, selectedIds, onToggleOne, isPrinted, renderStatus],
+  324 |   )
+  325 |    react-hooks/preserve-manual-memoization
+  323:5  warning  React Hook useMemo has missing dependencies: 'openOrderDetail' and 'togglePrintStatus'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 react-hooks/exhaustive-deps
+
+F:\shophub-frontend\src\features\orders\components\orders-pending-actions\OrdersPendingActionsFilters.tsx
+  62:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\orders\components\orders-pending-actions\OrdersPendingActionsFilters.tsx:62:7
+  60 |   useEffect(() => {
+  61 |     if (isDateDialogOpen) {
+> 62 |       setDraftDateFilters(dateFilters)
+     |       ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  63 |     }
+  64 |   }, [dateFilters, isDateDialogOpen])
+  65 |  react-hooks/set-state-in-effect
+
+F:\shophub-frontend\src\features\orders\hooks\useOrdersAllSelection.ts
+  7:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\orders\hooks\useOrdersAllSelection.ts:7:5
+   5 |
+   6 |   useEffect(() => {
+>  7 |     setSelectedIds((current) => current.filter((id) => visibleRowIds.includes(id)))
+     |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+   8 |   }, [visibleRowIds])
+   9 |
+  10 |   const selectedCount = selectedIds.length  react-hooks/set-state-in-effect
+
+F:\shophub-frontend\src\features\products\components\ProductDetailView.tsx
+  42:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\products\components\ProductDetailView.tsx:42:5
+  40 |     }
+  41 |
+> 42 |     setEditName(model.product.name)
+     |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  43 |     setEditBrand(model.product.brand ?? '')
+  44 |     setEditShortDescription(model.product.shortDescription ?? '')
+  45 |     setEditDescription(model.product.description ?? '')  react-hooks/set-state-in-effect
+
+F:\shophub-frontend\src\features\products\components\products-table\ProductsTable.tsx
+  45:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\products\components\products-table\ProductsTable.tsx:45:5
+  43 |   useEffect(() => {
+  44 |     const validIds = new Set(products.map((p) => p.id))
+> 45 |     setSelectedRows((prev) => new Set([...prev].filter((id) => validIds.has(id))))
+     |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  46 |   }, [products])
+  47 |
+  48 |   useEffect(() => {  react-hooks/set-state-in-effect
+
+F:\shophub-frontend\src\features\products\logic\productDetailPage.logic.ts
+  32:20  error  React Hook "useNavigate" is called in function "buildProductDetailViewModel" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"                   react-hooks/rules-of-hooks
+  33:20  error  React Hook "useLocation" is called in function "buildProductDetailViewModel" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"                   react-hooks/rules-of-hooks
+  34:18  error  React Hook "useParams" is called in function "buildProductDetailViewModel" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"                     react-hooks/rules-of-hooks
+  35:26  error  React Hook "useSearchParams" is called in function "buildProductDetailViewModel" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  40:50  error  React Hook "useProductById" is called in function "buildProductDetailViewModel" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"                react-hooks/rules-of-hooks
+  41:50  error  React Hook "useProducts" is called in function "buildProductDetailViewModel" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"                   react-hooks/rules-of-hooks
+  46:7   error  React Hook "useProductAutomationTriggers" is called in function "buildProductDetailViewModel" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  50:7   error  React Hook "useInventorySKUs" is called in function "buildProductDetailViewModel" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  51:41  error  React Hook "useUpdateProduct" is called in function "buildProductDetailViewModel" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  53:27  error  React Hook "useMemo" is called in function "buildProductDetailViewModel" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"                       react-hooks/rules-of-hooks
+  60:17  error  React Hook "useMemo" is called in function "buildProductDetailViewModel" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"                       react-hooks/rules-of-hooks
+  82:28  error  React Hook "useMemo" is called in function "buildProductDetailViewModel" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"                       react-hooks/rules-of-hooks
+
+F:\shophub-frontend\src\features\products\logic\productsListPage.logic.ts
+  24:7   error  React Hook "useProductsPageLogic" is called in function "buildProductsListViewModel" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  27:45  error  React Hook "useState" is called in function "buildProductsListViewModel" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  33:3   error  React Hook "useEffect" is called in function "buildProductsListViewModel" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+
+F:\shophub-frontend\src\features\revenue\components\revenue-ml-forecast\RevenueMlForecastView.tsx
+  79:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\revenue\components\revenue-ml-forecast\RevenueMlForecastView.tsx:79:5
+  77 |   useEffect(() => {
+  78 |     const nextScenario = model.scenarios.find((scenario) => scenario.isRecommended) ?? model.scenarios[0] ?? null
+> 79 |     setSelectedScenarioId((current) => {
+     |     ^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  80 |       if (current && model.scenarios.some((scenario) => scenario.id === current)) {
+  81 |         return current
+  82 |       }  react-hooks/set-state-in-effect
+
+F:\shophub-frontend\src\features\revenue\components\revenue-summary-report\RevenueTopProductsSection.tsx
+  143:9  error  Error: Cannot reassign variable after render completes
+
+Reassigning `runningTotal` after render has completed can cause inconsistent behavior on subsequent renders. Consider using state instead.
+
+F:\shophub-frontend\src\features\revenue\components\revenue-summary-report\RevenueTopProductsSection.tsx:143:9
+  141 |       if (item.kind === 'decrease') {
+  142 |         end = runningTotal - item.amount
+> 143 |         runningTotal = end
+      |         ^^^^^^^^^^^^ Cannot reassign `runningTotal` after render completes
+  144 |       } else if (item.kind === 'total') {
+  145 |         start = 0
+  146 |         end = item.amount  react-hooks/immutability
+
+F:\shophub-frontend\src\features\settings\components\automation-builder\AutomationBuilderTriggerParametersForm.tsx
+  88:67  error  Redundant Boolean call  no-extra-boolean-cast
+  91:21  error  Redundant Boolean call  no-extra-boolean-cast
+  96:20  error  Redundant Boolean call  no-extra-boolean-cast
+
+F:\shophub-frontend\src\features\settings\components\automation-builder\SettingsAutomationBuilder.tsx
+  42:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\settings\components\automation-builder\SettingsAutomationBuilder.tsx:42:5
+  40 |     if (!data?.defaultTriggerId) return
+  41 |
+> 42 |     setTriggerParameterValuesByTriggerId((current) => {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  43 |       if (Object.keys(current).length > 0) {
+  44 |         return current
+  45 |       }  react-hooks/set-state-in-effect
+
+F:\shophub-frontend\src\features\settings\components\automation-logs\AutomationLogsDrawer.tsx
+  24:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\settings\components\automation-logs\AutomationLogsDrawer.tsx:24:5
+  22 |   useEffect(() => {
+  23 |     if (!open) return
+> 24 |     setStatus('all')
+     |     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  25 |     setPage(1)
+  26 |   }, [open, ruleId])
+  27 |  react-hooks/set-state-in-effect
+
+F:\shophub-frontend\src\features\settings\components\profile-settings\SettingsProfile.tsx
+  30:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\settings\components\profile-settings\SettingsProfile.tsx:30:5
+  28 |     }
+  29 |
+> 30 |     setDraft({
+     |     ^^^^^^^^ Avoid calling setState() directly within an effect
+  31 |       fullName: data.identity.fullName,
+  32 |       phone: data.identity.phone,
+  33 |       jobTitle: data.identity.jobTitle,  react-hooks/set-state-in-effect
+
+F:\shophub-frontend\src\features\settings\components\staff-permissions\SettingsStaffPermissionsInviteDrawer.tsx
+  31:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\shophub-frontend\src\features\settings\components\staff-permissions\SettingsStaffPermissionsInviteDrawer.tsx:31:5
+  29 |     }
+  30 |
+> 31 |     setSelectedRoleId(model.defaultRoleOptions[0]?.id ?? '')
+     |     ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  32 |     setSelectedPermissionIds(model.permissions.filter((permission) => permission.defaultChecked).map((permission) => permission.id))
+  33 |     setEmail('')
+  34 |   }, [model, open])  react-hooks/set-state-in-effect
+
+F:\shophub-frontend\src\features\shared\hooks\BACK_NAVIGATION_EXAMPLES.tsx
+  23:10  error  'TopProductsTableExample' is defined but never used  @typescript-eslint/no-unused-vars
+  56:22  error  'BackIconButton' is defined but never used           @typescript-eslint/no-unused-vars
+
+F:\shophub-frontend\src\mocks\data\dashboardRevenueOrders.ts
+  12:9   error  'statues' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  67:27  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+F:\shophub-frontend\src\mocks\handlers\inventory.handlers.ts
+   82:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  128:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+F:\shophub-frontend\src\mocks\handlers\products.handlers.ts
+  73:9  error  'filtered' is never reassigned. Use 'const' instead  prefer-const
+
+Γ£û 94 problems (86 errors, 8 warnings)
+  4 errors and 0 warnings potentially fixable with the `--fix` option.
+

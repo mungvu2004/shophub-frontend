@@ -14,6 +14,8 @@ export type OrdersAllQueryState = {
   dateTo: string
   minAmount: string
   maxAmount: string
+  sortBy?: string
+  sortDirection?: 'asc' | 'desc'
 }
 
 export type OrdersAllAdvancedFilters = {

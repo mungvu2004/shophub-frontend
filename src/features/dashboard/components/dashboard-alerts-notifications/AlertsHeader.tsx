@@ -7,6 +7,8 @@ type AlertsHeaderProps = {
   subtitle: string
   autoRefreshLabel: string
   updatedAtLabel: string
+  markAllReadLabel: string
+  settingsTooltip: string
   isRefreshing: boolean
   isMarkingAllRead: boolean
   onMarkAllRead: () => void
@@ -18,46 +20,49 @@ export function AlertsHeader({
   subtitle,
   autoRefreshLabel,
   updatedAtLabel,
+  markAllReadLabel,
+  settingsTooltip,
   isRefreshing,
   isMarkingAllRead,
   onMarkAllRead,
   onOpenSettings,
 }: AlertsHeaderProps) {
   return (
-    <header className="grid gap-4 rounded-2xl border border-slate-200/80 bg-white px-4 py-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-start md:px-5">
-      <div className="space-y-2">
-        <h1 className="text-[24px] font-bold leading-8 text-slate-900">{title}</h1>
-        <p className="text-[13px] font-medium text-slate-600">{subtitle}</p>
+    <header className="grid gap-4 rounded-2xl border border-slate-100 bg-white px-5 py-5 shadow-sm md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h1>
+        <p className="text-sm font-medium text-slate-500">{subtitle}</p>
       </div>
 
-      <div className="flex flex-col items-end gap-2">
-        <div className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs text-slate-600 whitespace-nowrap">
-          <span className="size-2 rounded-full bg-emerald-500 ring-2 ring-emerald-300/60" />
-          <span className="font-medium">{autoRefreshLabel}</span>
-          <span className="text-slate-400">{updatedAtLabel}</span>
-          {isRefreshing ? <Loader2 className="size-3 animate-spin" /> : null}
+      <div className="flex flex-col items-end gap-3">
+        <div className="inline-flex h-9 items-center gap-2 rounded-full border border-slate-100 bg-slate-50/50 px-3.5 text-xs font-semibold text-slate-600 whitespace-nowrap">
+          <span className="size-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+          <span>{autoRefreshLabel}</span>
+          <span className="h-3 w-px bg-slate-200" />
+          <span className="text-slate-400 font-mono">{updatedAtLabel}</span>
+          {isRefreshing ? <Loader2 className="size-3 animate-spin text-primary-500" /> : null}
         </div>
 
         <div className="flex items-center gap-2">
           <Button
             type="button"
             variant="outline"
-            className="h-10 whitespace-nowrap rounded-xl border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm"
+            className="h-10 whitespace-nowrap rounded-xl border-slate-200 bg-white px-4 text-xs font-bold uppercase tracking-wider text-slate-700 shadow-sm hover:bg-slate-50 focus-visible:ring-primary-500"
             onClick={onMarkAllRead}
             disabled={isMarkingAllRead}
           >
-            {isMarkingAllRead ? <Loader2 className="size-4 animate-spin" /> : <BellRing className="size-4" />}
-            Đánh dấu tất cả đã đọc
+            {isMarkingAllRead ? <Loader2 className="size-3.5 animate-spin" /> : <BellRing className="size-3.5" />}
+            <span>{markAllReadLabel}</span>
           </Button>
 
           <Button
             type="button"
             variant="ghost"
-            className="h-10 whitespace-nowrap rounded-xl px-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+            className="h-10 w-10 p-0 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 focus-visible:ring-primary-500"
             onClick={onOpenSettings}
+            title={settingsTooltip}
           >
-            <Settings className="size-4" />
-            Cài đặt thông báo
+            <Settings className="size-5" />
           </Button>
         </div>
       </div>

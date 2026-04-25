@@ -12,12 +12,15 @@ export function DashboardRevenueCharts() {
     model, 
     isLoading, 
     isError,
-    isRefreshing, 
+    isRefreshing,
+    isSettingsOpen,
     onPlatformChange, 
     onRangeChange, 
     onCategorySelect,
     selectedCategoryId,
     onExportChart,
+    onExportFullReport,
+    onToggleSettings,
     refetch 
   } = useRevenueChartsController()
 
@@ -48,11 +51,14 @@ export function DashboardRevenueCharts() {
       <DashboardRevenueChartsView
         model={model}
         isRefreshing={isRefreshing}
+        isSettingsOpen={isSettingsOpen}
         onPlatformChange={onPlatformChange}
         onRangeChange={onRangeChange}
         onCategorySelect={onCategorySelect}
         selectedCategoryId={selectedCategoryId}
         onExportChart={onExportChart}
+        onExportFullReport={onExportFullReport}
+        onToggleSettings={onToggleSettings}
       />
     </div>
   )

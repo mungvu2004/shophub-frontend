@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
+import { PageSkeleton } from '@/components/ui/PageSkeleton'
 import { OrderDetail } from '@/features/orders/components/order-detail/OrderDetail'
 import { OrdersReturnsView } from '@/features/orders/components/orders-returns/OrdersReturnsView'
 import { useOrdersReturnsData } from '@/features/orders/hooks/useOrdersReturnsData'
@@ -47,7 +48,7 @@ export function OrdersReturns() {
   }, [data, page, pageSize, platform, search])
 
   if (isLoading && !model) {
-    return <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-500">Đang tải dữ liệu hoàn/hủy...</div>
+    return <PageSkeleton />
   }
 
   if (isError || !model) {

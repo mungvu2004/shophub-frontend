@@ -1,7 +1,9 @@
-import { InventoryStockAdjustmentPageView } from '@/features/inventory/components/inventory-stock-adjustment-page/InventoryStockAdjustmentPageView'
-import { useInventoryStockAdjustmentPage } from '@/features/inventory/hooks/useInventoryStockAdjustmentPage'
+import { StockAdjustmentView } from '@/features/inventory/components/stock-adjustment/StockAdjustmentView'
 
 export function InventoryStockAdjustmentPage() {
-  const model = useInventoryStockAdjustmentPage()
-  return <InventoryStockAdjustmentPageView model={model} />
+  return (
+    <div className="container mx-auto">
+      <StockAdjustmentView />
+    </div>
+  )
 }

@@ -1,5 +1,5 @@
+import { useCallback, useMemo, useState } from 'react'
 import { MoreVertical } from 'lucide-react'
-import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 import {
@@ -9,11 +9,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { DataTable, type DataTableColumn, type DataTableSortState } from '@/components/shared/DataTable'
 
 import type {
   DashboardTopProductsViewModel,
   TopProductsPlatformId,
+  TopProductsRankingRowViewModel,
 } from '@/features/dashboard/logic/dashboardTopProducts.types'
+
+import { ProductTag } from './ProductTag'
+import { TopProductsRankBadge } from './TopProductsRankBadge'
+import { TopProductsSparkline } from './TopProductsSparkline'
 
 type TopProductsRankingTableProps = {
   rows: DashboardTopProductsViewModel['rankingRows']
@@ -23,7 +29,7 @@ type TopProductsRankingTableProps = {
 
 const INITIAL_VISIBLE_ROWS = 6
 
-type OptionalColumnId = 'sku' | 'platform' | 'sold' | 'revenue' | 'avgPrice' | 'returnRate' | 'trend'
+type OptionalColumnId = 'sku' | 'platform' | 'sold' | 'revenue' | 'avgPrice' | 'returnRate' | 'trend' | 'sparkline'
 
 type VisibleColumns = Record<OptionalColumnId, boolean>
 
@@ -35,59 +41,23 @@ const defaultVisibleColumns: VisibleColumns = {
   avgPrice: true,
   returnRate: true,
   trend: true,
+  sparkline: true,
 }
 
-const columnDefs: Array<{ id: OptionalColumnId; label: string }> = [
-  { id: 'sku', label: 'SKU' },
-  { id: 'platform', label: 'Sàn' },
-  { id: 'sold', label: 'Đã bán' },
-  { id: 'revenue', label: 'Doanh thu' },
-  { id: 'avgPrice', label: 'Giá TB' },
-  { id: 'returnRate', label: 'Tỷ lệ hoàn' },
-  { id: 'trend', label: 'Xu hướng' },
-]
-
-export function getNextVisibleRankingCount(current: number, step: number, total: number) {
-  return Math.min(total, current + step)
-}
-
-export function getCollapsedVisibleRankingCount() {
-  return INITIAL_VISIBLE_ROWS
-}
-
-export function buildTopProductsCsv(rows: DashboardTopProductsViewModel['rankingRows'], visibleColumns: VisibleColumns) {
-  const headers = ['Hạng', 'Sản phẩm']
-
-  if (visibleColumns.sku) headers.push('SKU')
-  if (visibleColumns.platform) headers.push('Sàn')
-  if (visibleColumns.sold) headers.push('Đã bán')
-  if (visibleColumns.revenue) headers.push('Doanh thu')
-  if (visibleColumns.avgPrice) headers.push('Giá TB')
-  if (visibleColumns.returnRate) headers.push('Tỷ lệ hoàn')
-  if (visibleColumns.trend) headers.push('Xu hướng')
-
-  const csvRows = rows.map((row) => {
-    const values = [row.rankLabel, row.name]
-
-    if (visibleColumns.sku) values.push(row.sku)
-    if (visibleColumns.platform) values.push(row.platformLabel)
-    if (visibleColumns.sold) values.push(row.soldLabel)
-    if (visibleColumns.revenue) values.push(row.revenueLabel)
-    if (visibleColumns.avgPrice) values.push(row.avgPriceLabel)
-    if (visibleColumns.returnRate) values.push(row.returnRateLabel)
-    if (visibleColumns.trend) values.push(row.trendTone === 'up' ? 'Tăng' : 'Giảm')
-
-    return values
-  })
-
-  const toCsvCell = (value: string) => `"${value.replaceAll('"', '""')}"`
-
-  return [headers, ...csvRows].map((line) => line.map(toCsvCell).join(',')).join('\n')
+const columnLabels: Record<OptionalColumnId, string> = {
+  sku: 'SKU',
+  platform: 'Sàn',
+  sold: 'Đã bán',
+  revenue: 'Doanh thu',
+  avgPrice: 'Giá TB',
+  returnRate: 'Tỷ lệ hoàn',
+  trend: 'Xu hướng',
+  sparkline: '7 Ngày',
 }
 
 const platformClassMap = {
-  shopee: 'bg-orange-100 text-orange-600',
-  lazada: 'bg-indigo-100 text-indigo-700',
+  shopee: 'bg-orange-100 text-orange-700',
+  lazada: 'bg-indigo-100 text-indigo-800',
   tiktok: 'bg-slate-900 text-white',
 }
 
@@ -97,216 +67,301 @@ const toneToPlatformMap: Record<DashboardTopProductsViewModel['rankingRows'][num
   tiktok: 'tiktok_shop',
 }
 
-function triggerCsvDownload(filename: string, content: string) {
-  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = filename
-  anchor.click()
-  URL.revokeObjectURL(url)
+export function getNextVisibleRankingCount(current: number, step: number, total: number) {
+  return Math.min(total, current + step)
+}
+
+export function getCollapsedVisibleRankingCount() {
+  return INITIAL_VISIBLE_ROWS
+}
+
+function compareUnknown(a: any, b: any): number {
+  if (typeof a === 'number' && typeof b === 'number') return a - b
+  const valA = a === null || a === undefined ? '' : String(a)
+  const valB = b === null || b === undefined ? '' : String(b)
+  return valA.localeCompare(valB, 'vi')
 }
 
 export function TopProductsRankingTable({ rows, onProductClick, onQuickFilterPlatform }: TopProductsRankingTableProps) {
   const [visibleRowsCount, setVisibleRowsCount] = useState(INITIAL_VISIBLE_ROWS)
   const [isCustomizeOpen, setIsCustomizeOpen] = useState(false)
   const [visibleColumns, setVisibleColumns] = useState<VisibleColumns>(defaultVisibleColumns)
+  const [sortState, setSortState] = useState<DataTableSortState>({ columnId: 'rank', direction: 'asc' })
 
-  const visibleRows = rows.slice(0, visibleRowsCount)
-  const hasMoreRows = visibleRowsCount < rows.length
-  const canCollapse = visibleRowsCount > INITIAL_VISIBLE_ROWS
-
-  const hiddenColumnsCount = useMemo(
-    () => Object.values(visibleColumns).filter((isVisible) => !isVisible).length,
-    [visibleColumns],
-  )
-
-  const handleToggleColumn = (columnId: OptionalColumnId) => {
+  const handleToggleColumn = useCallback((columnId: OptionalColumnId) => {
     setVisibleColumns((current) => ({
       ...current,
       [columnId]: !current[columnId],
     }))
-  }
+  }, [])
 
-  const handleExportCsv = () => {
-    const csv = buildTopProductsCsv(rows, visibleColumns)
-    triggerCsvDownload('top-products-report.csv', csv)
-    toast.success('Đã xuất báo cáo CSV Top Products.')
-  }
-
-  const handleCopySku = async (sku: string) => {
+  const handleCopySku = useCallback(async (sku: string) => {
     try {
       await navigator.clipboard.writeText(sku)
       toast.success('Đã sao chép SKU.')
     } catch {
       toast.error('Không thể sao chép SKU trên trình duyệt hiện tại.')
     }
-  }
+  }, [])
+
+  const columns = useMemo((): DataTableColumn<TopProductsRankingRowViewModel>[] => {
+    const cols: DataTableColumn<TopProductsRankingRowViewModel>[] = [
+      {
+        id: 'rank',
+        header: 'Hạng',
+        widthClassName: 'w-20',
+        cell: (row) => (
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-sm font-semibold text-slate-700">{row.rankLabel}</span>
+            <TopProductsRankBadge change={row.rankChange} />
+          </div>
+        ),
+      },
+      {
+        id: 'product',
+        header: 'Sản phẩm',
+        cell: (row) => (
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => onProductClick(row.id)}
+              className="h-10 w-10 shrink-0 overflow-hidden rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+            >
+              <img src={row.imageUrl} alt={row.name} className="h-full w-full object-cover" />
+            </button>
+            <div className="flex flex-col gap-1 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => onProductClick(row.id)}
+                className="line-clamp-1 text-left text-sm font-semibold text-slate-900 hover:text-primary-600"
+              >
+                {row.name}
+              </button>
+              <div className="flex flex-wrap gap-1">
+                {row.tags.map((tag) => (
+                  <ProductTag key={tag.type} tag={tag} />
+                ))}
+              </div>
+            </div>
+          </div>
+        ),
+      },
+    ]
+
+    if (visibleColumns.sku) {
+      cols.push({
+        id: 'sku',
+        header: 'SKU',
+        align: 'center',
+        accessor: 'sku',
+        cell: (row) => <span className="font-mono text-[10px] uppercase text-slate-500">{row.sku}</span>,
+      })
+    }
+
+    if (visibleColumns.platform) {
+      cols.push({
+        id: 'platform',
+        header: 'Sàn',
+        align: 'center',
+        accessor: 'platformLabel',
+        cell: (row) => (
+          <span className={`inline-flex rounded-md px-2 py-1 text-[10px] font-bold ${platformClassMap[row.platformTone]}`}>
+            {row.platformLabel}
+          </span>
+        ),
+      })
+    }
+
+    if (visibleColumns.sold) {
+      cols.push({
+        id: 'sold',
+        header: 'Đã bán',
+        align: 'right',
+        sortable: true,
+        sortAccessor: (row) => row.soldValue,
+        cell: (row) => <span className="font-mono text-sm text-slate-900">{row.soldLabel}</span>,
+      })
+    }
+
+    if (visibleColumns.revenue) {
+      cols.push({
+        id: 'revenue',
+        header: 'Doanh thu',
+        align: 'right',
+        sortable: true,
+        sortAccessor: (row) => row.revenueValue,
+        cell: (row) => <span className="font-mono text-sm font-bold text-primary-600">{row.revenueLabel}</span>,
+      })
+    }
+
+    if (visibleColumns.avgPrice) {
+      cols.push({
+        id: 'avgPrice',
+        header: 'Giá TB',
+        align: 'right',
+        sortable: true,
+        sortAccessor: (row) => row.avgPriceValue,
+        cell: (row) => <span className="font-mono text-sm text-slate-900">{row.avgPriceLabel}</span>,
+      })
+    }
+
+    if (visibleColumns.returnRate) {
+      cols.push({
+        id: 'returnRate',
+        header: 'Tỷ lệ hoàn',
+        align: 'right',
+        sortable: true,
+        sortAccessor: (row) => row.returnRateValue,
+        cell: (row) => <span className="font-mono text-sm text-slate-900">{row.returnRateLabel}</span>,
+      })
+    }
+
+    if (visibleColumns.trend) {
+      cols.push({
+        id: 'trend',
+        header: 'Xu hướng',
+        align: 'center',
+        cell: (row) => (
+          <div
+            className="inline-flex items-end gap-1 rounded-md bg-slate-50 px-2 py-1"
+            role="img"
+            aria-label={`Xu hướng ${row.trendTone === 'up' ? 'tăng' : 'giảm'}`}
+          >
+            {row.trendBars.map((bar, index) => (
+              <span
+                key={`${row.id}-bar-${index}`}
+                className={`w-2 rounded-sm ${row.trendTone === 'up' ? 'bg-primary-500' : 'bg-red-400'}`}
+                style={{ height: `${bar}px` }}
+              />
+            ))}
+          </div>
+        ),
+      })
+    }
+
+    if (visibleColumns.sparkline) {
+      cols.push({
+        id: 'sparkline',
+        header: '7 Ngày',
+        align: 'center',
+        widthClassName: 'w-32',
+        cell: (row) => <TopProductsSparkline data={row.sparklineData} tone={row.trendTone} />,
+      })
+    }
+
+    cols.push({
+      id: 'actions',
+      header: 'Tác vụ',
+      align: 'center',
+      cell: (row) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger className="rounded-md p-1 text-slate-500 hover:bg-slate-100" aria-label={`Tác vụ sản phẩm ${row.name}`}>
+            <MoreVertical className="h-4 w-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuItem className="cursor-pointer" onClick={() => onProductClick(row.id)}>
+              Xem chi tiết sản phẩm
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => handleCopySku(row.sku)}>
+              Sao chép SKU
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => {
+                onQuickFilterPlatform(toneToPlatformMap[row.platformTone])
+                toast.success(`Đã lọc theo sàn ${row.platformLabel}.`)
+              }}
+            >
+              Lọc theo sàn này
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    })
+
+    return cols
+  }, [onProductClick, onQuickFilterPlatform, visibleColumns])
+
+  const sortedAndVisibleRows = useMemo(() => {
+    const sorted = [...rows]
+    const activeColumn = columns.find(c => c.id === sortState.columnId)
+    
+    if (activeColumn && activeColumn.sortable) {
+      sorted.sort((a, b) => {
+        const valA = activeColumn.sortAccessor 
+          ? activeColumn.sortAccessor(a) 
+          : (activeColumn.accessor 
+              ? (typeof activeColumn.accessor === 'function' ? activeColumn.accessor(a) : (a as any)[activeColumn.accessor]) 
+              : null)
+        const valB = activeColumn.sortAccessor 
+          ? activeColumn.sortAccessor(b) 
+          : (activeColumn.accessor 
+              ? (typeof activeColumn.accessor === 'function' ? activeColumn.accessor(b) : (b as any)[activeColumn.accessor]) 
+              : null)
+        
+        const result = compareUnknown(valA, valB)
+        return sortState.direction === 'asc' ? result : -result
+      })
+    }
+
+    return sorted.slice(0, visibleRowsCount)
+  }, [rows, columns, sortState, visibleRowsCount])
+
+  const hasMoreRows = visibleRowsCount < rows.length
+  const canCollapse = visibleRowsCount > INITIAL_VISIBLE_ROWS
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-[#e7eeff] bg-white shadow-sm">
-      <header className="flex items-center justify-between border-b border-[#eef2ff] px-5 py-4">
-        <h3 className="text-base font-bold text-[#111c2d]">Danh sách xếp hạng đầy đủ</h3>
+    <section className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+      <header className="flex items-center justify-between border-b border-slate-50 px-5 py-4">
+        <h3 className="text-base font-bold text-slate-900">Danh sách xếp hạng đầy đủ</h3>
         <button
           type="button"
           onClick={() => setIsCustomizeOpen((prev) => !prev)}
-          className="text-sm font-semibold text-[#5b4bff] hover:text-[#4338ca]"
+          className="text-sm font-semibold text-primary-600 hover:text-primary-700"
         >
           Tuỳ chỉnh báo cáo
         </button>
       </header>
 
       {isCustomizeOpen ? (
-        <div className="border-b border-[#eef2ff] bg-[#f8f9ff] px-5 py-4">
+        <div className="border-b border-slate-50 bg-slate-50/50 px-5 py-4">
           <div className="flex flex-wrap items-center gap-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#334155]">Ẩn/hiện cột</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-700">Ẩn/hiện cột</p>
             <div className="flex flex-wrap gap-3">
-              {columnDefs.map((column) => {
-                const checked = visibleColumns[column.id]
-
-                return (
-                  <label key={column.id} className="inline-flex items-center gap-2 text-xs text-[#334155]">
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => handleToggleColumn(column.id)}
-                      className="h-3.5 w-3.5 rounded border-slate-300"
-                    />
-                    {column.label}
-                  </label>
-                )
-              })}
-            </div>
-          </div>
-
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-[#64748b]">
-              {hiddenColumnsCount > 0 ? `Đang ẩn ${hiddenColumnsCount} cột.` : 'Đang hiển thị đầy đủ các cột.'}
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setVisibleColumns(defaultVisibleColumns)}
-                className="rounded-md border border-[#dbe1ff] px-3 py-1.5 text-xs font-semibold text-[#334155] hover:bg-white"
-              >
-                Khôi phục mặc định
-              </button>
-              <button
-                type="button"
-                onClick={handleExportCsv}
-                className="rounded-md bg-[#4338ca] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#3730a3]"
-              >
-                Xuất CSV
-              </button>
+              {(Object.keys(columnLabels) as OptionalColumnId[]).map((id) => (
+                <label key={id} className="inline-flex items-center gap-2 text-xs text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={visibleColumns[id]}
+                    onChange={() => handleToggleColumn(id)}
+                    className="h-3.5 w-3.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                  />
+                  {columnLabels[id]}
+                </label>
+              ))}
             </div>
           </div>
         </div>
       ) : null}
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[860px]">
-          <thead>
-            <tr className="bg-[#f8f9ff] text-[10px] uppercase tracking-[0.08em] text-[#64748b]">
-              <th className="px-4 py-3 text-left">Hạng</th>
-              <th className="px-4 py-3 text-left">Sản phẩm</th>
-              {visibleColumns.sku ? <th className="px-4 py-3 text-center">SKU</th> : null}
-              {visibleColumns.platform ? <th className="px-4 py-3 text-center">Sàn</th> : null}
-              {visibleColumns.sold ? <th className="px-4 py-3 text-right">Đã bán</th> : null}
-              {visibleColumns.revenue ? <th className="px-4 py-3 text-right">Doanh thu</th> : null}
-              {visibleColumns.avgPrice ? <th className="px-4 py-3 text-right">Giá TB</th> : null}
-              {visibleColumns.returnRate ? <th className="px-4 py-3 text-right">Tỷ lệ hoàn</th> : null}
-              {visibleColumns.trend ? <th className="px-4 py-3 text-center">Xu hướng</th> : null}
-              <th className="px-4 py-3 text-center">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visibleRows.map((row) => (
-              <tr key={row.id} className="border-t border-[#eef2ff]">
-                <td className="px-4 py-4 font-mono text-sm font-semibold text-[#334155]">{row.rankLabel}</td>
-                <td className="px-4 py-4">
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        console.log('[TopProducts] Click product:', { productId: row.id, productName: row.name })
-                        onProductClick(row.id)
-                      }}
-                      className="h-10 w-10 overflow-hidden rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366f1]"
-                    >
-                      <img src={row.imageUrl} alt={row.name} className="h-full w-full object-cover" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        console.log('[TopProducts] Click product:', { productId: row.id, productName: row.name })
-                        onProductClick(row.id)
-                      }}
-                      className="line-clamp-1 text-left text-base font-semibold text-[#0f172a] hover:text-[#4338ca]"
-                    >
-                      {row.name}
-                    </button>
-                  </div>
-                </td>
-                {visibleColumns.sku ? <td className="px-4 py-4 text-center font-mono text-[10px] uppercase text-[#64748b]">{row.sku}</td> : null}
-                {visibleColumns.platform ? (
-                  <td className="px-4 py-4 text-center">
-                    <span className={`inline-flex rounded-md px-2 py-1 text-[10px] font-bold ${platformClassMap[row.platformTone]}`}>{row.platformLabel}</span>
-                  </td>
-                ) : null}
-                {visibleColumns.sold ? <td className="px-4 py-4 text-right font-mono text-base text-[#111c2d]">{row.soldLabel}</td> : null}
-                {visibleColumns.revenue ? <td className="px-4 py-4 text-right font-mono text-base font-bold text-[#4338ca]">{row.revenueLabel}</td> : null}
-                {visibleColumns.avgPrice ? <td className="px-4 py-4 text-right font-mono text-base text-[#111c2d]">{row.avgPriceLabel}</td> : null}
-                {visibleColumns.returnRate ? <td className="px-4 py-4 text-right font-mono text-base text-[#111c2d]">{row.returnRateLabel}</td> : null}
-                {visibleColumns.trend ? (
-                  <td className="px-4 py-4 text-center">
-                    <div className="inline-flex items-end gap-1 rounded-md bg-[#eef2ff] px-2 py-1">
-                      {row.trendBars.map((bar, index) => (
-                        <span
-                          key={`${row.id}-bar-${index}`}
-                          className={`w-2 rounded-sm ${row.trendTone === 'up' ? 'bg-[#6366f1]' : 'bg-[#f87171]'}`}
-                          style={{ height: `${bar}px` }}
-                        />
-                      ))}
-                    </div>
-                  </td>
-                ) : null}
-                <td className="px-4 py-4 text-center">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="rounded-md p-1 text-[#64748b] hover:bg-[#f1f5f9]" aria-label={`Tác vụ sản phẩm ${row.name}`}>
-                      <MoreVertical className="h-4 w-4" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-44">
-                      <DropdownMenuItem className="cursor-pointer" onClick={() => onProductClick(row.id)}>
-                        Xem chi tiết sản phẩm
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="cursor-pointer" onClick={() => handleCopySku(row.sku)}>
-                        Sao chép SKU
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="cursor-pointer"
-                        onClick={() => {
-                          onQuickFilterPlatform(toneToPlatformMap[row.platformTone])
-                          toast.success(`Đã lọc theo sàn ${row.platformLabel}.`)
-                        }}
-                      >
-                        Lọc theo sàn này
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <DataTable
+          rows={sortedAndVisibleRows}
+          columns={columns}
+          rowKey={(row) => row.id}
+          tableClassName="min-w-[960px]"
+          sortState={sortState}
+          onSortChange={setSortState}
+        />
       </div>
 
-      <footer className="border-t border-[#eef2ff] py-3 text-center text-xs font-semibold text-[#334155]">
+      <footer className="border-t border-slate-50 py-3 text-center text-xs font-semibold text-slate-700">
         <div className="flex items-center justify-center gap-4">
           {hasMoreRows ? (
             <button
               type="button"
-              className="text-[#5b4bff] hover:text-[#4338ca]"
+              className="text-primary-600 hover:text-primary-700"
               onClick={() => setVisibleRowsCount((current) => getNextVisibleRankingCount(current, INITIAL_VISIBLE_ROWS, rows.length))}
             >
               Xem thêm {Math.min(INITIAL_VISIBLE_ROWS, rows.length - visibleRowsCount)} sản phẩm
@@ -318,7 +373,7 @@ export function TopProductsRankingTable({ rows, onProductClick, onQuickFilterPla
           {canCollapse ? (
             <button
               type="button"
-              className="text-[#64748b] hover:text-[#334155]"
+              className="text-slate-500 hover:text-slate-700"
               onClick={() => setVisibleRowsCount(getCollapsedVisibleRankingCount())}
             >
               Thu gọn

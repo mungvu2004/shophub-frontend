@@ -20,6 +20,8 @@ export function useOrdersAllData(params: {
   dateTo: string
   minAmount: string
   maxAmount: string
+  sortBy?: string
+  sortDirection?: 'asc' | 'desc'
 }) {
   const serviceParams: GetOrdersAllParams = {
     search: params.search,
@@ -31,6 +33,8 @@ export function useOrdersAllData(params: {
     dateTo: params.dateTo || undefined,
     minAmount: toOptionalNumber(params.minAmount),
     maxAmount: toOptionalNumber(params.maxAmount),
+    sortBy: params.sortBy,
+    sortDirection: params.sortDirection,
   }
 
   const query = useQuery({
@@ -46,6 +50,8 @@ export function useOrdersAllData(params: {
       params.dateTo,
       params.minAmount,
       params.maxAmount,
+      params.sortBy,
+      params.sortDirection,
     ] as const,
     queryFn: (): Promise<OrdersAllResponse> => ordersAllService.getOrders(serviceParams),
     staleTime: 2 * 60 * 1000,

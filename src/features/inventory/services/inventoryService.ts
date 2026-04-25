@@ -88,6 +88,41 @@ class InventoryService {
     const response = await apiClient.post('/inventory/adjust', adjustment);
     return response.data;
   }
+  /**
+   * Fetch unique categories from existing stock
+   */
+  async getCategories(): Promise<string[]> {
+    const response = await apiClient.get('/inventory/categories');
+    return response.data;
+  }
+
+  /**
+   * Create a new SKU
+   */
+  async createSKU(data: any): Promise<StockLevel> {
+    const response = await apiClient.post('/inventory', data);
+    return response.data;
+  }
+
+  /**
+   * Delete SKU(s)
+   */
+  async deleteSKUs(ids: string[]): Promise<void> {
+    await apiClient.delete('/inventory', { data: { ids } });
+  }
+
+  /**
+   * Fetch inventory summary
+   */
+  async getInventorySummary(): Promise<{
+    totalSKUs: number;
+    totalValue: string;
+    lastUpdated: string;
+    lowStockCount: number;
+  }> {
+    const response = await apiClient.get('/inventory/summary');
+    return response.data;
+  }
 }
 
 export const inventoryService = new InventoryService();

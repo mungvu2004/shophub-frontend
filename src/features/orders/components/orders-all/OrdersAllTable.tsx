@@ -46,6 +46,8 @@ type OrdersAllTableProps = {
   onToggleOne: (id: string) => void
   onOpenDetail?: (row: OrdersAllTableRowModel) => void
   onExportData: () => void
+  sortState: DataTableSortState
+  onSortChange: (sort: DataTableSortState) => void
   onPageChange: (page: number) => void
   onPageSizeChange: (pageSize: number) => void
 }
@@ -76,12 +78,13 @@ export function OrdersAllTable({
   onToggleOne,
   onOpenDetail,
   onExportData,
+  sortState,
+  onSortChange,
   onPageChange,
   onPageSizeChange,
 }: OrdersAllTableProps) {
   const navigate = useNavigate()
   const location = useLocation()
-  const [sortState, setSortState] = useState<DataTableSortState>({ columnId: 'updated', direction: 'desc' })
   const [printStatusOverrides, setPrintStatusOverrides] = useState<Record<string, boolean>>({})
 
   const isPrinted = (row: OrdersAllTableRowModel) => {
@@ -168,7 +171,7 @@ export function OrdersAllTable({
       {
         id: 'code',
         header: 'Mã đơn',
-        widthClassName: 'w-[11%]',
+        widthClassName: 'w-[110px]',
         cell: (row) => (
           <>
             <button
@@ -189,7 +192,7 @@ export function OrdersAllTable({
         id: 'platform',
         header: 'Sàn',
         align: 'center',
-        widthClassName: 'w-[8%]',
+        widthClassName: 'w-[60px]',
         cell: (row) => (
           <span
             className={`inline-flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-bold ${platformMarkClassMap[row.platform]}`}
@@ -203,7 +206,7 @@ export function OrdersAllTable({
       {
         id: 'product',
         header: 'Sản phẩm',
-        widthClassName: 'w-[15%]',
+        widthClassName: 'min-w-[180px]',
         cellClassName: 'max-w-0',
         cell: (row) => (
           <>
@@ -227,7 +230,7 @@ export function OrdersAllTable({
         sortAccessor: (row) => row.amountValue,
         accessor: (row) => row.amountLabel,
         align: 'right',
-        widthClassName: 'w-[16%]',
+        widthClassName: 'w-[140px]',
         cellClassName: 'font-mono text-[14px] font-bold text-slate-900',
       },
       {
@@ -236,7 +239,7 @@ export function OrdersAllTable({
         sortable: true,
         sortAccessor: (row) => statusSortWeight[row.status],
         align: 'center',
-        widthClassName: 'w-[17%]',
+        widthClassName: 'w-[150px]',
         cell: (row) => renderStatus(row),
       },
       {
@@ -245,7 +248,7 @@ export function OrdersAllTable({
         sortable: true,
         sortAccessor: (row) => (isPrinted(row) ? 1 : 0),
         align: 'center',
-        widthClassName: 'w-[14%]',
+        widthClassName: 'w-[120px]',
         cell: (row) => (
           <button
             type="button"
@@ -267,7 +270,7 @@ export function OrdersAllTable({
         sortable: true,
         sortAccessor: (row) => row.updatedAtMs,
         align: 'center',
-        widthClassName: 'w-[11%]',
+        widthClassName: 'w-[110px]',
         cell: (row) => (
           <span className={`inline-flex text-[12px] ${row.updatedTone === 'danger' ? 'font-semibold text-rose-600' : 'text-slate-500'}`}>
             {row.updatedAgoLabel}
@@ -278,7 +281,7 @@ export function OrdersAllTable({
         id: 'actions',
         header: 'Tác vụ',
         align: 'center',
-        widthClassName: 'w-[6%]',
+        widthClassName: 'w-[70px]',
         cell: (row) => {
           const isSelected = selectedIds.includes(row.id)
 
@@ -324,11 +327,11 @@ export function OrdersAllTable({
   )
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_24px_60px_-35px_rgba(15,23,42,0.4)]">
-      <div className="flex items-start justify-between gap-3 border-b border-slate-100 bg-[linear-gradient(135deg,#eef2ff_0%,#ffffff_48%,#ecfeff_100%)] px-5 py-4">
+    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_12px_32px_-12px_rgba(15,23,42,0.12)]">
+      <div className="flex items-start justify-between gap-3 border-b border-slate-100 bg-slate-50/50 px-5 py-4">
         <div>
           <p className="text-sm font-semibold text-slate-900">Danh sách đơn hàng</p>
-          <p className="mt-1 text-xs text-slate-500">Theo dõi đơn quan trọng, phản ứng nhanh theo trạng thái và thao tác ngay trong từng dòng.</p>
+          <p className="mt-1 text-xs text-slate-500">Phản ứng nhanh theo trạng thái và thao tác ngay trong từng dòng.</p>
         </div>
 
         <button
@@ -344,27 +347,29 @@ export function OrdersAllTable({
       </div>
 
       <div className="px-5 py-4">
-        <DataTable
-          rows={rows}
-          columns={columns}
-          rowKey={(row) => row.id}
-          tableClassName="w-full table-fixed [&_th]:whitespace-nowrap [&_td]:align-middle"
-          disableScroll
-          emptyText="Không có đơn hàng phù hợp với bộ lọc hiện tại."
-          sortState={sortState}
-          onSortChange={(nextSort) => setSortState(nextSort)}
-          rowClassName={(row) => {
-            const isSelected = selectedIds.includes(row.id)
-            const isDangerRow = row.updatedTone === 'danger'
+        <div className="overflow-x-auto rounded-xl border border-slate-100">
+          <DataTable
+            rows={rows}
+            columns={columns}
+            rowKey={(row) => row.id}
+            tableClassName="w-full min-w-[1000px] table-fixed [&_th]:whitespace-nowrap [&_td]:align-middle"
+            disableScroll
+            emptyText="Không có đơn hàng phù hợp với bộ lọc hiện tại."
+            sortState={sortState}
+            onSortChange={onSortChange}
+            rowClassName={(row) => {
+              const isSelected = selectedIds.includes(row.id)
+              const isDangerRow = row.updatedTone === 'danger'
 
-            return isSelected
-              ? 'bg-indigo-50/75 hover:bg-indigo-50/75'
-              : isDangerRow
-                ? 'bg-rose-50/35 hover:bg-rose-50/35'
-                : 'hover:bg-slate-50/90'
-          }}
-          onRowClick={(row) => openOrderDetail(row)}
-        />
+              return isSelected
+                ? 'bg-indigo-50/75 hover:bg-indigo-50/75'
+                : isDangerRow
+                  ? 'bg-rose-50/35 hover:bg-rose-50/35'
+                  : 'hover:bg-slate-50/90'
+            }}
+            onRowClick={(row) => openOrderDetail(row)}
+          />
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/70 px-5 py-4">

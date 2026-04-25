@@ -32,9 +32,31 @@ export const stockMovementsService = {
     };
   },
 
-  async getChartData(): Promise<InventoryStockMovementChartEntry[]> {
-    await new Promise(resolve => setTimeout(resolve, 400));
-    return mockChartData;
+  async getChartData(filters?: Partial<InventoryStockMovementsQueryState>): Promise<InventoryStockMovementChartEntry[]> {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // Default data for 'all'
+    if (!filters || (filters.platform === 'all' && filters.movementGroup === 'all' && filters.warehouseId === 'all')) {
+      return mockChartData;
+    }
+
+    // Assign unique multipliers per platform to make them distinct
+    const platformMultipliers: Record<string, { in: number, out: number }> = {
+      'shopee': { in: 0.6, out: 1.2 },
+      'lazada': { in: 1.4, out: 0.5 },
+      'tiktok_shop': { in: 0.9, out: 0.8 },
+    };
+
+    const multiplier = (filters.platform && platformMultipliers[filters.platform]) || { in: 0.5, out: 0.5 };
+    const warehouseFactor = filters.warehouseId !== 'all' ? 0.6 : 1;
+
+    // Generate distinct data based on selection
+    return mockChartData.map((item, idx) => ({
+      ...item,
+      // Add a bit of randomness per index to make the line shape change slightly too
+      inbound: Math.floor(item.inbound * multiplier.in * warehouseFactor * (idx % 2 === 0 ? 1.1 : 0.9)),
+      outbound: Math.floor(item.outbound * multiplier.out * warehouseFactor * (idx % 3 === 0 ? 0.8 : 1.2))
+    }));
   },
 
   async getPerformers() {

@@ -14,6 +14,12 @@ export type DashboardAlertAction = {
   variant: AlertsActionVariant
 }
 
+export type Assignee = {
+  id: string
+  name: string
+  avatar?: string
+}
+
 export type DashboardAlertRecord = {
   id: string
   title: string
@@ -24,10 +30,27 @@ export type DashboardAlertRecord = {
   category: AlertsCategory
   platform: AlertsPlatform
   priority: AlertsPriority
-  countdownMinutes?: number
+  expiresAt?: string
   quote?: string
   actions: DashboardAlertAction[]
   isRead: boolean
+  assignedTo?: Assignee
+  resolvedAt?: string
+}
+
+export type AlertThreshold = {
+  id: string
+  category: AlertsCategory
+  label: string
+  value: number
+  unit: string
+  description: string
+}
+
+export type AlertFrequencyDataPoint = {
+  date: string
+  count: number
+  criticalCount: number
 }
 
 export type DashboardAlertsNotificationsResponse = {
@@ -37,7 +60,7 @@ export type DashboardAlertsNotificationsResponse = {
   summaryTotals?: Partial<Record<AlertsSeverity, number>>
 }
 
-export type AlertsTabId = 'all' | 'critical' | AlertsCategory
+export type AlertsTabId = 'all' | 'critical' | AlertsCategory | 'history'
 
 export type AlertsFilter = {
   tab: AlertsTabId
@@ -68,8 +91,10 @@ export type DashboardAlertCardModel = {
   platform: AlertsPlatform
   priorityLabel: string
   countdownLabel?: string
+  expiresAt?: string
   quote?: string
   actions: DashboardAlertAction[]
+  assignedTo?: Assignee
 }
 
 export type DashboardAlertsSectionModel = {
@@ -84,6 +109,11 @@ export type DashboardAlertsNotificationsViewModel = {
   subtitle: string
   autoRefreshLabel: string
   updatedAtLabel: string
+  markAllReadLabel: string
+  settingsTooltip: string
+  filterLabel: string
+  clearFilterLabel: string
+  emptyMessage: string
   tabs: AlertsTabItem[]
   summaryChips: AlertsSummaryChip[]
   sections: DashboardAlertsSectionModel[]

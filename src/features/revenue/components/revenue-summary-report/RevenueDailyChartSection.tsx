@@ -11,6 +11,7 @@ import {
 import type { RevenueSummaryReportViewModel } from '@/features/revenue/logic/revenueSummaryReport.logic'
 import { toCurrencyLabel } from '@/features/revenue/components/revenue-summary-report/revenueSummaryReport.formatters'
 import type { RevenueSummaryPlatformFilter } from '@/types/revenue.types'
+import { REVENUE_COLORS, CHART_CONFIG } from '@/features/revenue/logic/revenueSummary.constants'
 
 type RevenueTooltipItem = {
   dataKey?: string | number
@@ -30,13 +31,16 @@ function DailyRevenueTooltip({ active, payload, label }: RevenueTooltipProps) {
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs shadow-lg">
-      <p className="mb-1 font-semibold text-slate-500">Ngày {label}</p>
-      <div className="space-y-1">
+    <div className="rounded-xl border border-secondary-200 bg-white px-4 py-2.5 text-xs shadow-xl ring-1 ring-secondary-200/50">
+      <p className="mb-1.5 font-bold text-secondary-500 uppercase tracking-widest text-[10px]">Ngày {label}</p>
+      <div className="space-y-1.5">
         {payload.map((item) => (
-          <div key={item.dataKey?.toString()} className="flex items-center justify-between gap-4">
-            <span className="font-medium text-slate-600">{item.name}</span>
-            <span className="font-bold text-slate-900">{toCurrencyLabel(Number(item.value ?? 0))}</span>
+          <div key={item.dataKey?.toString()} className="flex items-center justify-between gap-6">
+            <div className="flex items-center gap-2">
+              <span className="size-1.5 rounded-full" style={{ backgroundColor: item.dataKey === 'shopee' ? REVENUE_COLORS.SHOPEE : item.dataKey === 'tiktok' ? REVENUE_COLORS.TIKTOK : item.dataKey === 'lazada' ? REVENUE_COLORS.LAZADA : REVENUE_COLORS.PREVIOUS }} />
+              <span className="font-semibold text-secondary-600">{item.name}</span>
+            </div>
+            <span className="font-bold font-mono text-secondary-900">{toCurrencyLabel(Number(item.value ?? 0))}</span>
           </div>
         ))}
       </div>
@@ -64,62 +68,47 @@ export function RevenueDailyChartSection({
   }
 
   return (
-    <section className="flex h-full min-h-0 flex-col rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
-      <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+    <section className="flex flex-col rounded-xl border border-secondary-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">Doanh thu theo ngày</h2>
-          <p className="mt-1 text-sm font-medium text-slate-500">{periodLabel}</p>
+          <h2 className="text-lg font-bold text-secondary-900 tracking-tight">Doanh thu theo ngày</h2>
+          <p className="mt-1 text-sm font-semibold text-secondary-500">{periodLabel}</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-600">
-          {shouldShowSeries('shopee') ? <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-[#f97316]" />Shopee</span> : null}
-          {shouldShowSeries('tiktok') ? <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-[#1d4ed8]" />TikTok Shop</span> : null}
-          {shouldShowSeries('lazada') ? <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-[#8b5cf6]" />Lazada</span> : null}
-          <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full border border-slate-400" />{comparisonLabel}</span>
+        <div className="flex flex-wrap items-center gap-5 text-[10px] font-bold uppercase tracking-widest text-secondary-500">
+          {shouldShowSeries('shopee') ? <span className="inline-flex items-center gap-2"><span className="size-2 rounded-full" style={{ backgroundColor: REVENUE_COLORS.SHOPEE }} />Shopee</span> : null}
+          {shouldShowSeries('tiktok') ? <span className="inline-flex items-center gap-2"><span className="size-2 rounded-full" style={{ backgroundColor: REVENUE_COLORS.TIKTOK }} />TikTok Shop</span> : null}
+          {shouldShowSeries('lazada') ? <span className="inline-flex items-center gap-2"><span className="size-2 rounded-full" style={{ backgroundColor: REVENUE_COLORS.LAZADA }} />Lazada</span> : null}
+          <span className="inline-flex items-center gap-2"><span className="size-2 rounded-full border border-secondary-400" />{comparisonLabel}</span>
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 rounded-2xl border border-slate-100 bg-gradient-to-b from-slate-50 to-white px-3 py-2">
+      <div className="h-[320px] w-full min-h-0 flex-1 rounded-xl border border-secondary-100 bg-secondary-50/20 px-2 py-5 overflow-hidden">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={dailyRevenue} margin={{ top: 12, right: 8, bottom: 0, left: 0 }}>
-            <defs>
-              <linearGradient id="shopeeGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#fdba74" stopOpacity={0.7} />
-                <stop offset="100%" stopColor="#fdba74" stopOpacity={0.08} />
-              </linearGradient>
-              <linearGradient id="tiktokGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#60a5fa" stopOpacity={0.6} />
-                <stop offset="100%" stopColor="#60a5fa" stopOpacity={0.08} />
-              </linearGradient>
-              <linearGradient id="lazadaGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#a78bfa" stopOpacity={0.55} />
-                <stop offset="100%" stopColor="#a78bfa" stopOpacity={0.08} />
-              </linearGradient>
-            </defs>
-
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+          <AreaChart data={dailyRevenue} margin={{ top: 10, right: 15, bottom: 0, left: 0 }}>
+            <CartesianGrid strokeDasharray="4 4" vertical={false} stroke={CHART_CONFIG.GRID_COLOR} />
             <XAxis
               dataKey="label"
               tickLine={false}
               axisLine={false}
               interval={tickInterval}
-              minTickGap={10}
-              label={{ value: 'Ngày trong tháng', position: 'insideBottom', offset: -2, fill: '#475569', fontSize: 12 }}
-              tick={{ fontSize: 12, fill: '#475569', fontWeight: 600 }}
+              minTickGap={15}
+              tick={{ fontSize: 10, fill: CHART_CONFIG.TICK_COLOR, fontWeight: 700, fontFamily: CHART_CONFIG.FONT_FAMILY_MONO }}
             />
             <YAxis hide />
-            <Tooltip content={<DailyRevenueTooltip />} cursor={{ stroke: '#cbd5e1', strokeDasharray: '4 4' }} />
-            <Area type="monotone" dataKey="shopee" name="Shopee" stackId="1" hide={!shouldShowSeries('shopee')} stroke="#f97316" fill="url(#shopeeGradient)" strokeWidth={2.2} />
-            <Area type="monotone" dataKey="tiktok" name="TikTok Shop" stackId="1" hide={!shouldShowSeries('tiktok')} stroke="#2563eb" fill="url(#tiktokGradient)" strokeWidth={2.2} />
-            <Area type="monotone" dataKey="lazada" name="Lazada" stackId="1" hide={!shouldShowSeries('lazada')} stroke="#8b5cf6" fill="url(#lazadaGradient)" strokeWidth={2.2} />
+            <Tooltip content={<DailyRevenueTooltip />} cursor={{ stroke: REVENUE_COLORS.PRIMARY, strokeDasharray: '6 6', strokeWidth: 1 }} />
+            <Area type="monotone" dataKey="shopee" name="Shopee" stackId="1" hide={!shouldShowSeries('shopee')} stroke={REVENUE_COLORS.SHOPEE} fill={REVENUE_COLORS.SHOPEE} fillOpacity={0.08} strokeWidth={2.5} animationDuration={1000} />
+            <Area type="monotone" dataKey="tiktok" name="TikTok Shop" stackId="1" hide={!shouldShowSeries('tiktok')} stroke={REVENUE_COLORS.TIKTOK} fill={REVENUE_COLORS.TIKTOK} fillOpacity={0.08} strokeWidth={2.5} animationDuration={1200} />
+            <Area type="monotone" dataKey="lazada" name="Lazada" stackId="1" hide={!shouldShowSeries('lazada')} stroke={REVENUE_COLORS.LAZADA} fill={REVENUE_COLORS.LAZADA} fillOpacity={0.08} strokeWidth={2.5} animationDuration={1400} />
             <Area
               type="monotone"
               dataKey="previous"
               name={comparisonLabel}
-              stroke="#64748b"
+              stroke={REVENUE_COLORS.PREVIOUS}
               fill="transparent"
-              strokeDasharray="6 4"
+              strokeDasharray="6 6"
               strokeWidth={2}
+              animationDuration={800}
             />
           </AreaChart>
         </ResponsiveContainer>

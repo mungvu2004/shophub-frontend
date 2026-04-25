@@ -8,46 +8,50 @@ type RevenueHeroSectionProps = {
   model: RevenueChartsViewModel
   isRefreshing: boolean
   onRangeChange: (range: RevenueChartsRangeDays) => void
+  onExportFullReport: () => void
+  onToggleSettings: () => void
 }
 
-export function RevenueHeroSection({ model, isRefreshing, onRangeChange }: RevenueHeroSectionProps) {
+export function RevenueHeroSection({ 
+  model, 
+  isRefreshing, 
+  onRangeChange,
+  onExportFullReport,
+  onToggleSettings
+}: RevenueHeroSectionProps) {
   return (
-    <div className="relative overflow-hidden rounded-[2.5rem] bg-[#0F172A] p-8 text-white shadow-2xl sm:p-12">
-      {/* Background patterns */}
-      <div className="absolute left-0 top-0 h-full w-full opacity-10">
-        <div className="absolute left-[-10%] top-[-20%] h-[400px] w-[400px] rounded-full bg-indigo-500 blur-[100px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] h-[400px] w-[400px] rounded-full bg-blue-500 blur-[100px]" />
-      </div>
+    <div className="relative overflow-hidden rounded-3xl border border-secondary-200 bg-white px-5 py-6 shadow-sm sm:px-8 sm:py-7">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_oklch(0.94_0.03_263)_0%,_transparent_45%),radial-gradient(circle_at_bottom_left,_oklch(0.95_0.03_248)_0%,_transparent_40%)]" />
 
-      <div className="relative z-10 flex flex-col justify-between gap-10 lg:flex-row lg:items-end">
+      <div className="relative z-10 flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-indigo-500/20 p-2 backdrop-blur-md">
-              <Layers className="h-6 w-6 text-indigo-400" />
+            <div className="rounded-xl bg-primary-50 p-2 text-primary-600">
+              <Layers className="h-6 w-6" />
             </div>
-            <h1 className="text-3xl font-black tracking-tight sm:text-4xl">{model.title}</h1>
+            <h1 className="text-2xl font-black tracking-tight text-secondary-900 sm:text-3xl">{model.title}</h1>
           </div>
-          <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-400">
-            <span className="flex items-center gap-2">
-              <RefreshCw className={`h-4 w-4 text-emerald-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <div className="flex flex-wrap items-center gap-3 text-sm font-medium text-secondary-500">
+            <span className="inline-flex items-center gap-2 rounded-full bg-secondary-100 px-3 py-1.5 text-xs font-semibold text-secondary-700">
+              <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
               Cập nhật lúc: {model.updatedAtLabel}
             </span>
-            <span className="h-1 w-1 rounded-full bg-slate-600" />
-            <span className="text-indigo-400">Live Analytics Active</span>
+            <span className="h-1 w-1 rounded-full bg-secondary-300" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-primary-700">Live analytics active</span>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex rounded-2xl bg-slate-800/50 p-1.5 backdrop-blur-md border border-slate-700/50">
+        <div className="flex w-full flex-col gap-3 xl:w-auto xl:items-end">
+          <div className="flex flex-wrap gap-2 rounded-2xl border border-secondary-200 bg-secondary-50 p-1.5">
             {model.rangeTabs.map((tab) => (
               <button
                 key={tab.days}
                 type="button"
                 onClick={() => onRangeChange(tab.days)}
-                className={`rounded-xl px-5 py-2 text-xs font-bold transition-all duration-300 ${
-                  tab.days === model.selectedRange 
-                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' 
-                    : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+                className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                  tab.days === model.selectedRange
+                    ? 'bg-white text-secondary-900 shadow-sm'
+                    : 'text-secondary-500 hover:bg-secondary-100 hover:text-secondary-800'
                 }`}
               >
                 {tab.label}
@@ -55,18 +59,20 @@ export function RevenueHeroSection({ model, isRefreshing, onRangeChange }: Reven
             ))}
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap justify-start gap-2 xl:justify-end">
             <button
               type="button"
-              className="group flex items-center gap-2 rounded-2xl bg-slate-800/50 px-5 py-3 text-sm font-bold text-slate-200 border border-slate-700/50 hover:bg-slate-700 transition-colors"
+              onClick={onExportFullReport}
+              className="group inline-flex items-center gap-2 rounded-xl border border-secondary-200 bg-white px-4 py-2.5 text-sm font-semibold text-secondary-700 transition hover:border-primary-300 hover:text-primary-700 active:scale-95"
             >
-              <Download className="h-4 w-4 text-indigo-400 group-hover:translate-y-0.5 transition-transform" />
+              <Download className="h-4 w-4 transition-transform group-hover:translate-y-0.5" />
               <span>Xuất báo cáo</span>
             </button>
-            
+
             <button
               type="button"
-              className="flex items-center gap-2 rounded-2xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 hover:bg-indigo-500 transition-all hover:scale-[1.02] active:scale-95"
+              onClick={onToggleSettings}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700 active:scale-95"
             >
               <ChevronDown className="h-4 w-4" />
               <span>Tùy chỉnh</span>

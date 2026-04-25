@@ -7,6 +7,29 @@ export const mockStockMovementPerformers = [
   { id: 'system', label: 'Hệ thống (Auto)' },
 ];
 
+// Hàm sinh ngày động cho biểu đồ (7 ngày gần nhất)
+const generateDynamicChartData = () => {
+  const data = [];
+  const today = new Date();
+  
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    
+    const dateLabel = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+    
+    // Sinh số lượng ngẫu nhiên để trông thật hơn
+    data.push({
+      date: dateLabel,
+      inbound: Math.floor(Math.random() * 150) + 50,
+      outbound: Math.floor(Math.random() * 150) + 40
+    });
+  }
+  return data;
+};
+
+export const mockChartData = generateDynamicChartData();
+
 export const mockExtendedStockMovements: InventoryStockMovementRecord[] = [
   {
     id: 1001,
@@ -29,8 +52,8 @@ export const mockExtendedStockMovements: InventoryStockMovementRecord[] = [
     note: 'Lô hàng từ nhà cung cấp X',
     attachments: ['https://example.com/receipt1.pdf', 'https://example.com/photo1.jpg'],
     performerName: 'Nguyễn Văn A',
-    createdAt: '2024-03-20T10:00:00Z',
-    createdAtLabel: '20/03/2024 10:00',
+    createdAt: new Date().toISOString(),
+    createdAtLabel: 'Hôm nay',
     createdByLabel: 'Nguyễn Văn A',
   },
   {
@@ -39,7 +62,7 @@ export const mockExtendedStockMovements: InventoryStockMovementRecord[] = [
     movementGroup: 'adjustment',
     movementTypeLabel: 'Điều chỉnh',
     movementTone: 'amber',
-    platform: 'Shopee',
+    platform: 'shopee',
     platformLabel: 'Shopee',
     warehouseId: 'WH_HCM_01',
     warehouseName: 'Kho HCM',
@@ -52,21 +75,11 @@ export const mockExtendedStockMovements: InventoryStockMovementRecord[] = [
     qtyAfter: 100,
     reason: 'Kiểm kê kho',
     note: 'Phát hiện sai lệch lớn sau kiểm kê tháng 3',
-    isAnomaly: true, // Mark as anomaly due to large adjustment
+    isAnomaly: true,
     attachments: ['https://example.com/audit_report.pdf'],
     performerName: 'Trần Thị B',
-    createdAt: '2024-03-19T14:30:00Z',
-    createdAtLabel: '19/03/2024 14:30',
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    createdAtLabel: 'Hôm qua',
     createdByLabel: 'Trần Thị B',
   },
-  // Add more mock entries as needed for chart and list
-];
-
-export const mockChartData = [
-  { date: '15/03', inbound: 120, outbound: 80 },
-  { date: '16/03', inbound: 45, outbound: 60 },
-  { date: '17/03', inbound: 200, outbound: 150 },
-  { date: '18/03', inbound: 30, outbound: 90 },
-  { date: '19/03', inbound: 100, outbound: 110 },
-  { date: '20/03', inbound: 150, outbound: 70 },
 ];

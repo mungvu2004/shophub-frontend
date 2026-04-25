@@ -1,3 +1,5 @@
+import { REVENUE_CHART_COLORS } from '@/features/dashboard/logic/dashboardRevenueCharts.constants'
+
 type RevenueGoalBannerProps = {
   label: string
   progressPercent: number
@@ -10,7 +12,7 @@ export function RevenueGoalBanner({ label, progressPercent, progressLabel }: Rev
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1">
           <p className="text-sm font-black text-primary-900 leading-none">{label}</p>
-          <p className="text-xs font-medium text-primary-600 opacity-80">Mục tiêu tăng trưởng tháng hiện tại</p>
+          <p className="text-xs font-semibold" style={{ color: REVENUE_CHART_COLORS.PRIMARY }}>Mục tiêu tăng trưởng tháng hiện tại</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs font-black uppercase tracking-wider text-primary-700">{progressLabel}</span>
