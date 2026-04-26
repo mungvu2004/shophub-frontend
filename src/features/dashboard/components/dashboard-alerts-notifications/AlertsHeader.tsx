@@ -28,7 +28,7 @@ export function AlertsHeader({
   onOpenSettings,
 }: AlertsHeaderProps) {
   return (
-    <header className="grid gap-4 rounded-2xl border border-slate-100 bg-white px-5 py-5 shadow-sm md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+    <header className="grid gap-4 rounded-2xl border border-slate-100 bg-white bg-abstract-geometric px-5 py-5 shadow-sm md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
       <div className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h1>
         <p className="text-sm font-medium text-slate-500">{subtitle}</p>

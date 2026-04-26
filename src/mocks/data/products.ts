@@ -44,6 +44,15 @@ export const mockProducts: Product[] = Array.from({ length: 62 }, (_, idx) => {
   const variantImage = buildPlaceholderImage(`P${n}V2`, "#475569");
   const variantAltImage = buildPlaceholderImage(`P${n}V2-2`, "#334155");
 
+  const stock = (n * 7) % 180 + 20;
+  const sold = (n * 11) % 280 + 40;
+  const revenue = ((n * 13) % 120 + 20) * 1000000;
+  const margin = (n * 17) % 40 + 15;
+  const qualityScore = (n * 23) % 60 + 40;
+  const trendData = Array.from({ length: 7 }).map((_, i) => ({
+    value: (n * (i + 1) * 13) % 100 + 20
+  }));
+
   return {
     id: `prod-${String(n).padStart(3, "0")}`,
     sellerId: "seller-001",
@@ -58,6 +67,12 @@ export const mockProducts: Product[] = Array.from({ length: 62 }, (_, idx) => {
     isDeleted: false,
     createdAt: `2026-03-${String((n % 28) + 1).padStart(2, "0")}T02:00:00Z`,
     updatedAt: `2026-03-${String((n % 28) + 1).padStart(2, "0")}T09:00:00Z`,
+    stock,
+    sold,
+    revenue,
+    margin,
+    qualityScore,
+    trendData,
     variants: [
       {
         id: `var-${String(n).padStart(3, "0")}-1`,

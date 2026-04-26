@@ -88,7 +88,7 @@ export function RevenueMlForecastHeaderSection({
   onRangeChange: (days: RevenueMlForecastRangeDays) => void
 }) {
   return (
-    <section className="rounded-3xl border border-indigo-100/80 bg-gradient-to-br from-[#f8f9ff] via-white to-[#eef1ff] p-6 shadow-[0_10px_30px_rgba(53,37,205,0.08)] md:p-7">
+    <section className="rounded-3xl border border-indigo-100/80 bg-gradient-to-br from-[#f8f9ff] via-white to-[#eef1ff] bg-abstract-geometric p-6 shadow-[0_10px_30px_rgba(53,37,205,0.08)] md:p-7">
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">

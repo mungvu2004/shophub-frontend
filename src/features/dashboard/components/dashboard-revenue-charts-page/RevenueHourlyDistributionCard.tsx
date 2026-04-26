@@ -60,7 +60,7 @@ export function RevenueHourlyDistributionCard({
               }}
               itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
               labelStyle={{ fontSize: '10px', color: REVENUE_CHART_COLORS.SLATE_500, marginBottom: '6px', fontWeight: 'black', textTransform: 'uppercase' }}
-              formatter={(value: number) => [formatCurrency(value), 'Doanh thu']}
+              formatter={(value: any) => [formatCurrency(value), 'Doanh thu']}
             />
 
             <Bar dataKey="revenue" radius={[4, 4, 0, 0]} barSize={20}>

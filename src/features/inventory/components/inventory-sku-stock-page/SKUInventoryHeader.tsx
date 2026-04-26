@@ -16,7 +16,7 @@ export function SKUInventoryHeader({
   const lowStockRatio = totalSKUs > 0 ? Math.round((lowStockCount / totalSKUs) * 100) : 0
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="bg-abstract-geometric grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <article className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white p-5 transition-all hover:border-indigo-200 hover:shadow-md">
         <div className="flex items-start justify-between">
           <div className="space-y-1">

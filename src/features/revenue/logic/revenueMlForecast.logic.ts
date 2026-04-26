@@ -53,7 +53,7 @@ const toKpiCardViewModel = (card: RevenueMlForecastKpiCard): RevenueMlForecastKp
       id: card.id,
       label: card.label,
       valueLabel: toCurrencyLabel(card.predictionValue),
-      subValueLabel: toForecastRangeLabel(card.rangeMin, card.rangeMax),
+      subValueLabel: `KHOẢNG BIẾN ĐỘNG: ${toForecastRangeLabel(card.rangeMin, card.rangeMax)}`,
       confidencePercent: card.confidencePercent,
       trendLabel: card.trendPercent ? `${card.trendPercent > 0 ? '+' : ''}${card.trendPercent.toFixed(1)}% vs T3` : undefined,
       trendClassName: card.trendPercent ? getTrendClassName(card.trendPercent > 0 ? 'positive' : card.trendPercent < 0 ? 'negative' : 'neutral') : undefined,
@@ -91,15 +91,23 @@ const toChartPoint = (point: RevenueMlForecastChartPoint): RevenueMlForecastChar
   confidenceHigh: point.confidenceHigh,
 })
 
-const toScenarioCard = (scenario: RevenueMlForecastScenario): RevenueMlForecastScenarioCardViewModel => ({
-  id: scenario.id,
-  title: scenario.title,
-  projectedRevenue: scenario.projectedRevenue,
-  valueLabel: toCurrencyLabel(scenario.projectedRevenue),
-  note: scenario.note,
-  accent: scenario.accent,
-  isRecommended: scenario.isRecommended,
-})
+const toScenarioCard = (scenario: RevenueMlForecastScenario): RevenueMlForecastScenarioCardViewModel => {
+  const statusMap: Record<string, string> = {
+    'Optimistic': 'Lạc quan',
+    'Baseline': 'Cơ sở',
+    'Critical': 'Nguy cấp'
+  }
+  
+  return {
+    id: scenario.id,
+    title: scenario.title,
+    projectedRevenue: scenario.projectedRevenue,
+    valueLabel: toCurrencyLabel(scenario.projectedRevenue),
+    note: statusMap[scenario.note] || scenario.note,
+    accent: scenario.accent,
+    isRecommended: scenario.isRecommended,
+  }
+}
 
 const toActionPlan = (
   actionPlan: RevenueMlForecastResponse['actionPlan'],
@@ -114,19 +122,19 @@ const defaultLegends: RevenueMlForecastChartLegendViewModel[] = [
     id: 'history',
     label: 'Lịch sử',
     type: 'line',
-    color: '#111c2d',
+    color: '#64748b', // Slate 500
   },
   {
     id: 'forecast',
-    label: 'Dự báo AI',
+    label: 'Dự báo',
     type: 'dashed',
-    color: '#3525cd',
+    color: '#4f46e5', // Indigo 600
   },
   {
     id: 'confidence',
     label: 'Độ tin cậy',
     type: 'block',
-    color: '#e0e7ff',
+    color: '#e0e7ff', // Indigo 100
   },
 ]
 
@@ -146,32 +154,39 @@ export function buildRevenueMlForecastViewModel(
   data: RevenueMlForecastResponse,
   selectedDays: RevenueMlForecastRangeDays,
 ): RevenueMlForecastViewModel {
+  // Defensive check for data object
+  const safeData = data || {} as RevenueMlForecastResponse;
+  const safeChart = safeData.chart || { title: 'Biểu đồ dự báo', points: [], annotations: [] };
+  const safeScenario = safeData.scenario || { title: 'Kịch bản giả lập', customizeCtaLabel: 'Tùy chỉnh', scenarios: [] };
+  const safeActionPlan = safeData.actionPlan || { title: '', steps: [], ctaLabel: '' };
+
   return {
     header: {
-      title: data.title,
-      modelLabel: data.modelLabel,
-      accuracyLabel: `${Math.round(data.accuracyPercent * 10) / 10}%`,
-      updateLabel: data.lastUpdatedLabel,
-      rangeOptions: data.rangeOptions.map((days) => ({
+      title: safeData.title || 'Dự báo doanh thu',
+      modelLabel: safeData.modelLabel || '',
+      accuracyLabel: safeData.accuracyPercent ? `${Math.round(safeData.accuracyPercent * 10) / 10}%` : '0%',
+      updateLabel: safeData.lastUpdatedLabel || '',
+      rangeOptions: (safeData.rangeOptions || []).map((days) => ({
         days,
         label: getRangeLabel(days),
         isActive: selectedDays === days,
       })),
-      reportCtaLabel: data.reportCtaLabel,
+      reportCtaLabel: safeData.reportCtaLabel || 'Xem báo cáo',
     },
-    cards: data.cards.map(toKpiCardViewModel),
-    chartTitle: data.chart.title,
-    chartPoints: data.chart.points.map(toChartPoint),
+    cards: (safeData.cards || []).map(toKpiCardViewModel),
+    chartTitle: safeChart.title || 'Biểu đồ dự báo',
+    chartPoints: (safeChart.points || []).map(toChartPoint),
     chartLegends: defaultLegends,
-    chartAnnotations: toChartAnnotations(data.chart.annotations),
-    targetRevenue: data.targetRevenue || 0,
-    gapToTarget: data.gapToTarget || 0,
-    channelBreakdown: data.channelBreakdown || [],
-    historicalMape: data.historicalMape || 0,
-    keyDrivers: data.keyDrivers || [],
-    scenarioTitle: data.scenario.title,
-    scenarioActionLabel: data.scenario.customizeCtaLabel,
-    scenarios: data.scenario.scenarios.map(toScenarioCard),
-    actionPlan: toActionPlan(data.actionPlan),
+    chartAnnotations: toChartAnnotations(safeChart.annotations || []),
+    targetRevenue: safeData.targetRevenue || 0,
+    gapToTarget: safeData.gapToTarget || 0,
+    channelBreakdown: safeData.channelBreakdown || [],
+    historicalMape: safeData.historicalMape || 0,
+    keyDrivers: safeData.keyDrivers || [],
+    scenarioTitle: safeScenario.title || 'Kịch bản giả lập',
+    scenarioActionLabel: safeScenario.customizeCtaLabel || 'Tùy chỉnh',
+    scenarios: (safeScenario.scenarios || []).map(toScenarioCard),
+    actionPlan: toActionPlan(safeActionPlan),
+    selectedDays,
   }
 }

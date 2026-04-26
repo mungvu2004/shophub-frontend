@@ -8,7 +8,7 @@ type PlatformConnectionsHeaderProps = {
 
 export function PlatformConnectionsHeader({ title, subtitle }: PlatformConnectionsHeaderProps) {
   return (
-    <Card className="relative overflow-hidden border-border bg-gradient-to-r from-card to-muted/40 px-5 py-5 shadow-sm xl:px-6 xl:py-6">
+    <Card className="bg-abstract-geometric relative overflow-hidden border-border bg-gradient-to-r from-card to-muted/40 px-5 py-5 shadow-sm xl:px-6 xl:py-6">
       <div className="absolute -right-8 -top-8 size-32 rounded-full bg-primary/10" aria-hidden />
       <div className="absolute -bottom-12 right-20 size-28 rounded-full bg-primary/10" aria-hidden />
 

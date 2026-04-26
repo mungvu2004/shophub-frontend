@@ -9,7 +9,7 @@ type AppFooterViewProps = {
   isRefreshing: boolean
 }
 
-export function AppFooterView({ model, isRefreshing }: AppFooterViewProps) {
+export function AppFooterView({ model }: AppFooterViewProps) {
   return (
     <footer className="mt-10 border-t border-slate-200/80 bg-gradient-to-b from-slate-50 to-white px-4 py-8 lg:px-8">
       <div className="mx-auto w-full max-w-7xl space-y-5">

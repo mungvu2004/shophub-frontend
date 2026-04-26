@@ -1,4 +1,4 @@
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import type { InventoryStockMovementChartEntry } from '@/features/inventory/logic/inventoryStockMovements.types';
 
 export type StockMovementsChartProps = {

@@ -20,7 +20,7 @@ export function OrdersAllHeader({
   onPrintWaybills,
 }: OrdersAllHeaderProps) {
   return (
-    <section className="rounded-xl bg-white px-6 py-4 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
+    <section className="rounded-xl bg-white bg-abstract-geometric px-6 py-4 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-[22px] font-bold leading-[33px] tracking-[-0.55px] text-slate-800">{title}</h1>

@@ -70,7 +70,7 @@ export const productsHandlers = [
     const limit = Number(url.searchParams.get("limit") ?? 20);
     const offset = Number(url.searchParams.get("offset") ?? 0);
 
-    let filtered = mockProducts.filter((product) => {
+    const filtered = mockProducts.filter((product) => {
       // Search filter (name or SKU)
       const matchSearch =
         !search ||

@@ -31,6 +31,26 @@
 - **Khắc phục**: Chuyển đổi giá trị `"all"` thành `undefined` ở tầng Service hoặc xử lý ngoại lệ `"all"` trong Mock Handler.
 - **Bài học**: Luôn kiểm tra cách tầng API/Mock xử lý các giá trị mặc định của bộ lọc. Giá trị `"all"` ở UI thường tương ứng với việc "không lọc" (không gửi tham số) ở phía Server.
 
+## [2026-04-26] Lỗi giật lag và Failed to fetch trên trang Dự báo ML
+
+### 1. Lỗi: Trang bị "load lại" và giật lag khi chuyển đổi 7/30/90 ngày
+- **Triệu chứng**: Khi người dùng nhấn nút chọn khoảng thời gian, toàn bộ nội dung biến mất, hiện spinner rồi mới hiện lại biểu đồ kèm hiệu ứng fade-in.
+- **Nguyên nhân**: 
+    - Thiếu `placeholderData: keepPreviousData` trong hook `useRevenueMlForecast`. Khi query key thay đổi, TanStack Query xóa data cũ, làm `isLoading && !forecast` trở thành `true`.
+    - Logic render trong component cha unmount toàn bộ nội dung chính để hiện spinner, làm mất trạng thái DOM và kích hoạt lại animation khi mount lại.
+- **Khắc phục**: 
+    - Thêm `placeholderData: keepPreviousData` vào `useQuery`.
+    - Tách biệt `isInitialLoading` (chỉ true khi lần đầu tiên không có dữ liệu) để giữ UI cũ hiển thị trong khi tải dữ liệu mới ở background.
+- **Bài học**: Luôn sử dụng chiến lược "giữ dữ liệu cũ" cho các biểu đồ hoặc trang dashboard khi thay đổi bộ lọc để tránh trải nghiệm người dùng bị ngắt quãng.
+
+### 2. Lỗi: MSW Uncaught (in promise) TypeError: Failed to fetch (mockServiceWorker.js:238)
+- **Triệu chứng**: Console báo lỗi fetch không mong muốn từ Service Worker.
+- **Nguyên nhân**: Một số yêu cầu không khớp chính xác với Handler (do sai lệch tham số hoặc path) bị đẩy ra mạng thật (`passthrough`) và thất bại vì không có server thật.
+- **Khắc phục**: 
+    - Bổ sung Handler catch-all (`http.all('/api/revenue/*', ...)`) để bắt các yêu cầu không khớp và trả về 404 thay vì để nó thoát ra ngoài.
+    - Thêm các kiểm tra phòng vệ (defensive checks) trong Handler để tránh crash logic (như check `baseline?.[0]`).
+- **Bài học**: Khi sử dụng MSW, luôn có một handler catch-all cho mỗi prefix API để dễ dàng debug các request bị bỏ sót.
+
 ## [2024-04-26] Lỗi import Label và sai lệch kiểu dữ liệu trong ML Forecast
 
 ### 1. Lỗi: Failed to resolve import "@/components/ui/label"
@@ -45,3 +65,16 @@
 ### 3. Lỗi: Invalid variant for Badge component
 - **Nguyên nhân**: Sử dụng variant `"destructive"` cho `Badge` trong khi hệ thống chỉ hỗ trợ `"danger"`.
 - **Khắc phục**: Chỉnh sửa variant về đúng giá trị hợp lệ của hệ thống thiết kế.
+
+## [2026-04-26] Lỗi thiết kế AI Slop và Thiếu Accessibility trong trang Dự báo ML
+
+### 1. Lỗi: Giao diện bị nhiễu thị giác (Visual Noise) và lạm dụng ngôn ngữ AI
+- **Nguyên nhân**: Sử dụng quá nhiều hiệu ứng blur, shadow và tiêu đề phóng đại ("Simulation Lab Cockpit", "AI Strategic Deck").
+- **Khắc phục**: Loại bỏ blur nền, đơn giản hóa UX writing sang tiếng Việt chuyên môn (Ví dụ: "Giả lập kịch bản").
+- **Bài học**: Ưu tiên sự rõ ràng của dữ liệu hơn các hiệu ứng thị giác hào nhoáng.
+
+### 2. Lỗi: Thiếu hỗ trợ Accessibility và Hard-coded colors
+- **Nguyên nhân**: Quên bổ sung ARIA labels cho slider/chart và gán mã hex trực tiếp cho biểu đồ.
+- **Khắc phục**: Thêm `role="region"`, `aria-label` và chuyển mã hex sang palette màu hệ thống. Giảm thời gian animation biểu đồ để tăng tốc độ phản hồi.
+- **Bài học**: Luôn kiểm tra Accessibility cho các thành phần custom và sử dụng design tokens.
+

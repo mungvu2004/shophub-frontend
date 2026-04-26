@@ -3,25 +3,8 @@ import { productsService } from '@/features/products/services/productsService'
 import { useState, useEffect } from 'react'
 import type { ProductsListViewModel, PlatformStats } from './productsListPage.types'
 
-export function buildProductsListViewModel(): ProductsListViewModel {
-  const {
-    state,
-    products,
-    totalCount,
-    isLoading,
-    paginationInfo,
-    handleViewModeChange,
-    handleSearchChange,
-    handleStatusChange,
-    handleCategoryChange,
-    handlePlatformChange,
-    handleSortChange,
-    handlePageChange,
-    handlePageSizeChange,
-    handleEdit,
-    handleDelete,
-    handleViewVariants,
-  } = useProductsPageLogic()
+export function useProductsListViewModel(): ProductsListViewModel {
+  const logic = useProductsPageLogic()
 
   // Calculate platform stats from all products
   const [platformStats, setPlatformStats] = useState<PlatformStats>({
@@ -66,22 +49,28 @@ export function buildProductsListViewModel(): ProductsListViewModel {
   }, [])
 
   return {
-    state,
-    products,
-    totalCount,
-    totalPages: paginationInfo.totalPages,
-    isLoading,
+    state: logic.state,
+    products: logic.products,
+    totalCount: logic.totalCount,
+    totalPages: logic.paginationInfo.totalPages,
+    isLoading: logic.isLoading,
     platformStats,
-    onViewModeChange: handleViewModeChange,
-    onSearchChange: handleSearchChange,
-    onStatusChange: handleStatusChange,
-    onCategoryChange: handleCategoryChange,
-    onPlatformChange: handlePlatformChange,
-    onSortChange: handleSortChange,
-    onPageChange: handlePageChange,
-    onPageSizeChange: handlePageSizeChange,
-    onEdit: handleEdit,
-    onDelete: handleDelete,
-    onViewVariants: handleViewVariants,
+    quickStats: logic.quickStats,
+    insightsData: logic.insightsData,
+    statusCounts: logic.statusCounts,
+    availableCategories: logic.availableCategories,
+    availablePlatforms: logic.availablePlatforms,
+    onViewModeChange: logic.handleViewModeChange,
+    onSearchChange: logic.handleSearchChange,
+    onStatusChange: logic.handleStatusChange,
+    onCategoryChange: logic.handleCategoryChange,
+    onPlatformChange: logic.handlePlatformChange,
+    onSortChange: logic.handleSortChange,
+    onPageChange: logic.handlePageChange,
+    onPageSizeChange: logic.handlePageSizeChange,
+    onEdit: logic.handleEdit,
+    onSaveProduct: logic.handleSaveProduct,
+    onDelete: logic.handleDelete,
+    onViewVariants: logic.handleViewVariants,
   }
 }

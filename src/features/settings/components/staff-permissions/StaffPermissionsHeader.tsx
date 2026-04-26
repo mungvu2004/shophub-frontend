@@ -11,7 +11,7 @@ type StaffPermissionsHeaderProps = {
 
 export function StaffPermissionsHeader({ title, subtitle, actionLabel, onActionClick }: StaffPermissionsHeaderProps) {
   return (
-    <div className="flex flex-col gap-4 rounded-[24px] border border-white/70 bg-white/80 px-6 py-6 shadow-[0px_10px_30px_rgba(15,23,42,0.04)] backdrop-blur sm:flex-row sm:items-end sm:justify-between">
+    <div className="bg-abstract-geometric flex flex-col gap-4 rounded-[24px] border border-white/70 bg-white/80 px-6 py-6 shadow-[0px_10px_30px_rgba(15,23,42,0.04)] backdrop-blur sm:flex-row sm:items-end sm:justify-between">
       <div className="space-y-2">
         <h1 className="font-heading text-[clamp(1.6rem,2vw,2.2rem)] font-semibold tracking-[-0.04em] text-slate-900">
           {title}

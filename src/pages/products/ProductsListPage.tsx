@@ -1,7 +1,7 @@
-import { buildProductsListViewModel, ProductsListView } from '../../features/products'
+import { useProductsListViewModel, ProductsListView } from '../../features/products'
 
 export function ProductsListPage() {
-  const model = buildProductsListViewModel()
+  const model = useProductsListViewModel()
 
   return <ProductsListView model={model} />
 }

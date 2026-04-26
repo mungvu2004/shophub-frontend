@@ -85,15 +85,15 @@ export function AutomationBuilderTriggerParametersForm({
               {parameter.type === 'switch' ? (
                 <button
                   type="button"
-                  onClick={() => onParameterChange(parameter.id, !Boolean(value))}
+                  onClick={() => onParameterChange(parameter.id, !value)}
                   className={cn(
                     'inline-flex h-8 w-[92px] items-center justify-center rounded-lg border text-xs font-semibold transition-colors',
-                    Boolean(value)
+                    value
                       ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
                       : 'border-slate-300 bg-slate-50 text-slate-600',
                   )}
                 >
-                  {Boolean(value) ? 'Đang bật' : 'Đang tắt'}
+                  {value ? 'Đang bật' : 'Đang tắt'}
                 </button>
               ) : null}
             </label>

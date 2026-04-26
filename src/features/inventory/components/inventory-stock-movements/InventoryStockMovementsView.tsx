@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 import type { InventoryStockMovementsViewModel } from '@/features/inventory/logic/inventoryStockMovements.types'
 import { Pagination } from '@/components/ui/pagination'
 import { useState } from 'react'
@@ -10,7 +10,6 @@ import { InventoryStockMovementsSummaryCards } from '@/features/inventory/compon
 import { InventoryStockMovementsTimeline } from '@/features/inventory/components/inventory-stock-movements/InventoryStockMovementsTimeline'
 import { StockMovementsChart } from '@/features/inventory/components/inventory-stock-movements/StockMovementsChart'
 import { InventoryStockMovementDetailDrawer } from '@/features/inventory/components/inventory-stock-movements/InventoryStockMovementDetailDrawer'
-import { StockMovementActionButtons } from '@/features/inventory/components/inventory-stock-movements/StockMovementActionButtons'
 import { CreateMovementDialog } from '@/features/inventory/components/inventory-stock-movements/CreateMovementDialog'
 import type { useCreateMovement } from '@/features/inventory/hooks/useCreateMovement'
 
@@ -171,6 +170,10 @@ export function InventoryStockMovementsView({
       />
 
       <CreateMovementDialog controller={createMovementController} />
+    </div>
+  )
+}
+r={createMovementController} />
     </div>
   )
 }

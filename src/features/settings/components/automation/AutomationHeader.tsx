@@ -12,7 +12,7 @@ type AutomationHeaderProps = {
 
 export function AutomationHeader({ title, subtitle, createRuleLabel, isRefreshing, onCreateRule }: AutomationHeaderProps) {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-4 rounded-xl border border-indigo-100 bg-gradient-to-r from-white to-indigo-50/40 px-5 py-4 shadow-[0_8px_20px_rgba(15,23,42,0.04)]">
+    <header className="bg-abstract-geometric flex flex-wrap items-end justify-between gap-4 rounded-xl border border-indigo-100 bg-gradient-to-r from-white to-indigo-50/40 px-5 py-4 shadow-[0_8px_20px_rgba(15,23,42,0.04)]">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h1>
         <p className="mt-1 text-sm italic text-slate-500">{subtitle}</p>

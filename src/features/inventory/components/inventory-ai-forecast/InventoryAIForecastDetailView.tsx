@@ -11,7 +11,6 @@ import {
 } from 'recharts'
 import { 
   ArrowLeft, 
-  Lightbulb, 
   Sparkles, 
   Package, 
   TrendingUp, 

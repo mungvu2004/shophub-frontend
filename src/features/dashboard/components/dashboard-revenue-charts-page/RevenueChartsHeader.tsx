@@ -13,7 +13,7 @@ type RevenueChartsHeaderProps = {
 
 export function RevenueChartsHeader({ model, isRefreshing, onRangeChange }: RevenueChartsHeaderProps) {
   return (
-    <section className="flex flex-wrap items-end justify-between gap-4">
+    <section className="bg-abstract-geometric flex flex-wrap items-end justify-between gap-4">
       <div>
         <div className="flex items-center gap-2 text-[13px] text-slate-600">
           <span>{model.title}</span>

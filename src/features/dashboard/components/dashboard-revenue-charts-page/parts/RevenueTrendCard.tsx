@@ -119,7 +119,7 @@ export function RevenueTrendCard({
               }}
               itemStyle={{ fontSize: '12px', fontWeight: 'bold', padding: '4px 0' }}
               labelStyle={{ fontSize: '11px', color: REVENUE_CHART_COLORS.SLATE_500, marginBottom: '8px', fontWeight: 'black', textTransform: 'uppercase', letterSpacing: '1px' }}
-              formatter={(value: number) => [formatCurrency(value), '']}
+              formatter={(value: any) => [formatCurrency(value), '']}
             />
 
             {visibleEvents.map((event) => (

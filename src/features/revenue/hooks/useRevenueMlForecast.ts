@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
 import { revenueMlForecastService } from '@/features/revenue/services/revenueMlForecastService'
@@ -15,23 +15,34 @@ export const useRevenueMlForecast = (days: RevenueMlForecastRangeDays = 30) => {
   const forecastQuery = useQuery({
     queryKey: ['revenue', 'ml-forecast', days],
     queryFn: () => revenueMlForecastService.getForecast(days),
+    placeholderData: keepPreviousData,
   })
 
   const comparisonQuery = useQuery({
     queryKey: ['revenue', 'ml-forecast', 'comparison'],
     queryFn: () => revenueMlForecastService.getComparisonScenarios(),
+    staleTime: 5 * 60 * 1000, // Comparison scenarios don't change often
   })
 
   const simulateMutation = useMutation({
     mutationFn: (input: RevenueMlForecastScenarioInput) => revenueMlForecastService.simulateScenario(input),
     onSuccess: (newScenario) => {
-      // Optimistically add to the comparison list
+      // Optimistically update the comparison list
       queryClient.setQueryData<RevenueMlForecastComparisonScenario[]>(
         ['revenue', 'ml-forecast', 'comparison'],
-        (old = []) => [...old, newScenario],
+        (old = []) => {
+          // If a scenario with the same title exists, replace it, otherwise add new
+          const exists = old.findIndex(s => s.title === newScenario.title)
+          if (exists > -1) {
+            const updated = [...old]
+            updated[exists] = newScenario
+            return updated
+          }
+          return [...old, newScenario]
+        },
       )
       // Auto select the new scenario for comparison
-      setComparedScenarioIds((prev) => [...prev, newScenario.id])
+      setComparedScenarioIds((prev) => prev.includes(newScenario.id) ? prev : [...prev, newScenario.id])
     },
   })
 
@@ -51,5 +62,6 @@ export const useRevenueMlForecast = (days: RevenueMlForecastRangeDays = 30) => {
     toggleComparison,
     simulate: simulateMutation.mutate,
     isSimulating: simulateMutation.isPending,
+    refetch: forecastQuery.refetch,
   }
 }

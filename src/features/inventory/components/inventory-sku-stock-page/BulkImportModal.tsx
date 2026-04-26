@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Upload, FileText, CheckCircle2, AlertCircle, X, Download } from 'lucide-react'
 import { useRef } from 'react'
 import type { useBulkImport } from '@/features/inventory/hooks/useBulkImport'
-import type { BulkImportRow } from '@/features/inventory/logic/bulkImport.types'
+
 
 export type BulkImportModalProps = {
   model: ReturnType<typeof useBulkImport>

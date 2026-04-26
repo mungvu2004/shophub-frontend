@@ -11,7 +11,7 @@ type SentimentAnalysisHeaderProps = {
 
 export function SentimentAnalysisHeader({ model, isRefreshing }: SentimentAnalysisHeaderProps) {
   return (
-    <header className="space-y-5 rounded-[28px] border border-white/60 bg-gradient-to-r from-white via-[#fafbff] to-[#f5f7ff] p-6 shadow-[0_16px_40px_rgba(15,23,42,0.08)] xl:p-8">
+    <header className="space-y-5 rounded-[28px] border border-white/60 bg-gradient-to-r from-white via-[#fafbff] to-[#f5f7ff] bg-abstract-geometric p-6 shadow-[0_16px_40px_rgba(15,23,42,0.08)] xl:p-8">
       <div className="flex items-center justify-between gap-4 text-sm">
         <button type="button" className="inline-flex items-center gap-2 font-medium text-[#4f46e5] transition-colors hover:text-[#3525cd]">
           <ArrowLeft className="h-3.5 w-3.5" />

@@ -36,7 +36,7 @@ export function RevenueSummaryHeader({
   onExportPdf,
 }: RevenueSummaryHeaderProps) {
   return (
-    <header className="rounded-[28px] border border-slate-200/80 bg-white/90 px-4 py-4 shadow-[0_14px_50px_rgba(15,23,42,0.06)] backdrop-blur md:px-6 md:py-5">
+    <header className="rounded-[28px] border border-slate-200/80 bg-white/90 bg-abstract-geometric px-4 py-4 shadow-[0_14px_50px_rgba(15,23,42,0.06)] backdrop-blur md:px-6 md:py-5">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h1>

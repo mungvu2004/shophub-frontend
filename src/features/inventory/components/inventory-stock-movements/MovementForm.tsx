@@ -13,17 +13,7 @@ type MovementFormProps = {
 const importReasons = ['Nhập hàng bổ sung', 'Hoàn hàng từ khách', 'Kiểm kê định kỳ', 'Khác']
 const exportReasons = ['Xuất hàng đi đơn', 'Xuất hàng hỏng/hết hạn', 'Xuất hàng mẫu', 'Kiểm kê định kỳ', 'Khác']
 
-const movementTypeLabels: Record<MovementType, string> = {
-  IMPORT: 'Nhập hàng',
-  RETURN_RECEIVED: 'Nhập hoàn',
-  ORDER_FULFILL: 'Xuất đơn',
-  MANUAL_ADJUSTMENT: 'Điều chỉnh thủ công',
-  DAMAGE_LOSS: 'Hao hụt / mất mát',
-  TRANSFER_IN: 'Điều chuyển vào',
-  TRANSFER_OUT: 'Điều chuyển ra',
-  ORDER_RESERVE: 'Giữ chỗ đơn',
-  ORDER_RELEASE: 'Giải phóng giữ chỗ',
-}
+
 
 export function MovementForm({ form, inventoryItems, warehouses, type, onFieldChange }: MovementFormProps) {
   const reasons = type === 'IMPORT' ? importReasons : exportReasons
@@ -103,10 +93,6 @@ export function MovementForm({ form, inventoryItems, warehouses, type, onFieldCh
         />
       </div>
 
-import { Input } from '@/components/ui/input'
-import { Upload, X, FileText } from 'lucide-react'
-import { toast } from 'sonner'
-... (around line 93)
       <div className="space-y-2">
         <label htmlFor="form-note" className="text-sm font-medium text-slate-700">Ghi chú (không bắt buộc)</label>
         <textarea
@@ -136,6 +122,14 @@ import { toast } from 'sonner'
               <Upload className="size-5 text-slate-400 group-hover:text-primary-600" />
             </div>
             <p className="text-xs font-bold text-slate-500">Kéo thả hoặc bấm để tải lên</p>
+            <p className="text-[10px] text-slate-400 mt-1 font-medium italic">Hỗ trợ PDF, JPG, PNG (Max 5MB)</p>
+          </label>
+        </div>
+      </div>
+    </div>
+  )
+}
+ext-xs font-bold text-slate-500">Kéo thả hoặc bấm để tải lên</p>
             <p className="text-[10px] text-slate-400 mt-1 font-medium italic">Hỗ trợ PDF, JPG, PNG (Max 5MB)</p>
           </label>
         </div>

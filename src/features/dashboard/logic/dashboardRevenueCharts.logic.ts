@@ -51,7 +51,7 @@ const toRangeTabs = () => [
   { days: 7 as const, label: '7 ngày qua' },
 ]
 
-const categoryColors = ['#6366F1', '#818CF8', '#A5B4FC', '#C7D2FE', '#E0E7FF']
+// const categoryColors = ['#6366F1', '#818CF8', '#A5B4FC', '#C7D2FE', '#E0E7FF']
 
 const platformLabel = (platform: RevenueChartsPlatformId) => {
   if (platform === 'shopee') return 'Shopee'

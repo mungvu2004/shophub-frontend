@@ -16,7 +16,7 @@ const iconMap: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>
 
 export function InventoryPageHeader({ model }: InventoryPageHeaderProps) {
   return (
-    <div className="flex items-center justify-between rounded-xl bg-white p-6 shadow-sm">
+    <div className="flex items-center justify-between rounded-xl bg-white bg-abstract-geometric p-6 shadow-sm">
       <div className="flex items-center gap-4">
         <h1 className="text-2xl font-bold text-slate-900">Quản lý Tồn kho</h1>
         

@@ -8,7 +8,7 @@ type CRMReviewInboxHeaderProps = {
 
 export function CRMReviewInboxHeader({ summary }: CRMReviewInboxHeaderProps) {
   return (
-    <header className="space-y-3 rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-indigo-50/70 p-5 shadow-sm">
+    <header className="space-y-3 rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-indigo-50/70 bg-abstract-geometric p-5 shadow-sm">
       <div>
         <h1 className="text-[28px] font-bold text-slate-800">Hộp thư Review</h1>
         <p className="text-sm text-slate-500">Quản lý và phản hồi đánh giá từ đa sàn.</p>

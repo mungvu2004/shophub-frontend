@@ -26,7 +26,7 @@ export function AiInsightBlock({
   mainValue,
   predictionLabel,
   predictionValue,
-  type = 'inventory',
+  type: _type = 'inventory',
   onAction,
   className
 }: AiInsightBlockProps) {

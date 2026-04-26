@@ -18,6 +18,32 @@ export interface PlatformStats {
   lazada: number
 }
 
+export interface ProductStatusCounts {
+  all: number
+  active: number
+  inactive: number
+  deleted: number
+}
+
+export interface ProductQuickStatData {
+  title: string
+  value: string | number
+  description: string
+  iconType: 'package' | 'cloud' | 'alert' | 'dollar'
+  colorTone: 'rose' | 'amber' | 'indigo' | 'emerald'
+}
+
+export interface ProductInsightsData {
+  categoryPerformance: { name: string, sales: number, stock: number }[]
+  platformAllocation: { name: string, value: number, color: string }[]
+}
+
+export interface PlatformConfig {
+  id: string
+  label: string
+  color: string
+}
+
 export interface ProductsListViewModel {
   // State
   state: ProductsListPageState
@@ -28,6 +54,11 @@ export interface ProductsListViewModel {
   totalPages: number
   isLoading: boolean
   platformStats: PlatformStats
+  statusCounts: ProductStatusCounts
+  availableCategories: string[]
+  availablePlatforms: PlatformConfig[]
+  quickStats: ProductQuickStatData[]
+  insightsData: ProductInsightsData
 
   // Handlers
   onViewModeChange: (mode: 'table' | 'grid') => void
@@ -39,6 +70,7 @@ export interface ProductsListViewModel {
   onPageChange: (page: number) => void
   onPageSizeChange: (size: number) => void
   onEdit: (product: Product) => void
+  onSaveProduct: (productData: { id?: string; name: string; sku: string; price: string; brand: string; status: string; syncedPlatforms: string[] }) => void
   onDelete: (product: Product) => void
   onViewVariants: (product: Product) => void
 }

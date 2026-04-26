@@ -17,6 +17,14 @@ export interface Product {
   createdAt: string; // Source: Products.CreatedAt | nullable: no
   updatedAt: string; // Source: Products.UpdatedAt | nullable: no
   variants: ProductVariant[]; // Source: Joined ProductVariants records | nullable: no
+
+  // Aggregated/Mock Metrics for UI
+  stock?: number;
+  sold?: number;
+  revenue?: number;
+  margin?: number;
+  qualityScore?: number;
+  trendData?: { value: number }[];
 }
 
 export interface ProductVariant {

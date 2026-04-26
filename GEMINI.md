@@ -24,4 +24,5 @@ Khi triển khai tính năng mới hoặc chỉnh sửa, phải tách biệt rõ
 - Luôn kiểm tra lại mã nguồn bằng các công cụ như `lint` hoặc `type-check` sau khi chỉnh sửa.
 
 ## 6. Kiểm tra và xác nhận hoàn thành
-- Trước khi báo cáo hoàn thành bất kỳ tác vụ nào, phải chạy các lệnh kiểm tra hệ thống (như `npm run lint`, `tsc`, hoặc các lệnh chạy test liên quan) để đảm bảo không còn lỗi cú pháp, lỗi kiểu (type) hoặc lỗi logic. Chỉ khi tất cả các kiểm tra đều vượt qua mới được coi là hoàn thành nhiệm vụ.
+- Trước khi báo cáo hoàn thành bất kỳ tác vụ nào, phải chạy các lệnh kiểm tra hệ thống (như `npm run lint`, `tsc`, hoặc các lệnh chạy test liên quan) và bắt buộc phải chạy lệnh build (`npm run build`) để đảm bảo không còn lỗi cú pháp, lỗi kiểu (type) hoặc lỗi logic.
+- Nếu quá trình build phát sinh lỗi, phải tiến hành fix lỗi triệt để trước khi báo cáo hoàn thành với người dùng. Chỉ khi tất cả các kiểm tra đều vượt qua mới được coi là hoàn thành nhiệm vụ.

@@ -97,4 +97,5 @@ export type RevenueMlForecastViewModel = {
   scenarioActionLabel: string
   scenarios: RevenueMlForecastScenarioCardViewModel[]
   actionPlan: RevenueMlForecastActionPlanViewModel
+  selectedDays: RevenueMlForecastRangeDays
 }

@@ -39,13 +39,11 @@ export function Navbar() {
     [location.pathname],
   )
   const isPlatformComparisonPage = location.pathname === '/revenue/platform-comparison'
-  const isRevenueMlForecastPage = location.pathname === '/revenue/ml-forecast'
 
   return (
     <header
       className={cn(
-        'border-b border-secondary-200 bg-white/90 px-4 py-3 backdrop-blur xl:px-8',
-        isRevenueMlForecastPage ? 'relative z-10' : 'sticky top-0 z-30',
+        'border-b border-secondary-200 bg-white/90 px-4 py-3 backdrop-blur xl:px-8 relative z-30'
       )}
     >
       <div className="flex items-center justify-between gap-4">

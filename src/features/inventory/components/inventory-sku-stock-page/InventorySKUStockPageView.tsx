@@ -1,18 +1,13 @@
-import { Badge } from '@/components/ui/badge'
 import { InventoryTableView } from '@/features/inventory/components/inventory-table/InventoryTableView'
 import { InventoryGridView } from '@/features/inventory/components/inventory-grid/InventoryGridView'
 import { SKUInventoryHeader } from '@/features/inventory/components/inventory-sku-stock-page/SKUInventoryHeader'
 import { SKUInventoryActions } from '@/features/inventory/components/inventory-sku-stock-page/SKUInventoryActions'
-import { SKUInventorySearch } from '@/features/inventory/components/inventory-sku-stock-page/SKUInventorySearch'
-import { SKUInventoryFilters } from '@/features/inventory/components/inventory-sku-stock-page/SKUInventoryFilters'
 import { SKULowStockAlert } from '@/features/inventory/components/inventory-sku-stock-page/SKULowStockAlert'
 import { SKUInventorySection } from '@/features/inventory/components/inventory-sku-stock-page/SKUInventorySection'
 import { BulkImportModal } from '@/features/inventory/components/inventory-sku-stock-page/BulkImportModal'
 import { Button } from '@/components/ui/button'
 import { Plus, Package } from 'lucide-react'
 import type { useInventorySKUStockPage } from '@/features/inventory/hooks/useInventorySKUStockPage'
-
-import { PLATFORM_OPTIONS, STATUS_OPTIONS } from '../../logic/inventory.constants'
 
 export type InventorySKUStockPageViewProps = {
   model: ReturnType<typeof useInventorySKUStockPage>
@@ -134,6 +129,18 @@ export function InventorySKUStockPageView({ model }: InventorySKUStockPageViewPr
         <SKUInventorySection
           title={viewMode === 'table' ? 'Danh sách SKU dạng bảng' : 'Danh sách SKU dạng lưới'}
           description="Dữ liệu được cập nhật theo bộ lọc và từ khóa tìm kiếm hiện tại."
+        >
+          {viewMode === 'table' ? (
+            <InventoryTableView filters={filterPayload} />
+          ) : (
+            <InventoryGridView filters={filterPayload} />
+          )}
+        </SKUInventorySection>
+      </section>
+    </div>
+  )
+}
+ếm hiện tại."
         >
           {viewMode === 'table' ? (
             <InventoryTableView filters={filterPayload} />

@@ -1,4 +1,4 @@
-import { Download, FileImage, FileText } from 'lucide-react'
+import { FileImage, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 import { EXPORT_MESSAGES } from '@/features/dashboard/logic/dashboardKpiOverview.constants'
 

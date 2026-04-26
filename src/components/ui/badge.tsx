@@ -20,6 +20,8 @@ const badgeVariants = cva(
         shopee: "bg-[#FFF0ED] text-[#EE4D2D] border-[#FECEC4]",
         tiktok: "bg-[#FFF0F3] text-[#FE2C55] border-[#FFCCD6]",
         outline: "border-secondary-300 text-secondary-700 hover:bg-secondary-50",
+        soft: "bg-secondary-50 text-secondary-700 border-transparent",
+        destructive: "bg-danger-600 text-white hover:bg-danger-700",
       },
     },
     defaultVariants: {

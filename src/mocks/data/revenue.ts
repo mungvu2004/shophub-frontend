@@ -426,6 +426,7 @@ export const revenueMlForecastMock: RevenueMlForecastResponse = {
         projectedRevenue: 48_500_000,
         note: 'Đối thủ flash sale + nhu cầu thấp',
         accent: 'negative',
+        metrics: { revenue: 48_500_000, growth: -16.7 },
       },
       {
         id: 'scenario-base',
@@ -434,6 +435,7 @@ export const revenueMlForecastMock: RevenueMlForecastResponse = {
         note: 'Điều kiện thị trường bình thường',
         accent: 'neutral',
         isRecommended: true,
+        metrics: { revenue: 58_200_000, growth: 19.5 },
       },
       {
         id: 'scenario-good',
@@ -441,6 +443,7 @@ export const revenueMlForecastMock: RevenueMlForecastResponse = {
         projectedRevenue: 67_800_000,
         note: 'Chiến dịch thành công + nhu cầu cao',
         accent: 'positive',
+        metrics: { revenue: 67_800_000, growth: 38.2 },
       },
     ],
   },
@@ -460,6 +463,12 @@ export const revenueMlForecastMock: RevenueMlForecastResponse = {
     periodLabel: 'Kỳ dự báo T3/2026',
     confidenceLevel: 95,
   },
+  keyDrivers: [
+    { id: 'kd-1', label: 'Xu hướng thị trường', impact: 85, trend: 'positive' },
+    { id: 'kd-2', label: 'Ngân sách Marketing', impact: 65, trend: 'positive' },
+    { id: 'kd-3', label: 'Giá bán cạnh tranh', impact: 40, trend: 'negative' },
+    { id: 'kd-4', label: 'Yếu tố mùa vụ', impact: 30, trend: 'positive' },
+  ],
   inputs: [
     {
       id: 'price-change',

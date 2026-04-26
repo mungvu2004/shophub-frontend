@@ -5,9 +5,7 @@ import { cn } from '@/lib/utils'
 
 type InventoryStockMovementsHeaderProps = {
   title: string
-  subtitle: string
   updatedAtLabel: string
-  suggestedActionLabel: string
   onRefresh?: () => void
   onExport?: () => void
   onQuickImport?: () => void
@@ -27,7 +25,7 @@ export function InventoryStockMovementsHeader({
   isRefreshing,
 }: InventoryStockMovementsHeaderProps) {
   return (
-    <header className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm xl:p-5">
+    <header className="rounded-3xl border border-slate-100 bg-white bg-abstract-geometric p-4 shadow-sm xl:p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <div className="flex size-12 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 border border-primary-100 shadow-inner">
@@ -86,5 +84,8 @@ export function InventoryStockMovementsHeader({
         </div>
       </div>
     </header>
+  )
+}
+der>
   )
 }
