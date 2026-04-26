@@ -13,6 +13,10 @@ export type MockOrdersReturnsItem = {
   amount: number
   status: MockOrdersReturnsStatus
   happenedAt: string
+  reason?: string
+  isAbuseFlagged?: boolean
+  evidenceUrls?: string[]
+  canAutoRefund?: boolean
 }
 
 export const mockOrdersReturns: MockOrdersReturnsItem[] = [
@@ -26,6 +30,10 @@ export const mockOrdersReturns: MockOrdersReturnsItem[] = [
     amount: 289000,
     status: 'processing',
     happenedAt: '2026-03-20T10:16:00+07:00',
+    reason: 'Sản phẩm lỗi: Rách đường chỉ vai',
+    isAbuseFlagged: false,
+    evidenceUrls: ['https://placehold.co/600x400/png?text=Evidence+1', 'https://placehold.co/600x400/png?text=Evidence+2'],
+    canAutoRefund: true,
   },
   {
     id: 'ret-002',
@@ -37,6 +45,8 @@ export const mockOrdersReturns: MockOrdersReturnsItem[] = [
     amount: 210000,
     status: 'cancelled',
     happenedAt: '2026-03-20T09:24:00+07:00',
+    reason: 'Đổi ý: Không còn nhu cầu',
+    isAbuseFlagged: false,
   },
   {
     id: 'ret-003',
@@ -48,6 +58,10 @@ export const mockOrdersReturns: MockOrdersReturnsItem[] = [
     amount: 1250000,
     status: 'awaiting_pickup',
     happenedAt: '2026-03-19T14:03:00+07:00',
+    reason: 'Sai hàng: Giao nhầm size 40',
+    isAbuseFlagged: true,
+    evidenceUrls: ['https://placehold.co/600x400/png?text=Evidence+3'],
+    canAutoRefund: false,
   },
   {
     id: 'ret-004',
@@ -59,6 +73,10 @@ export const mockOrdersReturns: MockOrdersReturnsItem[] = [
     amount: 1450000,
     status: 'refunded',
     happenedAt: '2026-03-19T11:55:00+07:00',
+    reason: 'Sản phẩm lỗi: Phai màu sau khi giặt',
+    isAbuseFlagged: false,
+    evidenceUrls: ['https://placehold.co/600x400/png?text=Evidence+4'],
+    canAutoRefund: true,
   },
   {
     id: 'ret-005',
@@ -70,6 +88,8 @@ export const mockOrdersReturns: MockOrdersReturnsItem[] = [
     amount: 220000,
     status: 'cancelled',
     happenedAt: '2026-03-18T15:33:00+07:00',
+    reason: 'Giao trễ: Quá thời gian cam kết',
+    isAbuseFlagged: false,
   },
   {
     id: 'ret-006',
@@ -81,6 +101,10 @@ export const mockOrdersReturns: MockOrdersReturnsItem[] = [
     amount: 540000,
     status: 'processing',
     happenedAt: '2026-03-18T10:04:00+07:00',
+    reason: 'Sai hàng: Nhầm màu xanh đậm',
+    isAbuseFlagged: false,
+    evidenceUrls: ['https://placehold.co/600x400/png?text=Evidence+5'],
+    canAutoRefund: true,
   },
   {
     id: 'ret-007',
@@ -92,6 +116,10 @@ export const mockOrdersReturns: MockOrdersReturnsItem[] = [
     amount: 680000,
     status: 'processing',
     happenedAt: '2026-03-18T09:08:00+07:00',
+    reason: 'Sản phẩm lỗi: Hỏng khóa kéo',
+    isAbuseFlagged: true,
+    evidenceUrls: ['https://placehold.co/600x400/png?text=Evidence+6'],
+    canAutoRefund: false,
   },
   {
     id: 'ret-008',
@@ -103,6 +131,8 @@ export const mockOrdersReturns: MockOrdersReturnsItem[] = [
     amount: 340000,
     status: 'cancelled',
     happenedAt: '2026-03-17T13:18:00+07:00',
+    reason: 'Đổi ý: Tìm thấy giá rẻ hơn',
+    isAbuseFlagged: false,
   },
   {
     id: 'ret-009',
@@ -114,5 +144,9 @@ export const mockOrdersReturns: MockOrdersReturnsItem[] = [
     amount: 890000,
     status: 'awaiting_pickup',
     happenedAt: '2026-03-17T09:47:00+07:00',
+    reason: 'Sản phẩm lỗi: Không nhận sạc',
+    isAbuseFlagged: false,
+    evidenceUrls: ['https://placehold.co/600x400/png?text=Evidence+7'],
+    canAutoRefund: true,
   },
 ]

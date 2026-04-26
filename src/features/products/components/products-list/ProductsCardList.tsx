@@ -1,4 +1,7 @@
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Check, X, Pencil } from 'lucide-react'
 import type { Product } from '@/types/product.types'
 
 interface ProductsCardListProps {
@@ -6,6 +9,7 @@ interface ProductsCardListProps {
   isLoading?: boolean
   onEdit?: (product: Product) => void
   onView?: (product: Product) => void
+  onUpdatePrice?: (productId: string, newPrice: number) => void
 }
 
 const calculateCardMetrics = (productId: string) => {
@@ -32,7 +36,29 @@ const platformBadgeClass: Record<string, string> = {
   lazada: 'bg-blue-600',
 }
 
-export function ProductsCardList({ products, isLoading, onEdit, onView }: ProductsCardListProps) {
+export function ProductsCardList({ products, isLoading, onEdit, onView, onUpdatePrice }: ProductsCardListProps) {
+  const [editingPriceId, setEditingPriceId] = useState<string | null>(null)
+  const [editPriceValue, setEditPriceValue] = useState<number>(0)
+
+  const handleStartEdit = (e: React.MouseEvent, productId: string, currentPrice: number) => {
+    e.stopPropagation()
+    setEditingPriceId(productId)
+    setEditPriceValue(currentPrice)
+  }
+
+  const handleCancelEdit = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setEditingPriceId(null)
+  }
+
+  const handleSaveEdit = (e: React.MouseEvent, productId: string) => {
+    e.stopPropagation()
+    if (onUpdatePrice) {
+      onUpdatePrice(productId, editPriceValue)
+    }
+    setEditingPriceId(null)
+  }
+
   if (isLoading && products.length === 0) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -70,13 +96,16 @@ export function ProductsCardList({ products, isLoading, onEdit, onView }: Produc
               ? 'bg-amber-500 text-white'
               : 'bg-rose-500 text-white'
 
+        const currentPrice = primaryVariant?.salePrice ?? 0
+        const isEditing = editingPriceId === product.id
+
         return (
           <article
             key={product.id}
-            className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-indigo-200 hover:shadow-md cursor-pointer"
+            className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-indigo-200 hover:shadow-md cursor-pointer flex flex-col h-full"
             onClick={() => onView?.(product)}
           >
-            <div className="relative h-40 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400">
+            <div className="relative h-40 shrink-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400">
               <div className="absolute left-2 top-2 flex flex-col gap-1">
                 {platforms.map((platform) => (
                   <span
@@ -103,50 +132,80 @@ export function ProductsCardList({ products, isLoading, onEdit, onView }: Produc
               )}
             </div>
 
-            <div className="space-y-3 p-4">
-              <div>
-                <h3 className="line-clamp-2 text-2xl font-bold leading-tight text-slate-800">{product.name}</h3>
+            <div className="flex flex-col flex-1 p-4">
+              <div className="mb-3">
+                <h3 className="line-clamp-2 text-base font-bold leading-tight text-slate-800 h-[2.5rem]">{product.name}</h3>
                 <p className="mt-1 text-[11px] uppercase tracking-wide text-slate-400">SKU: {primaryVariant?.internalSku ?? 'N/A'}</p>
               </div>
 
-              <p className="font-mono text-3xl font-bold text-indigo-600">
-                {(primaryVariant?.salePrice ?? 0).toLocaleString('vi-VN')} ₫
-              </p>
-
-              <div className="flex items-center justify-between text-sm">
-                <p className="font-semibold text-emerald-600">• Tồn: {metrics.stock} units</p>
-                <p className="text-slate-400">Đã bán: {metrics.sold}</p>
+              <div className="mb-4">
+                {isEditing ? (
+                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <Input
+                      type="number"
+                      className="h-8 w-28 font-mono text-sm font-bold bg-slate-50"
+                      value={editPriceValue}
+                      onChange={(e) => setEditPriceValue(Number(e.target.value))}
+                      autoFocus
+                    />
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50" onClick={(e) => handleSaveEdit(e, product.id)}>
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-slate-600 hover:bg-slate-100" onClick={handleCancelEdit}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 group">
+                    <p className="font-mono text-2xl font-bold text-indigo-600">
+                      {currentPrice.toLocaleString('vi-VN')} ₫
+                    </p>
+                    <button
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-indigo-600 p-1"
+                      onClick={(e) => handleStartEdit(e, product.id, currentPrice)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
               </div>
 
-              <div className="grid grid-cols-3 border-t border-slate-100 pt-2 text-center text-sm text-slate-400">
-                <p>Shopee: {metrics.shopee}</p>
-                <p>TikTok: {metrics.tiktok}</p>
-                <p>Lazada: {metrics.lazada}</p>
-              </div>
+              <div className="mt-auto">
+                <div className="flex items-center justify-between text-sm mb-2">
+                  <p className="font-semibold text-emerald-600">• Tồn: {metrics.stock}</p>
+                  <p className="text-slate-400">Đã bán: {metrics.sold}</p>
+                </div>
 
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-xl"
-                  onClick={(event) => {
-                    event.stopPropagation()
-                    onEdit?.(product)
-                  }}
-                >
-                  Sửa
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="rounded-xl border-indigo-200 text-indigo-600"
-                  onClick={(event) => {
-                    event.stopPropagation()
-                    onView?.(product)
-                  }}
-                >
-                  Xem
-                </Button>
+                <div className="grid grid-cols-3 border-t border-slate-100 pt-2 text-center text-xs font-medium text-slate-400 mb-3">
+                  <p>Shopee: {metrics.shopee}</p>
+                  <p>TikTok: {metrics.tiktok}</p>
+                  <p>Lazada: {metrics.lazada}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      onEdit?.(product)
+                    }}
+                  >
+                    Sửa chi tiết
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      onView?.(product)
+                    }}
+                  >
+                    Xem
+                  </Button>
+                </div>
               </div>
             </div>
           </article>

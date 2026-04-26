@@ -81,6 +81,14 @@ function toTimelineItem(item: OrdersReturnsItem): OrdersReturnsTimelineItemModel
     statusLabel: statusLabelMap[item.status],
     statusClassName: statusClassMap[item.status],
     isAlert: item.orderKind === 'return',
+    isAbuseFlagged: !!item.isAbuseFlagged,
+    hasEvidence: !!item.evidenceUrls && item.evidenceUrls.length > 0,
+    canAutoRefund: !!item.canAutoRefund,
+    reason: item.reason || 'Khách hàng không cung cấp lý do cụ thể.',
+    happenedAtLabel: item.happenedAt ? `${dateFormatter.format(new Date(item.happenedAt))} ${new Date(item.happenedAt).getHours()}:${String(new Date(item.happenedAt).getMinutes()).padStart(2, '0')}` : '--/--/---- --:--',
+    sku: item.sku || 'SKU-UNKNOWN',
+    skuDetails: item.skuDetails || 'N/A',
+    abuseNote: item.abuseNote,
   }
 }
 
@@ -150,6 +158,9 @@ export function buildOrdersReturnsViewModel(args: {
         tone: 'indigo',
       },
     ],
+    reasonAnalysis: response.summary.reasonAnalysis,
+    trendData: response.summary.trendData,
+    aiInsightText: response.summary.aiInsightText,
     tableRows: toTableRows(response.items),
     timelineGroups: toTimelineGroups(response.items),
     totalCount: response.totalCount,

@@ -3,6 +3,7 @@ import { Pagination } from '@/components/ui/pagination'
 import { ProductsFilters } from './products-filters/ProductsFilters'
 import { ProductsTable } from './products-table/ProductsTable'
 import { ProductsCardList } from './products-list/ProductsCardList'
+import { ProductCreateModal } from './products-list/ProductCreateModal'
 import { Download, RefreshCw, Plus } from 'lucide-react'
 import type { ProductsListViewModel } from '@/features/products/logic/productsListPage.types'
 import { useState } from 'react'
@@ -14,6 +15,7 @@ interface ProductsListViewProps {
 export function ProductsListView({ model }: ProductsListViewProps) {
   const formatNumber = (value: number) => value.toLocaleString('vi-VN')
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([])
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   const handleBulkUpdatePrice = () => {
     console.log('Bulk update price:', selectedProductIds)
@@ -29,6 +31,10 @@ export function ProductsListView({ model }: ProductsListViewProps) {
 
   const handleBulkDelete = () => {
     console.log('Bulk delete:', selectedProductIds)
+  }
+
+  const handleBulkExport = () => {
+    console.log('Bulk export:', selectedProductIds)
   }
 
   return (
@@ -60,7 +66,10 @@ export function ProductsListView({ model }: ProductsListViewProps) {
             <RefreshCw className="w-4 h-4" />
             Đồng bộ từ sàn
           </Button>
-          <Button className="gap-2 bg-indigo-600 hover:bg-indigo-700">
+          <Button 
+            className="gap-2 bg-indigo-600 hover:bg-indigo-700"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
             <Plus className="w-4 h-4" />
             Thêm sản phẩm
           </Button>
@@ -79,6 +88,7 @@ export function ProductsListView({ model }: ProductsListViewProps) {
         onBulkSync={handleBulkSync}
         onBulkPause={handleBulkPause}
         onBulkDelete={handleBulkDelete}
+        onBulkExport={handleBulkExport}
         selectedCount={selectedProductIds.length}
         selectedCategory={model.state.selectedCategory}
         selectedStatus={model.state.selectedStatus}
@@ -117,6 +127,11 @@ export function ProductsListView({ model }: ProductsListViewProps) {
           />
         </div>
       </div>
+
+      <ProductCreateModal 
+        open={isCreateModalOpen} 
+        onOpenChange={setIsCreateModalOpen} 
+      />
     </div>
   )
 }

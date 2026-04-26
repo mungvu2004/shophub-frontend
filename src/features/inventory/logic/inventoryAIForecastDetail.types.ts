@@ -11,16 +11,27 @@ export type InventoryAIForecastFactorViewModel = {
   impactPercent: number
 }
 
+export type InventoryAIForecastScenarioViewModel = {
+  id: string
+  label: string
+  description: string
+  impactLabel: string
+  tone: 'indigo' | 'emerald' | 'rose'
+}
+
 export type InventoryAIForecastDetailViewModel = {
   title: string
   subtitle: string
   backLabel: string
   skuTitle: string
+  productName: string
   tags: string[]
+  currentStock: number
   currentStockLabel: string
   avgDailySalesLabel: string
   stockoutDateLabel: string
   suggestedInboundLabel: string
+  confidenceScore: number
   chartTitle: string
   chartLegend: {
     history: string
@@ -33,4 +44,6 @@ export type InventoryAIForecastDetailViewModel = {
   aiTitle: string
   aiSuggestionText: string
   riskLabel: string
+  riskTone: 'low' | 'medium' | 'high'
+  scenarios: InventoryAIForecastScenarioViewModel[]
 }

@@ -5,7 +5,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ArrowDownUp, ChevronDown, LayoutGrid, Table2, Check } from 'lucide-react'
+import { ArrowDownUp, ChevronDown, LayoutGrid, Table2, Check, Download } from 'lucide-react'
+
+export type SortOption = 'price-asc' | 'price-desc' | 'inventory-desc' | 'revenue-desc' | 'name-asc' | 'newest'
 
 interface ProductsFiltersProps {
   viewMode: 'table' | 'grid'
@@ -13,28 +15,31 @@ interface ProductsFiltersProps {
   onStatusChange: (status: string) => void
   onCategoryChange: (category: string) => void
   onPlatformChange: (platform: string) => void
-  onSortChange: (sortBy: 'best-sellers' | 'newest' | 'price-asc' | 'price-desc') => void
+  onSortChange: (sortBy: SortOption) => void
   onBulkUpdatePrice: () => void
   onBulkSync: () => void
   onBulkPause: () => void
   onBulkDelete: () => void
+  onBulkExport: () => void
   selectedCount: number
   selectedCategory?: string
   selectedStatus?: string
   selectedPlatform?: string
-  selectedSort?: 'best-sellers' | 'newest' | 'price-asc' | 'price-desc'
+  selectedSort?: SortOption
 }
 
 const categories = ["Áo thun", "Váy nữ", "Quần nam", "Áo sơ mi", "Áo khoác", "Quần tây", "Đồ thể thao"];
-const sortOptions = [
-  { value: 'best-sellers', label: 'Bán chạy nhất' },
-  { value: 'newest', label: 'Mới nhất' },
-  { value: 'price-asc', label: 'Giá thấp đến cao' },
-  { value: 'price-desc', label: 'Giá cao đến thấp' },
-] as const
+const sortOptions: { value: SortOption; label: string }[] = [
+  { value: 'newest', label: 'Ngày tạo (Mới nhất)' },
+  { value: 'price-asc', label: 'Giá (Thấp đến cao)' },
+  { value: 'price-desc', label: 'Giá (Cao đến thấp)' },
+  { value: 'inventory-desc', label: 'Tồn kho (Nhiều nhất)' },
+  { value: 'revenue-desc', label: 'Doanh thu (Cao nhất)' },
+  { value: 'name-asc', label: 'Tên (A-Z)' },
+]
 
 const getSortLabel = (value: ProductsFiltersProps['selectedSort']) => {
-  return sortOptions.find((option) => option.value === value)?.label ?? 'Bán chạy nhất'
+  return sortOptions.find((option) => option.value === value)?.label ?? 'Ngày tạo (Mới nhất)'
 }
 
 export function ProductsFilters({
@@ -48,11 +53,12 @@ export function ProductsFilters({
   onBulkSync,
   onBulkPause,
   onBulkDelete,
+  onBulkExport,
   selectedCount,
   selectedCategory = '',
   selectedStatus = '',
   selectedPlatform = '',
-  selectedSort = 'best-sellers',
+  selectedSort = 'newest',
 }: ProductsFiltersProps) {
   return (
     <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
@@ -98,14 +104,14 @@ export function ProductsFilters({
           </div>
 
           <div className="flex items-end justify-between gap-4">
-            <div className="w-[180px] space-y-1.5">
+            <div className="w-[220px] space-y-1.5">
               <p className="px-1 text-[10px] font-bold uppercase tracking-[0.5px] text-slate-400">Sắp xếp</p>
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex h-11 w-full items-center justify-between rounded-lg bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-900 outline-none hover:bg-slate-100">
                   <span>{getSortLabel(selectedSort)}</span>
                   <ArrowDownUp className="h-4 w-4 text-slate-400" />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-[220px] rounded-xl border border-slate-200 bg-white p-1 shadow-lg">
+                <DropdownMenuContent align="start" className="w-[240px] rounded-xl border border-slate-200 bg-white p-1 shadow-lg">
                   {sortOptions.map((option) => (
                     <DropdownMenuItem
                       key={option.value}
@@ -138,6 +144,7 @@ export function ProductsFilters({
           <Button size="sm" variant="secondary" className="rounded-lg" disabled={selectedCount === 0} onClick={onBulkUpdatePrice}>Cập nhật giá</Button>
           <Button size="sm" variant="secondary" className="rounded-lg" disabled={selectedCount === 0} onClick={onBulkSync}>Đồng bộ sàn</Button>
           <Button size="sm" variant="secondary" className="rounded-lg" disabled={selectedCount === 0} onClick={onBulkPause}>Tạm dừng</Button>
+          <Button size="sm" variant="secondary" className="rounded-lg gap-2" disabled={selectedCount === 0} onClick={onBulkExport}><Download className="w-3.5 h-3.5"/> Xuất Excel</Button>
           <Button size="sm" variant="destructive" className="rounded-lg" disabled={selectedCount === 0} onClick={onBulkDelete}>Xoá</Button>
         </div>
         <span className="text-sm text-slate-400">Đã chọn {selectedCount} sản phẩm</span>

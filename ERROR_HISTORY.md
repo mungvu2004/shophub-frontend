@@ -30,3 +30,18 @@
 - **Nguyên nhân**: Giá trị `"all"` từ state bộ lọc được gửi trực tiếp lên API/Mock. Mock Handler thực hiện so sánh chính xác (`item.warehouseId === "all"`), dẫn đến việc không có kết quả nào khớp (vì ID thực tế là `"wh-001"`, `"wh-002"`).
 - **Khắc phục**: Chuyển đổi giá trị `"all"` thành `undefined` ở tầng Service hoặc xử lý ngoại lệ `"all"` trong Mock Handler.
 - **Bài học**: Luôn kiểm tra cách tầng API/Mock xử lý các giá trị mặc định của bộ lọc. Giá trị `"all"` ở UI thường tương ứng với việc "không lọc" (không gửi tham số) ở phía Server.
+
+## [2024-04-26] Lỗi import Label và sai lệch kiểu dữ liệu trong ML Forecast
+
+### 1. Lỗi: Failed to resolve import "@/components/ui/label"
+- **Nguyên nhân**: Sử dụng component `Label` trong UI nhưng component này chưa tồn tại trong thư mục `src/components/ui`.
+- **Khắc phục**: Tạo mới file `src/components/ui/label.tsx` với phong cách thiết kế nhất quán với hệ thống.
+- **Bài học**: Khi sử dụng các component UI cơ bản (atoms), cần kiểm tra xem chúng đã được triển khai trong thư mục `ui/` hay chưa trước khi import.
+
+### 2. Lỗi: Type mismatch in Recharts Tooltip formatter
+- **Nguyên nhân**: Kiểu dữ liệu của tham số trong `formatter` của Recharts không khớp với mong đợi (nhận `number | string` nhưng khai báo `number`).
+- **Khắc phục**: Ép kiểu hoặc xử lý linh hoạt tham số đầu vào bằng `Number(val)`.
+
+### 3. Lỗi: Invalid variant for Badge component
+- **Nguyên nhân**: Sử dụng variant `"destructive"` cho `Badge` trong khi hệ thống chỉ hỗ trợ `"danger"`.
+- **Khắc phục**: Chỉnh sửa variant về đúng giá trị hợp lệ của hệ thống thiết kế.

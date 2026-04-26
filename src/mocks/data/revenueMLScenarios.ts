@@ -1,0 +1,92 @@
+import type { RevenueMlForecastComparisonScenario, RevenueMlForecastInputAssumption } from '@/types/revenue.types'
+
+export const mlForecastInputAssumptionsMock: RevenueMlForecastInputAssumption[] = [
+  {
+    id: 'price-change',
+    label: 'Thay đổi giá bán trung bình',
+    currentValue: 0,
+    unit: '%',
+    step: 1,
+    min: -50,
+    max: 50,
+    type: 'price',
+  },
+  {
+    id: 'ads-budget-change',
+    label: 'Thay đổi ngân sách quảng cáo',
+    currentValue: 0,
+    unit: '%',
+    step: 5,
+    min: -100,
+    max: 500,
+    type: 'budget',
+  },
+  {
+    id: 'discount-depth',
+    label: 'Độ sâu khuyến mãi (Flash Sale)',
+    currentValue: 10,
+    unit: '%',
+    step: 1,
+    min: 0,
+    max: 90,
+    type: 'discount',
+  },
+  {
+    id: 'market-growth',
+    label: 'Tăng trưởng thị trường dự kiến',
+    currentValue: 2,
+    unit: '%',
+    step: 0.5,
+    min: -20,
+    max: 50,
+    type: 'other',
+  },
+]
+
+export const mlForecastComparisonScenariosMock: RevenueMlForecastComparisonScenario[] = [
+  {
+    id: 'baseline',
+    title: 'Kịch bản cơ sở',
+    projectedRevenue: 58_200_000,
+    note: 'Dựa trên dữ liệu lịch sử và xu hướng hiện tại',
+    accent: 'neutral',
+    color: '#94a3b8',
+    metrics: { revenue: 58_200_000, growth: 19.5 },
+    points: [
+      { label: 'T4-W1', value: 12_000_000 },
+      { label: 'T4-W2', value: 13_500_000 },
+      { label: 'T4-W3', value: 14_200_000 },
+      { label: 'T4-W4', value: 18_500_000 },
+    ],
+  },
+  {
+    id: 'aggressive-growth',
+    title: 'Tăng ngân sách Ads (+20%)',
+    projectedRevenue: 69_400_000,
+    note: 'Tối ưu hóa hiển thị cho sản phẩm Hero',
+    accent: 'positive',
+    color: '#6366f1',
+    metrics: { revenue: 69_400_000, growth: 42.4, roi: 3.2 },
+    points: [
+      { label: 'T4-W1', value: 14_000_000 },
+      { label: 'T4-W2', value: 16_800_000 },
+      { label: 'T4-W3', value: 17_500_000 },
+      { label: 'T4-W4', value: 21_100_000 },
+    ],
+  },
+  {
+    id: 'price-optimization',
+    title: 'Tăng giá 5% + Giảm giá Ads 10%',
+    projectedRevenue: 61_800_000,
+    note: 'Tập trung vào biên lợi nhuận',
+    accent: 'positive',
+    color: '#10b981',
+    metrics: { revenue: 61_800_000, growth: 26.8, roi: 4.1 },
+    points: [
+      { label: 'T4-W1', value: 13_100_000 },
+      { label: 'T4-W2', value: 14_200_000 },
+      { label: 'T4-W3', value: 15_600_000 },
+      { label: 'T4-W4', value: 18_900_000 },
+    ],
+  },
+]

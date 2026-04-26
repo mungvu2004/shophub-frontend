@@ -210,6 +210,40 @@ export interface RevenueMlForecastKeyDriver {
   trend: 'positive' | 'negative'
 }
 
+export interface RevenueMlForecastAccuracy {
+  mape: number
+  rmse: number
+  mae: number
+  periodLabel: string
+  confidenceLevel: number
+}
+
+export interface RevenueMlForecastInputAssumption {
+  id: string
+  label: string
+  currentValue: number
+  unit: string
+  step: number
+  min: number
+  max: number
+  type: 'price' | 'budget' | 'discount' | 'other'
+}
+
+export interface RevenueMlForecastScenarioInput {
+  title: string
+  assumptions: Record<string, number> // Assumption ID -> Change percentage or absolute value
+}
+
+export interface RevenueMlForecastComparisonScenario extends RevenueMlForecastScenario {
+  color: string
+  points: { label: string; value: number }[]
+  metrics: {
+    revenue: number
+    growth: number
+    roi?: number
+  }
+}
+
 export interface RevenueMlForecastResponse {
   title: string
   modelLabel: string
@@ -238,4 +272,6 @@ export interface RevenueMlForecastResponse {
   channelBreakdown?: RevenueMlForecastChannelBreakdown[]
   historicalMape?: number
   keyDrivers?: RevenueMlForecastKeyDriver[]
+  accuracy?: RevenueMlForecastAccuracy
+  inputs?: RevenueMlForecastInputAssumption[]
 }

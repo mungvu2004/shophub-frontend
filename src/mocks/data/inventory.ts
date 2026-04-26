@@ -179,6 +179,49 @@ export const mockInventoryAIForecast = {
     lastRunAt: '2026-03-28T14:28:00Z',
     statusText: 'Model đang hoạt động bình thường',
   },
+  accuracyMetrics: {
+    mape: 12.4,
+    rmse: 4.2,
+    previousMape: 14.8,
+  },
+  seasonalityPatterns: [
+    {
+      id: 'sea-001',
+      name: 'Mùa sắm Tết',
+      impactMultiplier: 2.4,
+      description: 'Nhu cầu tăng mạnh vào 2 tuần trước Tết Nguyên Đán.',
+      confidencePercent: 96,
+      periodLabel: 'Tháng 1 - Tháng 2',
+    },
+    {
+      id: 'sea-002',
+      name: 'Black Friday',
+      impactMultiplier: 3.8,
+      description: 'Nhu cầu đột biến trong tuần lễ giảm giá tháng 11.',
+      confidencePercent: 92,
+      periodLabel: 'Cuối tháng 11',
+    },
+  ],
+  inboundPlan: [
+    {
+      id: 'plan-001',
+      sku: 'AT-WHT-XL',
+      productName: 'Áo thun basic trắng XL',
+      suggestedQuantity: 150,
+      suggestedOrderDate: '2026-03-18T00:00:00Z',
+      leadTimeDays: 5,
+      priority: 'high',
+    },
+    {
+      id: 'plan-002',
+      sku: 'JEAN-SLM-M',
+      productName: 'Quần Jeans Slimfit M',
+      suggestedQuantity: 80,
+      suggestedOrderDate: '2026-03-19T00:00:00Z',
+      leadTimeDays: 3,
+      priority: 'high',
+    },
+  ],
   urgentRestocks: [
     {
       id: 'urgent-001',

@@ -254,6 +254,26 @@ export const ordersHandlers = [
         lazada: baseFiltered.filter((item) => item.platform === 'lazada').length,
         tiktok_shop: baseFiltered.filter((item) => item.platform === 'tiktok_shop').length,
       },
+      reasonAnalysis: [
+        { reason: 'defective', count: 124, percentage: 42, label: 'Sản phẩm lỗi' },
+        { reason: 'wrong_item', count: 68, percentage: 23, label: 'Sai hàng' },
+        { reason: 'change_of_mind', count: 45, percentage: 15, label: 'Đổi ý' },
+        { reason: 'late_delivery', count: 32, percentage: 11, label: 'Giao trễ' },
+        { reason: 'other', count: 26, percentage: 9, label: 'Khác' },
+      ],
+      trendData: [
+        { date: '01/03', returns: 5, cancellations: 2 },
+        { date: '03/03', returns: 8, cancellations: 4 },
+        { date: '05/03', returns: 12, cancellations: 3 },
+        { date: '07/03', returns: 7, cancellations: 6 },
+        { date: '09/03', returns: 15, cancellations: 4 },
+        { date: '11/03', returns: 10, cancellations: 8 },
+        { date: '13/03', returns: 18, cancellations: 5 },
+        { date: '15/03', returns: 14, cancellations: 7 },
+        { date: '17/03', returns: 22, cancellations: 4 },
+        { date: '19/03', returns: 16, cancellations: 9 },
+      ],
+      aiInsightText: 'Tỷ lệ Sản phẩm lỗi (42%) tăng cao đột biến tại sàn Shopee. Kiểm tra quy trình đóng gói và chất lượng lô hàng áo thun nhập ngày 10/03.',
     }
 
     return HttpResponse.json(
@@ -304,5 +324,31 @@ export const ordersHandlers = [
     }
 
     return HttpResponse.json(found, { status: 200 })
+  }),
+
+  http.post('/api/orders/returns/:id/approve', ({ params }) => {
+    const item = mockOrdersReturns.find((i) => i.id === params.id)
+    if (item) item.status = 'awaiting_pickup'
+    return HttpResponse.json({ success: true })
+  }),
+
+  http.post('/api/orders/returns/:id/reject', ({ params }) => {
+    const item = mockOrdersReturns.find((i) => i.id === params.id)
+    if (item) item.status = 'cancelled'
+    return HttpResponse.json({ success: true })
+  }),
+
+  http.post('/api/orders/returns/:id/auto-refund', ({ params }) => {
+    const item = mockOrdersReturns.find((i) => i.id === params.id)
+    if (item) item.status = 'refunded'
+    return HttpResponse.json({ success: true })
+  }),
+
+  http.post('/api/orders/returns/:id/response', async () => {
+    return HttpResponse.json({ success: true })
+  }),
+
+  http.post('/api/orders/returns/:id/evidence', async () => {
+    return HttpResponse.json({ success: true })
   }),
 ]

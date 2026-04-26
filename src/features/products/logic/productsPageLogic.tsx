@@ -2,11 +2,12 @@ import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProducts } from '@/features/products/hooks/useProducts'
 import type { Product } from '@/types/product.types'
+import type { SortOption } from '@/features/products/components/products-filters/ProductsFilters'
 
 export interface ProductsPageState {
   viewMode: 'table' | 'grid'
   searchValue: string
-  sortBy: 'best-sellers' | 'newest' | 'price-asc' | 'price-desc'
+  sortBy: SortOption
   selectedStatus: string
   selectedCategory: string
   selectedPlatform: string
@@ -19,7 +20,7 @@ export function useProductsPageLogic() {
   const [state, setState] = useState<ProductsPageState>({
     viewMode: 'table',
     searchValue: '',
-    sortBy: 'best-sellers',
+    sortBy: 'newest',
     selectedStatus: '',
     selectedCategory: '',
     selectedPlatform: '',
@@ -45,11 +46,26 @@ export function useProductsPageLogic() {
         return list.sort((a, b) => (a.variants?.[0]?.salePrice ?? 0) - (b.variants?.[0]?.salePrice ?? 0))
       case 'price-desc':
         return list.sort((a, b) => (b.variants?.[0]?.salePrice ?? 0) - (a.variants?.[0]?.salePrice ?? 0))
+      case 'name-asc':
+        return list.sort((a, b) => a.name.localeCompare(b.name))
+      case 'inventory-desc':
+        return list.sort((a, b) => {
+          // Mock inventory based on seeded id like in ProductsCardList
+          const getStock = (id: string) => (Number((id.match(/\d+/)?.[0] ?? '1')) * 7) % 180 + 20
+          return getStock(b.id) - getStock(a.id)
+        })
+      case 'revenue-desc':
+        return list.sort((a, b) => {
+          // Mock revenue based on sold * price
+          const getRevenue = (item: Product) => {
+            const sold = (Number((item.id.match(/\d+/)?.[0] ?? '1')) * 11) % 1100 + 20
+            return sold * (item.variants?.[0]?.salePrice ?? 0)
+          }
+          return getRevenue(b) - getRevenue(a)
+        })
       case 'newest':
-        return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      case 'best-sellers':
       default:
-        return list.sort((a, b) => (b.variants?.length ?? 0) - (a.variants?.length ?? 0))
+        return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     }
   }, [products, state.sortBy])
 

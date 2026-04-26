@@ -40,6 +40,35 @@ export type InventoryAIForecastTableTabViewModel = {
   count: number
 }
 
+// New Types for Craft Proposals
+export type ForecastAccuracyViewModel = {
+  mape: number
+  rmse: number
+  previousMape: number
+  status: 'improved' | 'declined' | 'stable'
+  lastPeriodLabel: string
+}
+
+export type SeasonalityPatternViewModel = {
+  id: string
+  name: string
+  impactLabel: string
+  description: string
+  confidencePercent: number
+  periodLabel: string
+}
+
+export type InboundPlanItemViewModel = {
+  id: string
+  sku: string
+  productName: string
+  suggestedQuantity: number
+  suggestedOrderDate: string
+  suggestedOrderDateLabel: string
+  leadTimeDays: number
+  priority: 'high' | 'medium' | 'low'
+}
+
 export type InventoryAIForecastViewModel = {
   title: string
   modelDescription: string
@@ -55,4 +84,18 @@ export type InventoryAIForecastViewModel = {
   watchCards: InventoryAIForecastWatchCardViewModel[]
   tableRows: InventoryAIForecastTableRowViewModel[]
   tabs: InventoryAIForecastTableTabViewModel[]
+  
+  // Added for new features
+  accuracy: ForecastAccuracyViewModel
+  seasonalityPatterns: SeasonalityPatternViewModel[]
+  inboundPlan: InboundPlanItemViewModel[]
+}
+
+export type ForecastParameterInput = {
+  eventId: string
+  eventName: string
+  startDate: string
+  endDate: string
+  expectedTrafficMultiplier: number
+  expectedSalesBoost: number
 }

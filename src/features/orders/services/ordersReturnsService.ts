@@ -37,6 +37,9 @@ const defaultSummary: OrdersReturnsSummary = {
     lazada: 0,
     tiktok_shop: 0,
   },
+  reasonAnalysis: [],
+  trendData: [],
+  aiInsightText: '',
 }
 
 function toPlatformBreakdown(value: unknown): Record<PlatformCode, number> {
@@ -52,7 +55,7 @@ function toPlatformBreakdown(value: unknown): Record<PlatformCode, number> {
 }
 
 function toSummary(value: unknown): OrdersReturnsSummary {
-  if (!value || typeof value !== 'object') return { ...defaultSummary }
+  if (!value || typeof value !== 'object') return { ...defaultSummary, reasonAnalysis: [], trendData: [] }
 
   const entry = value as Record<string, unknown>
 
@@ -70,6 +73,9 @@ function toSummary(value: unknown): OrdersReturnsSummary {
         ? entry.cancellationsDeltaPercent
         : 0,
     platformBreakdown: toPlatformBreakdown(entry.platformBreakdown),
+    reasonAnalysis: Array.isArray(entry.reasonAnalysis) ? entry.reasonAnalysis : [],
+    trendData: Array.isArray(entry.trendData) ? entry.trendData : [],
+    aiInsightText: typeof entry.aiInsightText === 'string' ? entry.aiInsightText : '',
   }
 }
 
@@ -124,6 +130,13 @@ function toItems(value: unknown): OrdersReturnsItem[] {
       amount: item.amount,
       status: item.status,
       happenedAt: item.happenedAt,
+      reason: typeof item.reason === 'string' ? item.reason : undefined,
+      isAbuseFlagged: item.isAbuseFlagged === true,
+      evidenceUrls: Array.isArray(item.evidenceUrls) ? item.evidenceUrls : undefined,
+      canAutoRefund: item.canAutoRefund === true,
+      sku: typeof item.sku === 'string' ? item.sku : undefined,
+      skuDetails: typeof item.skuDetails === 'string' ? item.skuDetails : undefined,
+      abuseNote: typeof item.abuseNote === 'string' ? item.abuseNote : undefined,
     }))
 }
 
@@ -147,6 +160,30 @@ class OrdersReturnsService {
       nextCursor: typeof response.data?.nextCursor === 'string' ? response.data.nextCursor : undefined,
       summary: toSummary(response.data?.summary),
     }
+  }
+
+  async approveReturn(id: string): Promise<void> {
+    await apiClient.post(`/orders/returns/${id}/approve`)
+  }
+
+  async rejectReturn(id: string): Promise<void> {
+    await apiClient.post(`/orders/returns/${id}/reject`)
+  }
+
+  async autoRefund(id: string): Promise<void> {
+    await apiClient.post(`/orders/returns/${id}/auto-refund`)
+  }
+
+  async sendResponse(id: string, message: string): Promise<void> {
+    await apiClient.post(`/orders/returns/${id}/response`, { message })
+  }
+
+  async uploadEvidence(id: string, files: File[]): Promise<void> {
+    const formData = new FormData()
+    files.forEach((file) => formData.append('files', file))
+    await apiClient.post(`/orders/returns/${id}/evidence`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
   }
 }
 

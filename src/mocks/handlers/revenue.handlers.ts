@@ -5,7 +5,12 @@ import {
   revenuePlatformComparisonMock,
   revenueSummaryReportMock,
 } from '@/mocks/data/revenue'
-import type { RevenuePlatformComparisonResponse, RevenuePlatformSnapshot } from '@/types/revenue.types'
+import { mlForecastComparisonScenariosMock } from '@/mocks/data/revenueMLScenarios'
+import type {
+  RevenueMlForecastScenarioInput,
+  RevenuePlatformComparisonResponse,
+  RevenuePlatformSnapshot,
+} from '@/types/revenue.types'
 
 const rangeFactorMap = {
   7: 0.45,
@@ -235,5 +240,32 @@ export const revenueHandlers = [
     return HttpResponse.json(toPlatformComparisonByMonth(month), { status: 200 })
   }),
   http.get('/api/revenue/ml-forecast', handleRevenueMlForecast),
-  http.get('/revenue/ml-forecast', handleRevenueMlForecast),
+  http.get('/api/revenue/ml-forecast/comparison', () => {
+    return HttpResponse.json(mlForecastComparisonScenariosMock, { status: 200 })
+  }),
+  http.post('/api/revenue/ml-forecast/simulate', async ({ request }) => {
+    const body = (await request.json()) as RevenueMlForecastScenarioInput
+    const baseline = mlForecastComparisonScenariosMock[0]
+    const priceChange = body.assumptions['price-change'] || 0
+    const adsChange = body.assumptions['ads-budget-change'] || 0
+
+    // Simple math for simulation
+    const impact = 1 + priceChange / 100 + adsChange / 200
+    const simulatedRevenue = Math.round(baseline.projectedRevenue * impact)
+
+    const simulatedScenario = {
+      ...baseline,
+      id: `sim-${Date.now()}`,
+      title: body.title || 'Kịch bản giả định',
+      projectedRevenue: simulatedRevenue,
+      color: '#ec4899',
+      metrics: {
+        revenue: simulatedRevenue,
+        growth: Number(((simulatedRevenue / 48_750_000 - 1) * 100).toFixed(1)),
+      },
+      points: baseline.points.map((p) => ({ ...p, value: Math.round(p.value * impact) })),
+    }
+
+    return HttpResponse.json(simulatedScenario, { status: 200 })
+  }),
 ]

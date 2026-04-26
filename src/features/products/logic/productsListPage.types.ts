@@ -1,9 +1,10 @@
 import type { Product } from '@/types/product.types'
+import type { SortOption } from '@/features/products/components/products-filters/ProductsFilters'
 
 export interface ProductsListPageState {
   viewMode: 'table' | 'grid'
   searchValue: string
-  sortBy: 'best-sellers' | 'newest' | 'price-asc' | 'price-desc'
+  sortBy: SortOption
   selectedStatus: string
   selectedCategory: string
   selectedPlatform: string

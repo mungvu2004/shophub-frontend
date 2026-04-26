@@ -2,27 +2,19 @@ import { useMemo, useState } from 'react'
 
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { PageSkeleton } from '@/components/ui/PageSkeleton'
-import { OrderDetail } from '@/features/orders/components/order-detail/OrderDetail'
 import { OrdersReturnsView } from '@/features/orders/components/orders-returns/OrdersReturnsView'
+import { OrdersReturnsDetailDialog } from '@/features/orders/components/orders-returns/OrdersReturnsDetailDialog'
 import { useOrdersReturnsData } from '@/features/orders/hooks/useOrdersReturnsData'
 import { useOrdersReturnsViewMode } from '@/features/orders/hooks/useOrdersReturnsViewMode'
 import { buildOrdersReturnsViewModel } from '@/features/orders/logic/ordersReturns.logic'
-import type { OrdersReturnsPlatformFilter } from '@/features/orders/logic/ordersReturns.types'
+import type { OrdersReturnsPlatformFilter, OrdersReturnsTableRowModel, OrdersReturnsTimelineItemModel } from '@/features/orders/logic/ordersReturns.types'
 
 export function OrdersReturns() {
   const [search, setSearch] = useState('')
   const [platform, setPlatform] = useState<OrdersReturnsPlatformFilter>('all')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-  const [activeDetailId, setActiveDetailId] = useState<string | null>(null)
-  const [activeDetailState, setActiveDetailState] = useState<{
-    orderCode?: string
-    platformLabel?: string
-    customerName?: string
-    productName?: string
-    amountLabel?: string
-    statusLabel?: string
-  } | null>(null)
+  const [selectedOrder, setSelectedOrder] = useState<OrdersReturnsTableRowModel | OrdersReturnsTimelineItemModel | null>(null)
 
   const { mode, setMode } = useOrdersReturnsViewMode('timeline')
 
@@ -55,18 +47,6 @@ export function OrdersReturns() {
     return <DataLoadErrorState title="Không thể tải dữ liệu hoàn/hủy đơn hàng." onRetry={() => refetch()} />
   }
 
-  const openDetailPopup = (row: { id: string; orderCode: string; platformLabel: string; customerName: string; productName: string; amountLabel: string; statusLabel: string }) => {
-    setActiveDetailId(row.id)
-    setActiveDetailState({
-      orderCode: row.orderCode,
-      platformLabel: row.platformLabel,
-      customerName: row.customerName,
-      productName: row.productName,
-      amountLabel: row.amountLabel,
-      statusLabel: row.statusLabel,
-    })
-  }
-
   return (
     <>
       <OrdersReturnsView
@@ -82,7 +62,7 @@ export function OrdersReturns() {
           setPlatform(value)
           setPage(1)
         }}
-        onOpenDetail={openDetailPopup}
+        onOpenDetail={setSelectedOrder}
         onPageChange={setPage}
         onPageSizeChange={(value) => {
           setPageSize(value)
@@ -90,17 +70,11 @@ export function OrdersReturns() {
         }}
       />
 
-      {activeDetailId ? (
-        <OrderDetail
-          orderId={activeDetailId}
-          fallbackState={activeDetailState}
-          isModalPresentation
-          onClose={() => {
-            setActiveDetailId(null)
-            setActiveDetailState(null)
-          }}
-        />
-      ) : null}
+      <OrdersReturnsDetailDialog
+        isOpen={!!selectedOrder}
+        onOpenChange={(open) => !open && setSelectedOrder(null)}
+        order={selectedOrder}
+      />
     </>
   )
 }

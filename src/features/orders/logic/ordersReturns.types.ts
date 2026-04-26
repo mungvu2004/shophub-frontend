@@ -13,6 +13,13 @@ export type OrdersReturnsQueryState = {
   pageSize: number
 }
 
+export type OrdersReturnsReasonAnalysis = {
+  reason: 'defective' | 'wrong_item' | 'change_of_mind' | 'late_delivery' | 'other'
+  count: number
+  percentage: number
+  label: string
+}
+
 export type OrdersReturnsSummary = {
   totalReturns: number
   totalCancellations: number
@@ -20,6 +27,9 @@ export type OrdersReturnsSummary = {
   returnsDeltaPercent: number
   cancellationsDeltaPercent: number
   platformBreakdown: Record<PlatformCode, number>
+  reasonAnalysis: OrdersReturnsReasonAnalysis[]
+  trendData: OrdersReturnsTrendPoint[]
+  aiInsightText: string
 }
 
 export type OrdersReturnsItem = {
@@ -32,6 +42,13 @@ export type OrdersReturnsItem = {
   amount: number
   status: OrdersReturnsStatus
   happenedAt: string
+  reason?: string
+  isAbuseFlagged?: boolean
+  evidenceUrls?: string[]
+  canAutoRefund?: boolean
+  sku?: string
+  skuDetails?: string
+  abuseNote?: string
 }
 
 export type OrdersReturnsResponse = {
@@ -63,6 +80,14 @@ export type OrdersReturnsTimelineItemModel = {
   statusLabel: string
   statusClassName: string
   isAlert: boolean
+  isAbuseFlagged: boolean
+  hasEvidence: boolean
+  canAutoRefund: boolean
+  reason: string
+  happenedAtLabel: string
+  sku: string
+  skuDetails: string
+  abuseNote?: string
 }
 
 export type OrdersReturnsDateGroupModel = {
@@ -74,11 +99,19 @@ export type OrdersReturnsTableRowModel = OrdersReturnsTimelineItemModel & {
   timeLabel: string
 }
 
+export type OrdersReturnsTrendPoint = {
+  date: string
+  returns: number
+  cancellations: number
+}
+
 export type OrdersReturnsViewModel = {
   title: string
   subtitleLabel: string
   dateRangeLabel: string
   statCards: OrdersReturnsStatCardModel[]
+  reasonAnalysis: OrdersReturnsReasonAnalysis[]
+  trendData: OrdersReturnsTrendPoint[]
   tableRows: OrdersReturnsTableRowModel[]
   timelineGroups: OrdersReturnsDateGroupModel[]
   totalCount: number

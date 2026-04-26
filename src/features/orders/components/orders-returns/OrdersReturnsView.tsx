@@ -4,6 +4,8 @@ import { OrdersReturnsSummaryCards } from '@/features/orders/components/orders-r
 import { OrdersReturnsTable } from '@/features/orders/components/orders-returns/OrdersReturnsTable'
 import { OrdersReturnsTimeline } from '@/features/orders/components/orders-returns/OrdersReturnsTimeline'
 import { OrdersReturnsViewModeToggle } from '@/features/orders/components/orders-returns/OrdersReturnsViewModeToggle'
+import { OrdersReturnsReasonAnalysis } from '@/features/orders/components/orders-returns/OrdersReturnsReasonAnalysis'
+import { OrdersReturnsTrendChart } from '@/features/orders/components/orders-returns/OrdersReturnsTrendChart'
 import type {
   OrdersReturnsPlatformFilter,
   OrdersReturnsTimelineItemModel,
@@ -36,7 +38,7 @@ export function OrdersReturnsView({
   onPageSizeChange,
 }: OrdersReturnsViewProps) {
   return (
-    <div className="space-y-4 pb-8 pt-1">
+    <div className="space-y-6 pb-8 pt-1">
       <OrdersReturnsHeader
         title={model.title}
         subtitle={model.subtitleLabel}
@@ -44,7 +46,20 @@ export function OrdersReturnsView({
         isRefreshing={isRefreshing}
       />
 
-      <OrdersReturnsSummaryCards cards={model.statCards} />
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch">
+        <div className="flex flex-col gap-6 lg:w-2/3">
+          <OrdersReturnsSummaryCards cards={model.statCards} />
+          <div className="flex-1">
+            <OrdersReturnsTrendChart data={model.trendData} />
+          </div>
+        </div>
+        <div className="lg:w-1/3">
+          <OrdersReturnsReasonAnalysis 
+            reasons={model.reasonAnalysis} 
+            aiInsightText={model.aiInsightText}
+          />
+        </div>
+      </div>
 
       <section className="space-y-3 rounded-xl border border-slate-100 bg-white px-6 pb-4 pt-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-wrap items-center justify-between gap-2">

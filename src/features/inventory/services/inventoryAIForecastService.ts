@@ -53,6 +53,29 @@ export type InventoryAIForecastResponse = {
   watchlist: InventoryAIForecastWatchItem[]
   allForecastRows: InventoryAIForecastTableRow[]
   generatedAt: string
+  // Added for new features
+  accuracyMetrics?: {
+    mape: number
+    rmse: number
+    previousMape: number
+  }
+  seasonalityPatterns?: {
+    id: string
+    name: string
+    impactMultiplier: number
+    description: string
+    confidencePercent: number
+    periodLabel: string
+  }[]
+  inboundPlan?: {
+    id: string
+    sku: string
+    productName: string
+    suggestedQuantity: number
+    suggestedOrderDate: string
+    leadTimeDays: number
+    priority: 'high' | 'medium' | 'low'
+  }[]
 }
 
 export type InventoryAIForecastFactor = {

@@ -10,33 +10,32 @@ type InventoryStockMovementsTimelineProps = {
 
 export function InventoryStockMovementsTimeline({ groups, selectedMovementId, onSelectMovement }: InventoryStockMovementsTimelineProps) {
   if (groups.length === 0) {
-    return null;
+    return (
+      <div className="rounded-[22px] border border-dashed border-slate-200 bg-white p-10 text-center text-sm text-slate-500">
+        Chưa có biến động nào phù hợp bộ lọc hiện tại.
+      </div>
+    )
   }
 
   return (
-    <div className="space-y-12 relative">
-      {/* Dynamic Connector Line */}
-      <div className="absolute left-[31px] top-6 bottom-6 w-0.5 bg-gradient-to-b from-secondary-100 via-secondary-100 to-transparent" />
-
+    <div className="space-y-10 relative">
       {groups.map((group) => (
         <section key={group.dateLabel} className="relative">
-          <div className="sticky top-20 z-10 mb-8 flex items-center gap-4 py-2">
-            <div className="flex items-center gap-3 rounded-full bg-white px-5 py-2 shadow-sm border border-secondary-100 group">
-              <Calendar className="size-4 text-primary-500 transition-transform group-hover:scale-110" />
-              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-secondary-900">{group.dateLabel}</h3>
+          <div className="sticky top-0 z-10 mb-6 flex items-center gap-4 bg-slate-50/90 py-3 backdrop-blur-md">
+            <div className="flex items-center gap-2 rounded-full bg-white px-4 py-1.5 shadow-sm border border-slate-100">
+              <Calendar className="size-3.5 text-primary-500" />
+              <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">{group.dateLabel}</h3>
             </div>
-            <div className="h-px flex-1 bg-gradient-to-r from-secondary-100 to-transparent" />
-            <span className="rounded-full bg-secondary-50 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-secondary-400 border border-secondary-100">
-               {group.items.length} Giao dịch
-            </span>
+            <div className="h-px flex-1 bg-gradient-to-r from-slate-200 to-transparent" />
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">{group.items.length} sự kiện</span>
           </div>
 
-          <div className="space-y-6 pl-10">
+          <div className="space-y-4 pl-4 border-l-2 border-slate-100 ml-6">
             {group.items.map((item, index) => (
               <div 
                 key={item.id} 
-                className="animate-in fade-in slide-in-from-left-4 duration-700 ease-out fill-mode-both"
-                style={{ animationDelay: `${index * 80}ms` }}
+                className="animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out fill-mode-both"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 <InventoryStockMovementCard
                   movement={item}
