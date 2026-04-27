@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import type { StockAdjustment, StockAdjustmentItem } from '../logic/stockAdjustment.types'
+import type { StockAdjustment } from '../logic/stockAdjustment.types'
 import { calculateDifference, buildStockAdjustmentViewModel, checkRequiresApproval } from '../logic/stockAdjustment.logic'
 import { toast } from 'sonner'
 

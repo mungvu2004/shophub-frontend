@@ -1,5 +1,4 @@
-import { Star } from 'lucide-react'
-
+import { Star, Reply, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type SentimentAnalysisReviewCardProps = {
@@ -35,50 +34,82 @@ export function SentimentAnalysisReviewCard({ review, isSelected, onSelect, onRe
     <article
       onClick={() => onSelect(review.id)}
       className={cn(
-        'cursor-pointer rounded-[18px] border border-slate-100 border-l-4 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition-all',
-        isSelected ? 'ring-2 ring-indigo-200' : 'hover:shadow-md',
-        review.borderClass,
+        'group cursor-pointer rounded-xl border border-slate-200 bg-white p-5 transition-all',
+        isSelected ? 'ring-2 ring-indigo-500 shadow-lg' : 'hover:border-indigo-200 hover:shadow-sm',
       )}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-700">
-            {initials}
+      <div className="flex flex-col gap-4">
+        {/* Top: Customer & Rating */}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-xs font-black text-slate-600 transition-colors group-hover:bg-indigo-50 group-hover:text-indigo-600">
+              {initials}
+            </div>
+
+            <div className="space-y-0.5">
+              <p className="text-sm font-bold text-slate-900">{review.customerName}</p>
+              <div className="flex items-center gap-0.5">
+                {review.stars.map((filled, index) => (
+                  <Star
+                    key={index}
+                    className={cn('size-3', filled ? 'fill-amber-400 text-amber-400' : 'text-slate-200')}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
 
-          <div>
-            <p className="text-sm font-bold text-[#111c2d]">{review.customerName}</p>
-            <div className="mt-1 flex items-center gap-1">
-              {review.stars.map((filled, index) => (
-                <Star key={`${review.id}-star-${index}`} className={cn('h-3.5 w-3.5', filled ? 'fill-amber-400 text-amber-400' : 'text-slate-200')} />
-              ))}
-            </div>
+          <div className="flex flex-col items-end gap-1.5">
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+              {review.timeLabel}
+            </span>
+            <span
+              className={cn(
+                'rounded px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest',
+                review.platformClass,
+              )}
+            >
+              {review.platformLabel}
+            </span>
           </div>
         </div>
 
-        <span className={cn('rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.08em]', review.sentimentClass)}>{review.sentimentLabel}</span>
-      </div>
+        {/* Content */}
+        <div className="relative">
+          <p className="text-sm leading-relaxed text-slate-700">{review.comment}</p>
+        </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
-        <span className={cn('rounded-md px-2.5 py-1 font-bold uppercase tracking-[0.08em]', review.platformClass)}>{review.platformLabel}</span>
-        <span className="rounded-md bg-slate-100 px-2 py-1 font-semibold text-slate-500">{review.weekLabel}</span>
-        <span className="font-mono text-slate-400">{review.timeLabel}</span>
-      </div>
+        {/* Footer: Meta & Actions */}
+        <div className="flex items-center justify-between border-t border-slate-50 pt-3">
+          <div className="flex items-center gap-2">
+            <div className="rounded bg-slate-50 px-2 py-0.5 text-[9px] font-bold text-slate-500 border border-slate-100">
+              {review.weekLabel}
+            </div>
+            {review.isReplied && (
+              <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-emerald-600">
+                <CheckCircle2 className="size-3" />
+                Đã phản hồi
+              </div>
+            )}
+          </div>
 
-      <p className="mt-4 text-sm leading-7 text-[#111c2d]">{review.comment}</p>
-
-      <div className="mt-4 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation()
-            onReply(review.id)
-          }}
-          className="inline-flex h-9 items-center rounded-xl px-1 text-xs font-bold uppercase tracking-[0.08em] text-[#4f46e5] transition-colors hover:text-[#3525cd]"
-        >
-          {review.actionLabel}
-        </button>
-        {review.isReplied ? <span className="text-xs font-semibold text-emerald-600">Đã phản hồi</span> : null}
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation()
+              onReply(review.id)
+            }}
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all',
+              review.isReplied
+                ? 'text-slate-400 hover:text-indigo-600'
+                : 'bg-indigo-600 text-white hover:bg-indigo-700',
+            )}
+          >
+            <Reply className="size-3" />
+            {review.isReplied ? 'Xem' : review.actionLabel}
+          </button>
+        </div>
       </div>
     </article>
   )

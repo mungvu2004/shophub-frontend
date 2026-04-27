@@ -1,5 +1,5 @@
 import { Download, TrendingUp, Layers, Box, CheckCircle2 } from 'lucide-react'
-import React, { memo } from 'react'
+import { memo } from 'react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'

@@ -1,6 +1,7 @@
-import { CalendarRange, Download } from 'lucide-react'
+import { CalendarRange, Download, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { ThemedPageHeader } from '@/components/shared/ThemedPageHeader'
 
 type OrdersReturnsHeaderProps = {
   title: string
@@ -26,36 +27,37 @@ export function OrdersReturnsHeader({ title, subtitle, dateRangeLabel, isRefresh
   }
 
   return (
-    <section className="rounded-xl border border-slate-100 bg-white bg-abstract-geometric px-6 py-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h1 className="text-[22px] font-bold leading-[33px] tracking-[-0.55px] text-slate-900 dark:text-slate-100">{title}</h1>
-          <p className="text-[16px] leading-6 text-slate-600 dark:text-slate-400">{subtitle}</p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Button 
-            type="button" 
-            variant="outline" 
-            className="h-11 rounded-lg border-slate-200 bg-white px-4 text-[14px] font-semibold text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 md:h-10"
-            onClick={handleDateClick}
-          >
-            <CalendarRange className="size-4" />
-            {dateRangeLabel}
-          </Button>
-          <Button 
-            type="button" 
-            variant="outline" 
-            className="h-11 rounded-lg border-indigo-300 bg-white px-4 text-[14px] font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-950/20 dark:text-indigo-400 md:h-10"
-            onClick={handleExport}
-          >
-            <Download className="mr-2 size-4" />
-            Xuất báo cáo
-          </Button>
-        </div>
+    <ThemedPageHeader
+      title={title}
+      subtitle={
+        <div className="flex items-center gap-2">
+          <span>{subtitle}</span>
+          {isRefreshing ? <span className="text-[11px] font-bold text-amber-600 animate-pulse">Đang cập nhật...</span> : null}
+        </div> as any
+      }
+      theme="orders"
+      badge={{ text: 'Returns & Cancellations', icon: <Undo2 className="size-3.5" /> }}
+    >
+      <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+        <Button 
+          type="button" 
+          variant="outline" 
+          className="h-10 rounded-xl border-amber-200/50 bg-white/80 backdrop-blur px-4 text-sm font-bold text-slate-700 hover:bg-white shadow-sm"
+          onClick={handleDateClick}
+        >
+          <CalendarRange className="size-4 mr-2" />
+          {dateRangeLabel}
+        </Button>
+        <Button 
+          type="button" 
+          variant="outline" 
+          className="h-10 rounded-xl border-amber-300/50 bg-white/80 backdrop-blur px-4 text-sm font-black text-amber-700 hover:bg-white hover:text-amber-900 shadow-sm"
+          onClick={handleExport}
+        >
+          <Download className="mr-2 size-4" />
+          Xuất báo cáo
+        </Button>
       </div>
-
-      {isRefreshing ? <p className="mt-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">Đang cập nhật dữ liệu...</p> : null}
-    </section>
+    </ThemedPageHeader>
   )
 }

@@ -1,4 +1,6 @@
 import { Button } from '@/components/ui/button'
+import { ShoppingCart } from 'lucide-react'
+import { ThemedPageHeader } from '@/components/shared/ThemedPageHeader'
 
 type OrdersAllHeaderProps = {
   title: string
@@ -20,42 +22,44 @@ export function OrdersAllHeader({
   onPrintWaybills,
 }: OrdersAllHeaderProps) {
   return (
-    <section className="rounded-xl bg-white bg-abstract-geometric px-6 py-4 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-[22px] font-bold leading-[33px] tracking-[-0.55px] text-slate-800">{title}</h1>
-          <p className="text-[14px] leading-5 text-slate-500">
-            {totalOrders} đơn hôm nay - <span className="font-semibold text-orange-500">{pendingOrders} cần xử lý ngay</span>
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            className="h-9 rounded-lg border-indigo-500 px-4 text-[14px] font-semibold text-indigo-600"
-            onClick={onConfirmBatch}
-          >
-            Xác nhận loạt
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="h-9 rounded-lg border-slate-300 px-4 text-[14px] font-semibold text-slate-600"
-            onClick={onExportCsv}
-          >
-            Xuất CSV
-          </Button>
-          <Button
-            type="button"
-            className="h-9 rounded-lg bg-indigo-600 px-4 text-[14px] font-semibold text-white hover:bg-indigo-700"
-            onClick={onPrintWaybills}
-          >
-            In mã VĐ
-          </Button>
-        </div>
+    <ThemedPageHeader
+      title={title}
+      subtitle={
+        <span className="flex items-center gap-2">
+          <span>{totalOrders} đơn hôm nay</span>
+          <span className="h-1 w-1 rounded-full bg-slate-400" />
+          <span className="font-bold text-amber-600">{pendingOrders} cần xử lý ngay</span>
+          {isRefreshing ? <span className="ml-2 text-[11px] font-bold text-amber-500 animate-pulse">Đang cập nhật...</span> : null}
+        </span> as any
+      }
+      theme="orders"
+      badge={{ text: 'Orders Management', icon: <ShoppingCart className="size-3.5" /> }}
+    >
+      <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+        <Button
+          type="button"
+          variant="outline"
+          className="h-10 rounded-xl border-amber-300/50 bg-white/80 backdrop-blur px-4 text-sm font-black text-amber-700 hover:bg-white hover:text-amber-900 shadow-sm"
+          onClick={onConfirmBatch}
+        >
+          Xác nhận loạt
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className="h-10 rounded-xl border-amber-200/50 bg-white/80 backdrop-blur px-4 text-sm font-black text-slate-700 hover:bg-white hover:text-slate-900 shadow-sm"
+          onClick={onExportCsv}
+        >
+          Xuất CSV
+        </Button>
+        <Button
+          type="button"
+          className="h-10 rounded-xl bg-amber-600 px-5 text-sm font-black text-white hover:bg-amber-700 shadow-sm"
+          onClick={onPrintWaybills}
+        >
+          In mã VĐ
+        </Button>
       </div>
-      {isRefreshing ? <p className="mt-2 text-[11px] font-semibold text-slate-400">Đang cập nhật dữ liệu...</p> : null}
-    </section>
+    </ThemedPageHeader>
   )
 }

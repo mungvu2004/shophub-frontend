@@ -9,7 +9,6 @@ const generateRevenueOrders = (): RevenueOrderItem[] => {
   const today = new Date()
   today.setHours(23, 59, 59, 999)
   const platforms: Array<'shopee' | 'lazada' | 'tiktok'> = ['shopee', 'lazada', 'tiktok']
-  const statues = ['completed', 'shipped', 'delivered', 'pending', 'cancelled', 'refunded']
 
   let orderId = 1
 

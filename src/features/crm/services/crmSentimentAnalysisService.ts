@@ -1,5 +1,9 @@
 import { apiClient } from '@/services/apiClient'
-import type { CRMSentimentAnalysisResponse, CRMSentimentPlatformFilter, CRMSentimentReviewItem } from '@/types/crm.types'
+import type { 
+  CRMSentimentAnalysisResponse, 
+  CRMSentimentReviewItem, 
+  CRMSentimentFilters 
+} from '@/types/crm.types'
 
 type ApiEnvelope = {
   data?: CRMSentimentAnalysisResponse | { data?: CRMSentimentAnalysisResponse }
@@ -40,22 +44,21 @@ const toReviewData = (payload: unknown): CRMSentimentReviewItem | null => {
 }
 
 export const crmSentimentAnalysisService = {
-  async getAnalysis(filters?: {
-    platform?: CRMSentimentPlatformFilter
-    weekLabel?: string
-  }): Promise<CRMSentimentAnalysisResponse> {
+  async getAnalysis(filters: CRMSentimentFilters): Promise<CRMSentimentAnalysisResponse> {
     const searchParams = new URLSearchParams()
 
-    if (filters?.platform && filters.platform !== 'all') {
+    searchParams.set('productId', filters.productId)
+    
+    if (filters.platform && filters.platform !== 'all') {
       searchParams.set('platform', filters.platform)
     }
 
-    if (filters?.weekLabel && filters.weekLabel !== 'all') {
+    if (filters.weekLabel && filters.weekLabel !== 'all') {
       searchParams.set('week', filters.weekLabel)
     }
 
     const query = searchParams.toString()
-    const endpoint = query ? `/crm/sentiment-analysis?${query}` : '/crm/sentiment-analysis'
+    const endpoint = `/crm/sentiment-analysis?${query}`
 
     const response = await apiClient.get(endpoint)
     const parsed = toAnalysisData(response.data)

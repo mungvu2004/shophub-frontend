@@ -5,29 +5,25 @@ export function CompetitorHeatmapGrid({ rows }: { rows: PriceHeatmapRow[] }) {
   const bucketLabels = rows[0]?.buckets.map((bucket) => bucket.rangeLabel) ?? []
 
   return (
-    <div className="overflow-x-auto space-y-5">
-      <div className="flex items-center justify-end gap-3 pr-2">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Số lượng đối thủ: ít</p>
-        <div className="h-2.5 w-32 rounded-full bg-gradient-to-r from-indigo-100 via-indigo-400 to-indigo-700" />
-        <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Nhiều</p>
-      </div>
-
-      <div className="min-w-[740px] space-y-3">
+    <div className="overflow-x-auto">
+      <div className="min-w-[700px] space-y-3">
         {rows.map((row) => (
-          <div key={row.category} className="grid grid-cols-[120px_repeat(6,minmax(0,1fr))] gap-2.5">
-            <p className="flex items-center text-sm font-semibold text-slate-600">{row.category}</p>
+          <div key={row.category} className="grid grid-cols-[140px_repeat(6,minmax(0,1fr))] gap-2">
+            <p className="flex items-center text-[13px] font-bold text-slate-700">{row.category}</p>
             {row.buckets.map((bucket) => {
               const intensity = bucket.totalCompetitors / maxValue
-              const bgOpacity = Math.max(0.12, Math.min(0.95, intensity))
+              // Dải màu từ indigo-50 đến indigo-700
+              const bgOpacity = Math.max(0.05, Math.min(0.9, intensity))
+              const isDark = bgOpacity > 0.5
 
               return (
                 <div
                   key={`${row.category}-${bucket.rangeLabel}`}
-                  className="flex h-14 items-center justify-center rounded-lg border border-white/80 text-xs font-bold text-white shadow-sm"
+                  className={`flex h-12 items-center justify-center rounded-md border border-slate-50 text-[13px] font-black transition-all hover:scale-[1.02] hover:shadow-sm ${isDark ? 'text-white' : 'text-indigo-900'}`}
                   style={{ backgroundColor: `rgba(79, 70, 229, ${bgOpacity})` }}
                   title={`${bucket.rangeLabel}: ${bucket.totalCompetitors} đối thủ`}
                 >
-                  {bucket.totalCompetitors}
+                  {bucket.totalCompetitors || ''}
                 </div>
               )
             })}
@@ -35,18 +31,20 @@ export function CompetitorHeatmapGrid({ rows }: { rows: PriceHeatmapRow[] }) {
         ))}
 
         {bucketLabels.length > 0 ? (
-          <div className="grid grid-cols-[120px_repeat(6,minmax(0,1fr))] gap-2.5 pt-1">
+          <div className="grid grid-cols-[140px_repeat(6,minmax(0,1fr))] gap-2 pt-2">
             <div />
             {bucketLabels.map((label) => (
-              <p key={label} className="text-center text-[11px] font-semibold text-slate-400">
+              <p key={label} className="text-center text-[11px] font-bold uppercase tracking-wider text-slate-400">
                 {label}
               </p>
             ))}
           </div>
         ) : null}
+        
+        <div className="mt-6 flex items-center justify-center gap-2 border-t border-slate-50 pt-4">
+          <span className="text-[10px] font-black uppercase tracking-[2px] text-slate-300">Khoảng giá thị trường (VND)</span>
+        </div>
       </div>
-
-      <p className="text-center text-xs font-bold uppercase tracking-wide text-slate-500">Khoảng giá (price buckets)</p>
     </div>
   )
 }

@@ -1,6 +1,7 @@
-import { Plus } from 'lucide-react'
+import { Plus, Zap } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { ThemedPageHeader } from '@/components/shared/ThemedPageHeader'
 
 type AutomationHeaderProps = {
   title: string
@@ -12,12 +13,12 @@ type AutomationHeaderProps = {
 
 export function AutomationHeader({ title, subtitle, createRuleLabel, isRefreshing, onCreateRule }: AutomationHeaderProps) {
   return (
-    <header className="bg-abstract-geometric flex flex-wrap items-end justify-between gap-4 rounded-xl border border-indigo-100 bg-gradient-to-r from-white to-indigo-50/40 px-5 py-4 shadow-[0_8px_20px_rgba(15,23,42,0.04)]">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h1>
-        <p className="mt-1 text-sm italic text-slate-500">{subtitle}</p>
-      </div>
-
+    <ThemedPageHeader
+      title={title}
+      subtitle={subtitle}
+      theme="settings"
+      badge={{ text: 'Automation', icon: <Zap className="size-3.5" /> }}
+    >
       <div className="flex items-center gap-3">
         {isRefreshing ? <span className="text-xs text-slate-500">Đang làm mới...</span> : null}
 
@@ -30,6 +31,6 @@ export function AutomationHeader({ title, subtitle, createRuleLabel, isRefreshin
           {createRuleLabel}
         </Button>
       </div>
-    </header>
+    </ThemedPageHeader>
   )
 }

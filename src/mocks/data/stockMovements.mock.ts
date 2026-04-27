@@ -37,7 +37,7 @@ export const mockExtendedStockMovements: InventoryStockMovementRecord[] = [
     movementGroup: 'inbound',
     movementTypeLabel: 'Nhập kho',
     movementTone: 'emerald',
-    platform: 'Da san',
+    platform: 'shopee',
     platformLabel: 'Đa sàn',
     warehouseId: 'WH_HN_01',
     warehouseName: 'Kho Hà Nội',

@@ -1,5 +1,6 @@
 import type { Product } from '@/types/product.types'
-import type { SortOption } from '@/features/products/components/products-filters/ProductsFilters'
+
+export type SortOption = 'price-asc' | 'price-desc' | 'inventory-desc' | 'revenue-desc' | 'name-asc' | 'newest'
 
 export interface ProductsListPageState {
   viewMode: 'table' | 'grid'
@@ -73,4 +74,12 @@ export interface ProductsListViewModel {
   onSaveProduct: (productData: { id?: string; name: string; sku: string; price: string; brand: string; status: string; syncedPlatforms: string[] }) => void
   onDelete: (product: Product) => void
   onViewVariants: (product: Product) => void
+  onSelectionChange: (ids: string[]) => void
+  onToggleAdvancedFilters: () => void
+  onBulkUpdatePrice: () => void
+  onBulkSync: () => void
+  onBulkPause: () => void
+  onBulkDelete: () => void
+  onBulkExport: () => void
+  onImportExcel: () => void
 }

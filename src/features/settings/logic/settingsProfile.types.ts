@@ -86,6 +86,8 @@ export type SettingsProfileViewModel = {
     valueLabel: string
   }>
   form: {
+    title: string
+    description: string
     fullNameLabel: string
     phoneLabel: string
     jobTitleLabel: string
@@ -95,6 +97,14 @@ export type SettingsProfileViewModel = {
     emailValue: string
     values: ProfileFormDraft
   }
-  preferences: SettingsProfilePreference[]
-  securityChecks: SettingsProfileSecurityCheck[]
+  preferences: {
+    title: string
+    description: string
+    items: SettingsProfilePreference[]
+  }
+  security: {
+    title: string
+    description: string
+    checks: SettingsProfileSecurityCheck[]
+  }
 }

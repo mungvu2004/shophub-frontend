@@ -1,6 +1,7 @@
-import { MoveRight } from 'lucide-react'
+import { MoveRight, Activity } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { ThemedPageHeader } from '@/components/shared/ThemedPageHeader'
 import type {
   RevenueMlForecastHeaderViewModel,
   RevenueMlForecastKpiCardViewModel,
@@ -88,56 +89,51 @@ export function RevenueMlForecastHeaderSection({
   onRangeChange: (days: RevenueMlForecastRangeDays) => void
 }) {
   return (
-    <section className="rounded-3xl border border-indigo-100/80 bg-gradient-to-br from-[#f8f9ff] via-white to-[#eef1ff] bg-abstract-geometric p-6 shadow-[0_10px_30px_rgba(53,37,205,0.08)] md:p-7">
-      <div className="flex flex-col gap-5">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl">
-            <p className="inline-flex rounded-full bg-[#3525cd]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[1.4px] text-[#3525cd]">
-              ML Revenue Forecast
-            </p>
-            <h1 className="mt-3 text-[32px] font-bold tracking-[-0.6px] text-slate-950 md:text-[36px]">{model.title}</h1>
-            <div className="mt-4 flex flex-wrap items-center gap-2 text-[12px] text-slate-600">
-              <span className="inline-flex items-center rounded-full bg-white px-3 py-1.5 font-semibold text-slate-800 shadow-sm ring-1 ring-slate-200/80">
-                {model.modelLabel}
-              </span>
-              <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 font-semibold text-emerald-700 ring-1 ring-emerald-100">
-                Độ chính xác 30 ngày: {model.accuracyLabel}
-              </span>
-              <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1.5 font-medium text-slate-600">
-                {model.updateLabel}
-              </span>
-            </div>
-          </div>
+    <ThemedPageHeader
+      title={model.title}
+      subtitle={
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-[12px] text-slate-600">
+          <span className="inline-flex items-center rounded-full bg-white px-3 py-1.5 font-semibold text-slate-800 shadow-sm ring-1 ring-slate-200/80">
+            {model.modelLabel}
+          </span>
+          <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 font-semibold text-emerald-700 ring-1 ring-emerald-100">
+            Độ chính xác 30 ngày: {model.accuracyLabel}
+          </span>
+          <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1.5 font-medium text-slate-600">
+            {model.updateLabel}
+          </span>
+        </div>
+      }
+      theme="revenue"
+      badge={{ text: 'ML Forecast', icon: <Activity className="size-3.5" /> }}
+    >
+      <div className="flex flex-col items-start gap-3 xl:items-end">
+        <Button
+          variant="ghost"
+          className="h-auto px-0 py-0 text-[13px] font-semibold text-[#3525cd] hover:bg-transparent hover:text-[#3525cd]"
+        >
+          {model.reportCtaLabel}
+        </Button>
 
-          <div className="flex flex-col items-start gap-3 xl:items-end">
-            <Button
-              variant="ghost"
-              className="h-auto px-0 py-0 text-[13px] font-semibold text-[#3525cd] hover:bg-transparent hover:text-[#3525cd]"
+        <div className="inline-flex w-fit flex-wrap gap-1 rounded-2xl bg-white/80 p-1.5 shadow-sm ring-1 ring-slate-200/80 backdrop-blur">
+          {model.rangeOptions.map((option) => (
+            <button
+              key={option.days}
+              type="button"
+              onClick={() => onRangeChange(option.days)}
+              className={cn(
+                'rounded-xl px-4 py-2 text-xs font-bold transition-all',
+                option.isActive
+                  ? 'bg-[#3525cd] text-white shadow-[0_8px_16px_rgba(53,37,205,0.2)]'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
+              )}
             >
-              {model.reportCtaLabel}
-            </Button>
-
-            <div className="inline-flex w-fit flex-wrap gap-1 rounded-2xl bg-white/80 p-1.5 ring-1 ring-slate-200/80">
-              {model.rangeOptions.map((option) => (
-                <button
-                  key={option.days}
-                  type="button"
-                  onClick={() => onRangeChange(option.days)}
-                  className={cn(
-                    'rounded-xl px-4 py-2 text-xs font-bold transition-all',
-                    option.isActive
-                      ? 'bg-[#3525cd] text-white shadow-[0_8px_16px_rgba(53,37,205,0.2)]'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
-                  )}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
+              {option.label}
+            </button>
+          ))}
         </div>
       </div>
-    </section>
+    </ThemedPageHeader>
   )
 }
 

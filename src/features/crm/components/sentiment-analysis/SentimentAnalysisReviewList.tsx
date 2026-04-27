@@ -1,28 +1,17 @@
+import { Inbox } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { SentimentAnalysisReviewCard } from './SentimentAnalysisReviewCard'
 
 type SentimentAnalysisReviewListProps = {
   title: string
   totalPrefix: string
   totalValue: string
-  items: Array<{
-    id: string
-    customerName: string
-    comment: string
-    timeLabel: string
-    platformLabel: string
-    platformClass: string
-    sentimentLabel: string
-    sentimentClass: string
-    borderClass: string
-    actionLabel: string
-    stars: boolean[]
-    isReplied: boolean
-    weekLabel: string
-  }>
+  items: any[]
   emptyLabel: string
   selectedReviewId: string | null
   onSelectReview: (reviewId: string) => void
   onReplyReview: (reviewId: string) => void
+  className?: string
 }
 
 export function SentimentAnalysisReviewList({
@@ -34,20 +23,30 @@ export function SentimentAnalysisReviewList({
   selectedReviewId,
   onSelectReview,
   onReplyReview,
+  className,
 }: SentimentAnalysisReviewListProps) {
   return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between gap-4">
-        <h2 className="text-[20px] font-bold tracking-[-0.03em] text-[#111c2d]">{title}</h2>
-        <div className="text-sm font-medium text-slate-500">
-          <span>{totalPrefix}:</span>
-          <span className="ml-2 font-semibold text-[#4f46e5]">{totalValue}</span>
+    <section className={cn('space-y-6', className)}>
+      <div className="flex items-end justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white">
+            <Inbox className="size-5" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-slate-900">{title}</h2>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                {totalPrefix}
+              </span>
+              <span className="font-mono text-xs font-black text-indigo-600">{totalValue}</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="space-y-4">
-        {items.length ? (
-          items.map((review) => (
+      {items.length > 0 ? (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {items.map((review) => (
             <SentimentAnalysisReviewCard
               key={review.id}
               review={review}
@@ -55,11 +54,13 @@ export function SentimentAnalysisReviewList({
               onSelect={onSelectReview}
               onReply={onReplyReview}
             />
-          ))
-        ) : (
-          <div className="rounded-[18px] border border-dashed border-slate-200 bg-white p-8 text-sm text-slate-500">{emptyLabel}</div>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-100 bg-slate-50/50 px-6 py-16 text-center">
+          <p className="text-sm font-bold text-slate-400">{emptyLabel}</p>
+        </div>
+      )}
     </section>
   )
 }

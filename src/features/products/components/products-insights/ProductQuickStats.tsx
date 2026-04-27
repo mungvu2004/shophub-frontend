@@ -5,6 +5,7 @@ import type { ProductQuickStatData } from '@/features/products/logic/productsLis
 
 interface ProductQuickStatsProps {
   stats: ProductQuickStatData[]
+  isCompact?: boolean
 }
 
 const icons = {
@@ -21,8 +22,31 @@ const colors = {
   emerald: { color: 'text-emerald-600', bgColor: 'bg-emerald-50', borderColor: 'border-emerald-100' },
 }
 
-export function ProductQuickStats({ stats }: ProductQuickStatsProps) {
+export function ProductQuickStats({ stats, isCompact }: ProductQuickStatsProps) {
   if (!stats || stats.length === 0) return null;
+
+  if (isCompact) {
+    return (
+      <div className="space-y-4">
+        {stats.map((stat, i) => {
+          const Icon = icons[stat.iconType] || PackageX
+          const theme = colors[stat.colorTone]
+
+          return (
+            <div key={i} className="flex items-center gap-3">
+              <div className={cn("size-8 rounded-lg flex items-center justify-center shrink-0", theme.bgColor)}>
+                <Icon className={cn("size-4", theme.color)} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[9px] font-black uppercase tracking-tight text-slate-500 leading-none mb-1 truncate">{stat.title}</p>
+                <p className="text-sm font-black text-slate-900 leading-none">{stat.value}</p>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">

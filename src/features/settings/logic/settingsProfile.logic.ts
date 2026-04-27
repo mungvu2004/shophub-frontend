@@ -82,6 +82,8 @@ export function buildSettingsProfileViewModel(params: {
       valueLabel: toStatValueLabel(stat.value, stat.suffix),
     })),
     form: {
+      title: 'Thông tin hồ sơ',
+      description: 'Thông tin này hiển thị trong dashboard và hoạt động cộng tác nội bộ.',
       fullNameLabel: 'Họ và tên',
       phoneLabel: 'Số điện thoại',
       jobTitleLabel: 'Chức danh',
@@ -91,10 +93,18 @@ export function buildSettingsProfileViewModel(params: {
       emailValue: data.identity.email,
       values: draft,
     },
-    preferences: toPreferences(data.preferences).map((item) => ({
-      ...item,
-      enabled: preferenceDraft[item.id] ?? item.enabled,
-    })),
-    securityChecks: toSecurityChecks(data.securityChecks),
+    preferences: {
+      title: 'Tùy chọn vận hành',
+      description: 'Bật hoặc tắt các nhắc nhở và chế độ làm việc cá nhân.',
+      items: toPreferences(data.preferences).map((item) => ({
+        ...item,
+        enabled: preferenceDraft[item.id] ?? item.enabled,
+      })),
+    },
+    security: {
+      title: 'Bảo mật tài khoản',
+      description: 'Kiểm tra định kỳ giúp giảm rủi ro khi vận hành đa nền tảng.',
+      checks: toSecurityChecks(data.securityChecks),
+    },
   }
 }

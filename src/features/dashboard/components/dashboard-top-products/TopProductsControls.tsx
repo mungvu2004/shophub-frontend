@@ -4,6 +4,8 @@ import type {
   TopProductsPlatformId,
   TopProductsRangeDays,
 } from '@/features/dashboard/logic/dashboardTopProducts.types'
+import { ThemedPageHeader } from '@/components/shared/ThemedPageHeader'
+import { Trophy } from 'lucide-react'
 
 type TopProductsControlsProps = {
   model: DashboardTopProductsViewModel
@@ -21,18 +23,20 @@ export function TopProductsControls({
   onPlatformChange,
 }: TopProductsControlsProps) {
   return (
-    <section className="space-y-4 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h2 className="text-[22px] font-bold leading-7 text-slate-900">{model.title}</h2>
-          <p className="mt-1 text-sm text-slate-500">
-            {model.subtitle}
-            {isRefreshing ? <span className="ml-2 text-xs text-primary-600">(đang cập nhật...)</span> : null}
-          </p>
-        </div>
-
+    <div className="space-y-6">
+      <ThemedPageHeader
+        title={model.title}
+        subtitle={
+          <span className="flex items-center gap-2">
+            <span>{model.subtitle}</span>
+            {isRefreshing ? <span className="text-[11px] font-bold text-blue-600 animate-pulse">(đang cập nhật...)</span> : null}
+          </span> as any
+        }
+        theme="dashboard"
+        badge={{ text: 'Top Performers', icon: <Trophy className="size-3.5" /> }}
+      >
         <div className="flex flex-wrap gap-3">
-          <div className="inline-flex rounded-lg bg-slate-50 p-1" role="tablist" aria-label="Metric selection">
+          <div className="inline-flex rounded-xl bg-white/60 p-1 backdrop-blur shadow-sm border border-blue-200/50" role="tablist" aria-label="Metric selection">
             {model.metricTabs.map((tab) => {
               const active = tab.id === model.selectedMetric
 
@@ -45,8 +49,8 @@ export function TopProductsControls({
                   onClick={() => onMetricChange(tab.id)}
                   className={
                     active
-                      ? 'rounded-md bg-white px-4 py-1.5 text-xs font-semibold text-primary-600 shadow-sm'
-                      : 'rounded-md px-4 py-1.5 text-xs font-semibold text-slate-500 hover:bg-white/70'
+                      ? 'rounded-lg bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-sm'
+                      : 'rounded-lg px-4 py-2 text-xs font-bold text-blue-900 hover:bg-white hover:text-blue-700 transition-colors'
                   }
                 >
                   {tab.label}
@@ -55,7 +59,7 @@ export function TopProductsControls({
             })}
           </div>
 
-          <div className="inline-flex rounded-lg bg-slate-50 p-1" role="tablist" aria-label="Date range selection">
+          <div className="inline-flex rounded-xl bg-white/60 p-1 backdrop-blur shadow-sm border border-blue-200/50" role="tablist" aria-label="Date range selection">
             {model.rangeTabs.map((tab) => {
               const active = tab.days === model.selectedRange
 
@@ -68,8 +72,8 @@ export function TopProductsControls({
                   onClick={() => onRangeChange(tab.days)}
                   className={
                     active
-                      ? 'rounded-md bg-white px-4 py-1.5 text-xs font-semibold text-primary-600 shadow-sm'
-                      : 'rounded-md px-4 py-1.5 text-xs font-semibold text-slate-500 hover:bg-white/70'
+                      ? 'rounded-lg bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-sm'
+                      : 'rounded-lg px-4 py-2 text-xs font-bold text-blue-900 hover:bg-white hover:text-blue-700 transition-colors'
                   }
                 >
                   {tab.label}
@@ -78,9 +82,9 @@ export function TopProductsControls({
             })}
           </div>
         </div>
-      </div>
+      </ThemedPageHeader>
 
-      <div className="flex flex-wrap gap-8 border-b border-slate-100" role="tablist" aria-label="Platform selection">
+      <div className="flex flex-wrap gap-8 border-b border-slate-100 px-2" role="tablist" aria-label="Platform selection">
         {model.platformTabs.map((tab) => {
           const active = tab.id === model.selectedPlatform
 
@@ -102,6 +106,6 @@ export function TopProductsControls({
           )
         })}
       </div>
-    </section>
+    </div>
   )
 }

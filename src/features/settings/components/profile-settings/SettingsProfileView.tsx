@@ -34,20 +34,20 @@ export function SettingsProfileView({
 
       <ProfileStatsGrid stats={model.stats} />
 
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12 xl:gap-8">
         <div className="space-y-6 xl:col-span-8">
           <ProfileFormSection form={model.form} onChange={onFormChange} />
           <ProfilePreferencesSection preferences={model.preferences} onToggle={onPreferenceToggle} />
-          <div className="flex justify-end">
-            <Button type="button" size="lg" onClick={onSave} disabled={model.isSaving}>
+          <div className="flex justify-end pt-2">
+            <Button type="button" variant="cta" size="lg" onClick={onSave} disabled={model.isSaving}>
               {model.isSaving ? 'Đang lưu...' : model.saveButtonLabel}
             </Button>
           </div>
         </div>
 
-        <aside className="space-y-6 xl:col-span-4">
+        <aside className="space-y-6 xl:sticky xl:top-24 xl:h-fit xl:col-span-4">
           <ProfileIdentityCard model={model.profileCard} />
-          <ProfileSecuritySection checks={model.securityChecks} />
+          <ProfileSecuritySection security={model.security} />
         </aside>
       </section>
     </div>

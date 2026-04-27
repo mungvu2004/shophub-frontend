@@ -1,5 +1,5 @@
 import { ChevronDown } from 'lucide-react'
-import { Line, LineChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
+import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
 
 import type {
   DynamicPricingHistoryPoint,
@@ -22,70 +22,97 @@ export function DynamicPricingPriceHistoryPanel({
 }: DynamicPricingPriceHistoryPanelProps) {
   return (
     <aside className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-100 px-5 py-5">
-        <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 shrink-0">
+        <div>
           <h4 className="text-sm font-bold uppercase tracking-wide text-slate-800">Lịch sử giá</h4>
-          <button type="button" className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600">
-            {periodLabel}
-            <ChevronDown className="h-3 w-3" aria-hidden />
-          </button>
+          <p className="mt-0.5 text-[11px] font-medium text-slate-500 truncate max-w-[180px]">{productName}</p>
         </div>
-
-        <p className="mt-3 text-sm font-semibold text-slate-700">{productName}</p>
-
-        <div className="mt-3 flex flex-wrap items-center gap-4 text-[11px] font-semibold text-slate-500">
-          <span className="inline-flex items-center gap-1">
-            <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
-            Shopee
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="h-2.5 w-2.5 rounded-full bg-slate-900" />
-            TikTok
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
-            Lazada
-          </span>
-          <span className="inline-flex items-center gap-1 text-slate-400">
-            <span className="h-0.5 w-3 bg-slate-300" />
-            Đối thủ
-          </span>
-        </div>
+        <button type="button" className="flex items-center gap-1 text-[11px] font-bold text-indigo-600">
+          {periodLabel}
+          <ChevronDown className="h-3 w-3" />
+        </button>
       </div>
 
-      <div className="flex-1 px-4 pt-6">
-        <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={points}>
-            <XAxis
-              dataKey="dateLabel"
-              tickLine={false}
-              axisLine={false}
-              tick={{ fontSize: 10, fill: '#94a3b8' }}
+      <div className="flex-1 w-full p-2">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={points} margin={{ top: 20, right: 30, left: 10, bottom: 10 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+            <XAxis 
+              dataKey="dateLabel" 
+              hide={false} 
+              axisLine={false} 
+              tickLine={false} 
+              tick={{ fontSize: 9, fontWeight: 600, fill: '#94a3b8' }}
+              dy={10}
             />
-            <YAxis hide domain={['dataMin - 2000', 'dataMax + 2000']} />
-            <Line type="monotone" dataKey="shopeePrice" stroke="#f97316" strokeWidth={2.5} dot={false} />
-            <Line type="monotone" dataKey="tiktokPrice" stroke="#0f172a" strokeWidth={2.5} dot={false} />
-            <Line type="monotone" dataKey="lazadaPrice" stroke="#0ea5e9" strokeWidth={2.5} dot={false} />
+            <YAxis 
+              hide 
+              domain={['dataMin - 5000', 'dataMax + 5000']} 
+            />
+            <Tooltip
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  return (
+                    <div className="rounded-lg border border-slate-100 bg-white p-3 shadow-xl">
+                      <p className="text-[10px] font-bold uppercase text-slate-400 mb-2">{payload[0].payload.dateLabel}</p>
+                      <div className="space-y-1.5">
+                        {payload.map((entry, index) => (
+                          <div key={index} className="flex items-center justify-between gap-4">
+                            <span className="text-[10px] font-bold text-slate-500">{entry.name}:</span>
+                            <span className="font-mono text-[10px] font-bold text-slate-900">{formatCurrency(Number(entry.value))}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                }
+                return null
+              }}
+            />
             <Line
+              name="Shopee"
+              type="monotone"
+              dataKey="shopeePrice"
+              stroke="#ee4d2d"
+              strokeWidth={2.5}
+              dot={false}
+              activeDot={{ r: 4, strokeWidth: 0 }}
+            />
+            <Line
+              name="TikTok"
+              type="monotone"
+              dataKey="tiktokPrice"
+              stroke="#000000"
+              strokeWidth={2.5}
+              dot={false}
+              activeDot={{ r: 4, strokeWidth: 0 }}
+            />
+            <Line
+              name="Lazada"
+              type="monotone"
+              dataKey="lazadaPrice"
+              stroke="#0f146d"
+              strokeWidth={2.5}
+              dot={false}
+              activeDot={{ r: 4, strokeWidth: 0 }}
+            />
+            <Line
+              name="Đối thủ"
               type="monotone"
               dataKey="competitorAvgPrice"
-              stroke="#cbd5e1"
-              strokeDasharray="5 4"
+              stroke="#94a3b8"
               strokeWidth={2}
+              strokeDasharray="4 4"
               dot={false}
             />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="border-t border-slate-100 bg-slate-50/70 px-5 py-4 text-sm">
+      <div className="border-t border-slate-100 bg-slate-50/70 px-5 py-3 shrink-0">
         <div className="flex items-center justify-between">
-          <span className="text-slate-500">Giá thấp nhất</span>
-          <span className="font-mono font-semibold text-indigo-600">{formatCurrency(summary.lowestPrice)}</span>
-        </div>
-        <div className="mt-1 flex items-center justify-between">
-          <span className="text-slate-500">Giá trung bình</span>
-          <span className="font-mono font-semibold text-slate-800">{formatCurrency(summary.averagePrice)}</span>
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Giá trung bình</span>
+          <span className="font-mono text-xs font-black text-slate-900">{formatCurrency(summary.averagePrice)}</span>
         </div>
       </div>
     </aside>

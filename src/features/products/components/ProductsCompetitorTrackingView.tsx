@@ -1,68 +1,100 @@
-import { AlertTriangle } from 'lucide-react'
+import { Eye, Settings2, UserPlus } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { ThemedPageHeader } from '@/components/shared/ThemedPageHeader'
+import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { CompetitorComparisonTable } from '@/features/products/components/products-competitor-tracking/CompetitorComparisonTable'
 import { CompetitorHeatmapGrid } from '@/features/products/components/products-competitor-tracking/CompetitorHeatmapGrid'
 import { CompetitorSidebar } from '@/features/products/components/products-competitor-tracking/CompetitorSidebar'
+import { CompetitorKpiSection } from '@/features/products/components/products-competitor-tracking/CompetitorKpiSection'
 import type { CompetitorTrackingViewModel } from '@/features/products/logic/productsCompetitorTracking.types'
 
 export function ProductsCompetitorTrackingView({ model }: { model: CompetitorTrackingViewModel }) {
   if (model.isError) {
     return (
-      <section className="rounded-xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
-        <p className="text-base font-semibold">Không thể tải dữ liệu theo dõi đối thủ</p>
-        <p className="mt-1 text-sm">{model.errorMessage}</p>
-        <Button variant="outline" className="mt-4" onClick={model.onRefresh}>
-          Thử lại
-        </Button>
-      </section>
+      <DataLoadErrorState 
+        title="Không thể tải dữ liệu theo dõi đối thủ" 
+        onRetry={model.onRefresh} 
+      />
+    )
+  }
+
+  if (model.isLoading && model.totalProductsTracked === 0) {
+    return (
+      <div className="flex h-[400px] items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white/50">
+        <div className="text-center">
+          <div className="mx-auto flex h-12 w-12 animate-spin items-center justify-center rounded-full border-2 border-indigo-600 border-t-transparent" />
+          <p className="mt-4 text-sm font-medium text-slate-500">Đang khởi tạo dữ liệu đối thủ...</p>
+        </div>
+      </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <section className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-100/60 px-4 py-3 text-amber-900">
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4" aria-hidden />
-          <p className="text-sm font-medium">{model.alertBanner.matchedCount} {model.alertBanner.message}</p>
-        </div>
-        <Button className="h-8 bg-indigo-700 px-4 text-sm font-semibold hover:bg-indigo-800">Xem ngay</Button>
-      </section>
-
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Theo dõi Đối thủ</h1>
-          <p className="mt-1 text-base text-slate-500">Giám sát giá {model.totalProductsTracked} đối thủ trên ba nền tảng</p>
-        </div>
-
+    <div className="space-y-8 pb-10">
+      <ThemedPageHeader
+        title="Theo dõi Đối thủ"
+        subtitle={`Giám sát vị thế giá của ${model.totalProductsTracked} sản phẩm trên các nền tảng thương mại điện tử.`}
+        theme="products"
+        badge={{ text: 'Competitor Intelligence', icon: <Eye className="size-3.5" /> }}
+      >
         <div className="flex flex-wrap items-center gap-3">
-          <Button variant="outline" className="h-11 border-indigo-300 px-6 text-indigo-600">
-            Cài đặt cảnh báo
+          <Button variant="outline" className="h-11 border-indigo-200 bg-white/80 px-5 text-indigo-700 shadow-sm backdrop-blur transition-all hover:bg-indigo-50">
+            <Settings2 className="mr-2 size-4" />
+            Cấu hình quét giá
           </Button>
-          <Button className="h-11 bg-gradient-to-r from-indigo-700 to-indigo-500 px-6 font-semibold shadow-lg shadow-indigo-200 hover:from-indigo-700 hover:to-indigo-600">
-            Thêm đối thủ theo dõi
+          <Button className="h-11 bg-gradient-to-r from-indigo-700 to-indigo-600 px-6 font-bold text-white shadow-lg shadow-indigo-100 hover:from-indigo-800 hover:to-indigo-700">
+            <UserPlus className="mr-2 size-4" />
+            Thêm đối thủ mới
           </Button>
         </div>
-      </header>
+      </ThemedPageHeader>
 
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <CompetitorComparisonTable model={model} />
-        <CompetitorSidebar model={model} />
-      </section>
+      {/* KPI Section */}
+      <CompetitorKpiSection 
+        totalProducts={model.totalProductsTracked}
+        avgPriceDiff={model.avgPriceDiff}
+        totalAlerts={model.totalAlerts}
+        topPlatform={model.topPlatform}
+      />
 
-      <article className="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">Bản đồ nhiệt Vị thế Giá</h3>
-            <p className="text-sm text-slate-500">Phân bố đối thủ theo danh mục và khoảng giá</p>
-          </div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Số lượng đối thủ: ít - nhiều</p>
+      {/* Main Analysis Content */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        {/* Left Column (2/3) */}
+        <div className="space-y-6 xl:col-span-2">
+          {/* Detailed Table Section */}
+          <CompetitorComparisonTable model={model} />
+
+          {/* Heatmap Section */}
+          <article className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_60px_-35px_rgba(15,23,42,0.4)]">
+            <div className="flex flex-wrap items-start justify-between gap-2 border-b border-slate-50 pb-5">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Bản đồ nhiệt Vị thế Giá</h3>
+                <p className="text-sm text-slate-500">Phân bố mật độ đối thủ theo danh mục và khoảng giá</p>
+              </div>
+              <div className="flex items-center gap-4">
+                 <div className="flex items-center gap-2">
+                   <div className="size-3 rounded-sm bg-indigo-100" />
+                   <span className="text-[11px] font-medium text-slate-400 uppercase">Thấp</span>
+                 </div>
+                 <div className="flex items-center gap-2">
+                   <div className="size-3 rounded-sm bg-indigo-600" />
+                   <span className="text-[11px] font-medium text-slate-400 uppercase">Cao</span>
+                 </div>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <CompetitorHeatmapGrid rows={model.heatmap} />
+            </div>
+          </article>
         </div>
 
-        <div className="mt-5">
-          <CompetitorHeatmapGrid rows={model.heatmap} />
+        {/* Right Column (1/3) - Sidebar */}
+        <div className="h-full">
+          <CompetitorSidebar model={model} />
         </div>
-      </article>
+      </div>
     </div>
   )
 }

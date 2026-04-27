@@ -4,20 +4,8 @@ import {
   mockInventoryAIForecastDetails,
   mockInventoryAlerts,
   mockStockLevels,
-  mockStockMovements,
   mockWarehouses,
 } from "@/mocks/data/inventory";
-import type { StockMovement } from "@/types/inventory.types";
-
-const matchesInventoryStatus = (derivedStatus: string, rawStatus: string) => {
-  if (!rawStatus || rawStatus === 'all') return true;
-
-  if (rawStatus === 'in-stock') return derivedStatus === 'normal';
-  if (rawStatus === 'low-stock') return derivedStatus === 'low';
-  if (rawStatus === 'out-of-stock') return derivedStatus === 'out';
-
-  return derivedStatus === rawStatus;
-};
 
 export const inventoryHandlers = [
   // Handler lấy tóm tắt kho
@@ -38,7 +26,7 @@ export const inventoryHandlers = [
 
   // Handler xóa SKU
   http.delete("/api/inventory", async ({ request }) => {
-    const { ids } = (await request.json()) as { ids: string[] };
+    await request.json();
     // Trong thực tế sẽ xóa trong mockStockLevels, ở đây ta chỉ giả lập thành công
     return new HttpResponse(null, { status: 204 });
   }),
@@ -61,7 +49,7 @@ export const inventoryHandlers = [
         stock.sku.toLowerCase().includes(search) || 
         (stock.productName ?? '').toLowerCase().includes(search);
 
-      const matchCategory = categoryFilter.length === 0 || categoryFilter.includes(stock.category);
+      const matchCategory = categoryFilter.length === 0 || (stock.category && categoryFilter.includes(stock.category));
       
       const channelStock = stock.channelStock ?? { shopee: 0, tiktok: 0, lazada: 0 };
       const matchPlatform = platformFilter.length === 0 || platformFilter.some(p => {

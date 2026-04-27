@@ -1,5 +1,3 @@
-import type { StockLevel } from '@/types/inventory.types'
-
 export type AdjustmentStatus = 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'DRAFT'
 
 export interface StockAdjustmentItem {

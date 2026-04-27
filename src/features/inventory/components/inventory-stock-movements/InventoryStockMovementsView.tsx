@@ -86,9 +86,7 @@ export function InventoryStockMovementsView({
     <div className="space-y-5 pb-8 pt-1">
       <InventoryStockMovementsHeader
         title={model.title}
-        subtitle={model.subtitle}
         updatedAtLabel={model.updatedAtLabel}
-        suggestedActionLabel={model.suggestedActionLabel}
         onRefresh={onRefresh}
         onExport={onExport}
         onQuickImport={createMovementController.openImport}
@@ -170,10 +168,6 @@ export function InventoryStockMovementsView({
       />
 
       <CreateMovementDialog controller={createMovementController} />
-    </div>
-  )
-}
-r={createMovementController} />
     </div>
   )
 }

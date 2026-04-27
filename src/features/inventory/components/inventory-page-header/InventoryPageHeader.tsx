@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import type { InventoryPageHeaderViewModel } from '@/features/inventory/logic/inventoryPageHeader.types'
-import { Grid3X3, ListIcon, Settings, Download, Upload } from 'lucide-react'
+import { Grid3X3, ListIcon, Settings, Download, Upload, Package } from 'lucide-react'
+import { ThemedPageHeader } from '@/components/shared/ThemedPageHeader'
 
 type InventoryPageHeaderProps = {
   model: InventoryPageHeaderViewModel
@@ -16,12 +17,15 @@ const iconMap: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>
 
 export function InventoryPageHeader({ model }: InventoryPageHeaderProps) {
   return (
-    <div className="flex items-center justify-between rounded-xl bg-white bg-abstract-geometric p-6 shadow-sm">
-      <div className="flex items-center gap-4">
-        <h1 className="text-2xl font-bold text-slate-900">Quản lý Tồn kho</h1>
-        
+    <ThemedPageHeader
+      title="Quản lý Tồn kho"
+      subtitle="Theo dõi và điều chỉnh hàng hóa trên tất cả các sàn"
+      theme="inventory"
+      badge={{ text: 'Inventory', icon: <Package className="size-3.5" /> }}
+    >
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
         {/* View Toggle */}
-        <div className="ml-4 inline-flex items-center gap-1 rounded-lg bg-indigo-50 p-1">
+        <div className="inline-flex items-center gap-1 rounded-xl bg-white/80 p-1 backdrop-blur shadow-sm border border-emerald-200/50">
           {model.tabs.map((tab) => {
             const isActive = tab.id === model.selectedViewMode
             const IconComponent = iconMap[tab.id]
@@ -32,7 +36,7 @@ export function InventoryPageHeader({ model }: InventoryPageHeaderProps) {
                 variant={isActive ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => model.onViewModeChange(tab.id)}
-                className={isActive ? 'bg-indigo-600 text-white' : 'text-slate-600'}
+                className={isActive ? 'bg-emerald-600 text-white shadow-sm' : 'text-emerald-900 hover:text-emerald-700 hover:bg-white'}
               >
                 {IconComponent && <IconComponent className="h-4 w-4" />}
                 <span className="ml-1.5">{tab.label}</span>
@@ -40,39 +44,41 @@ export function InventoryPageHeader({ model }: InventoryPageHeaderProps) {
             )
           })}
         </div>
-      </div>
 
-      {/* Action Buttons */}
-      <div className="flex items-center gap-3">
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => model.onAdjustStock?.()}
-          disabled={!model.onAdjustStock}
-        >
-          <Settings className="h-4 w-4" />
-          <span className="ml-1.5">Điều chỉnh</span>
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => model.onExportData?.()}
-          disabled={!model.onExportData}
-        >
-          <Download className="h-4 w-4" />
-          <span className="ml-1.5">Xuất kho</span>
-        </Button>
-        <Button 
-          variant="default" 
-          size="sm" 
-          className="bg-indigo-600"
-          onClick={() => model.onImportData?.()}
-          disabled={!model.onImportData}
-        >
-          <Upload className="h-4 w-4" />
-          <span className="ml-1.5">Nhập kho</span>
-        </Button>
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="h-9 rounded-xl bg-white/80 backdrop-blur border-emerald-200/50 text-emerald-900 font-bold shadow-sm hover:bg-white"
+            onClick={() => model.onAdjustStock?.()}
+            disabled={!model.onAdjustStock}
+          >
+            <Settings className="h-4 w-4" />
+            <span className="ml-1.5 hidden sm:inline">Điều chỉnh</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="h-9 rounded-xl bg-white/80 backdrop-blur border-emerald-200/50 text-emerald-900 font-bold shadow-sm hover:bg-white"
+            onClick={() => model.onExportData?.()}
+            disabled={!model.onExportData}
+          >
+            <Download className="h-4 w-4" />
+            <span className="ml-1.5 hidden sm:inline">Xuất kho</span>
+          </Button>
+          <Button 
+            variant="default" 
+            size="sm" 
+            className="h-9 rounded-xl bg-emerald-600 shadow-sm text-white hover:bg-emerald-700 font-bold"
+            onClick={() => model.onImportData?.()}
+            disabled={!model.onImportData}
+          >
+            <Upload className="h-4 w-4" />
+            <span className="ml-1.5 hidden sm:inline">Nhập kho</span>
+          </Button>
+        </div>
       </div>
-    </div>
+    </ThemedPageHeader>
   )
 }

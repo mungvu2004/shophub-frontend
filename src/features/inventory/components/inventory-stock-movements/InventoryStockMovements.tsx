@@ -55,7 +55,7 @@ export function InventoryStockMovements() {
   const model = useMemo(() => {
     if (!data) return null
 
-    const baseModel = buildInventoryStockMovementsViewModel({
+    const model = buildInventoryStockMovementsViewModel({
       response: data,
       query: {
         search,
@@ -67,14 +67,12 @@ export function InventoryStockMovements() {
         pageSize,
       } as any,
       selectedMovementId,
-    })
-
-    return {
-      ...baseModel,
       chartData,
       performerOptions: performers,
-      onExportLogs: () => stockMovementsService.exportToCSV(data.movements)
-    }
+      onExportLogs: () => stockMovementsService.exportToCSV(data.movements),
+    })
+
+    return model
   }, [data, movementGroup, page, pageSize, platform, search, selectedMovementId, warehouseId, performerId, chartData, performers])
 
   useEffect(() => {

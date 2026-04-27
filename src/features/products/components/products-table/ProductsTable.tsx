@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useEffect, useMemo, useState, useCallback, memo } from 'react'
 import type { Product } from '@/types/product.types'
 import { DataTable, type DataTableColumn } from '@/components/shared/DataTable'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Trash2, Edit, ChevronRight, ExternalLink } from 'lucide-react'
-import { LineChart, Line, ResponsiveContainer } from 'recharts'
 import { cn } from '@/lib/utils'
+import { PLATFORM_CONFIG } from '../../constants/platformConfig'
 
 interface ProductsTableProps {
   products: Product[]
@@ -16,6 +16,59 @@ interface ProductsTableProps {
 }
 
 const FALLBACK_IMAGE = 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns%3D%22http%3A//www.w3.org/2000/svg%22 width%3D%2248%22 height%3D%2248%22 viewBox%3D%220 0 48 48%22%3E%3Crect width%3D%2248%22 height%3D%2248%22 rx%3D%228%22 fill%3D%22%23f1f5f9%22/%3E%3C/svg%3E'
+
+/**
+ * Premium SVG Sparkline with smooth Bezier curves and high-fidelity area gradient
+ */
+const Sparkline = memo(({ data, color }: { data: { value: number }[], color: string }) => {
+  if (!data || data.length < 2) return <div className="h-6 w-16" />
+  
+  const min = Math.min(...data.map(d => d.value))
+  const max = Math.max(...data.map(d => d.value))
+  const range = max - min || 1
+  const width = 64
+  const height = 24
+  
+  const points = data.map((d, i) => ({
+    x: (i / (data.length - 1)) * width,
+    y: height - ((d.value - min) / range) * height
+  }))
+
+  let pathData = `M ${points[0].x} ${points[0].y}`
+  for (let i = 0; i < points.length - 1; i++) {
+    const cp1x = points[i].x + (points[i+1].x - points[i].x) / 2
+    const cp1y = points[i].y
+    const cp2x = points[i].x + (points[i+1].x - points[i].x) / 2
+    const cp2y = points[i+1].y
+    pathData += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${points[i+1].x} ${points[i+1].y}`
+  }
+
+  const fillPath = `${pathData} L ${width} ${height} L 0 ${height} Z`
+  const gradientId = `gradient-${color.replace('#', '')}`
+
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="mx-auto overflow-visible group-hover:scale-110 transition-transform duration-500">
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+          <stop offset="40%" stopColor={color} stopOpacity="0.1" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={fillPath} fill={`url(#${gradientId})`} />
+      <path
+        d={pathData}
+        fill="none"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+})
+
+Sparkline.displayName = 'Sparkline'
 
 export function ProductsTable({
   products,
@@ -29,28 +82,32 @@ export function ProductsTable({
 
   useEffect(() => {
     const validIds = new Set(products.map((p) => p.id))
-    setSelectedRows((prev) => new Set([...prev].filter((id) => validIds.has(id))))
+    setSelectedRows((prev) => {
+      const filtered = new Set([...prev].filter((id) => validIds.has(id)))
+      if (filtered.size !== prev.size) {
+         return filtered
+      }
+      return prev
+    })
   }, [products])
-
-  useEffect(() => {
-    onSelectionChange?.([...selectedRows])
-  }, [selectedRows, onSelectionChange])
 
   const toggleRow = useCallback((productId: string) => {
     setSelectedRows((prev) => {
       const next = new Set(prev)
       if (next.has(productId)) next.delete(productId)
       else next.add(productId)
+      onSelectionChange?.([...next])
       return next
     })
-  }, [])
+  }, [onSelectionChange])
 
   const toggleAllRows = useCallback(() => {
     setSelectedRows((prev) => {
-      if (prev.size === products.length) return new Set()
-      return new Set(products.map((p) => p.id))
+      const next = prev.size === products.length ? new Set<string>() : new Set(products.map((p) => p.id))
+      onSelectionChange?.([...next])
+      return next
     })
-  }, [products])
+  }, [products, onSelectionChange])
 
   const toggleVariants = useCallback((productId: string) => {
     setExpandedRows((prev) => {
@@ -66,73 +123,78 @@ export function ProductsTable({
       {
         id: 'select',
         header: (
-          <input
-            type="checkbox"
-            aria-label="Chọn tất cả sản phẩm"
-            checked={selectedRows.size === products.length && products.length > 0}
-            onChange={toggleAllRows}
-            className="size-4 rounded border-slate-300 accent-slate-900 cursor-pointer"
-          />
+          <div className="flex items-center justify-center">
+            <input
+              type="checkbox"
+              aria-label="Chọn tất cả sản phẩm"
+              checked={selectedRows.size === products.length && products.length > 0}
+              onChange={toggleAllRows}
+              className="size-3.5 rounded-md border-slate-300 accent-primary cursor-pointer transition-all hover:scale-110"
+            />
+          </div>
         ),
-        widthClassName: 'w-12',
+        widthClassName: 'w-10',
         cell: (product) => (
-          <input
-            type="checkbox"
-            aria-label={`Chọn sản phẩm ${product.name}`}
-            checked={selectedRows.has(product.id)}
-            onClick={(e) => e.stopPropagation()}
-            onChange={() => toggleRow(product.id)}
-            className="size-4 rounded border-slate-300 accent-slate-900 cursor-pointer"
-          />
+          <div className="flex items-center justify-center">
+            <input
+              type="checkbox"
+              aria-label={`Chọn sản phẩm ${product.name}`}
+              checked={selectedRows.has(product.id)}
+              onClick={(e) => e.stopPropagation()}
+              onChange={() => toggleRow(product.id)}
+              className="size-3.5 rounded-md border-slate-300 accent-primary cursor-pointer transition-all hover:scale-110"
+            />
+          </div>
         ),
       },
       {
         id: 'product',
         header: 'Sản phẩm',
-        widthClassName: 'w-[340px]',
+        widthClassName: 'w-[320px]',
         sortable: true,
         accessor: 'name',
         cell: (product) => {
           const variant = product.variants?.[0]
           const isExpanded = expandedRows.has(product.id)
           
-          // Extract unique platforms
           const platforms = new Set<string>()
           product.variants?.forEach(v => {
              v.listings?.forEach(l => platforms.add(l.platform))
           })
-          const platformColors: Record<string, string> = { shopee: 'bg-orange-500', tiktok_shop: 'bg-slate-900', lazada: 'bg-indigo-600' }
 
           return (
-            <div className="flex items-center gap-3">
-              <img
-                src={variant?.mainImageUrl || FALLBACK_IMAGE}
-                alt={product.name}
-                loading="lazy"
-                decoding="async"
-                className="size-12 rounded-xl object-cover border border-slate-200 bg-slate-50"
-              />
+            <div className="flex items-center gap-4 group/item">
+              <div className="relative shrink-0">
+                <img
+                  src={variant?.mainImageUrl || FALLBACK_IMAGE}
+                  alt={product.name}
+                  loading="lazy"
+                  decoding="async"
+                  className="size-11 rounded-xl object-cover border border-slate-100 shadow-sm transition-transform group-hover/item:scale-105"
+                />
+                <div className="absolute -bottom-1 -right-1 flex -space-x-1.5">
+                   {Array.from(platforms).map(p => (
+                     <div key={p} className={cn("size-3 rounded-full border-2 border-white shadow-xs", PLATFORM_CONFIG[p]?.color || "bg-slate-400")} />
+                   ))}
+                </div>
+              </div>
               <div className="min-w-0">
-                <p className="font-bold text-sm text-slate-900 leading-none truncate">{product.name}</p>
-                <div className="flex items-center gap-2 mt-1.5">
-                   <span className="font-mono text-[10px] font-bold text-slate-600 uppercase tracking-tight">{variant?.internalSku || 'SKU-NONE'}</span>
-                   {platforms.size > 0 && (
-                     <div className="flex -space-x-1">
-                       {Array.from(platforms).map(p => (
-                         <div key={p} className={cn("size-3 rounded-full border border-white", platformColors[p] || "bg-slate-400")} title={p} />
-                       ))}
-                     </div>
-                   )}
+                <p className="font-semibold text-xs text-slate-900 leading-tight truncate tracking-tight">{product.name}</p>
+                <div className="flex items-center gap-2 mt-1">
+                   <span className="font-mono text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                     {variant?.internalSku || 'NO-SKU'}
+                   </span>
                    {product.variants && product.variants.length > 1 && (
                      <button 
                        onClick={(e) => { e.stopPropagation(); toggleVariants(product.id) }}
+                       aria-expanded={isExpanded}
                        className={cn(
-                         "flex items-center gap-0.5 rounded-lg px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide transition-all",
-                         isExpanded ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                         "flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase transition-all",
+                         isExpanded ? "bg-slate-900 text-white" : "bg-slate-50 text-slate-500 hover:bg-slate-100"
                        )}
                      >
                        {product.variants.length} Phân loại
-                       <ChevronRight className={cn("size-3 transition-transform", isExpanded && "rotate-90")} />
+                       <ChevronRight className={cn("size-2.5 transition-transform", isExpanded && "rotate-90")} />
                      </button>
                    )}
                 </div>
@@ -142,53 +204,46 @@ export function ProductsTable({
         },
       },
       {
-        id: 'category',
-        header: 'Danh mục',
-        align: 'center',
-        widthClassName: 'w-28',
-        sortable: true,
-        accessor: 'brand',
-        cell: (product) => (
-          <span className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-bold text-slate-600">
-            {product.brand || 'Khác'}
-          </span>
-        ),
-      },
-      {
         id: 'price',
-        header: 'Giá niêm yết',
+        header: 'Giá bán',
         align: 'right',
-        widthClassName: 'w-32',
+        widthClassName: 'w-28',
         sortable: true,
         sortAccessor: (p) => p.variants?.[0]?.salePrice ?? 0,
         cell: (product) => (
-          <div className="flex items-center justify-end w-full">
-            <span className="font-mono text-sm font-bold text-slate-900">
+          <div className="flex flex-col items-end">
+            <p className="font-mono text-[13px] font-black text-slate-900">
               {(product.variants?.[0]?.salePrice ?? 0).toLocaleString('vi-VN')}
-            </span>
-            <span className="ml-1 text-xs font-semibold text-slate-500">₫</span>
+              <span className="ml-0.5 text-[10px] text-slate-400 font-normal">₫</span>
+            </p>
+            <div className="flex items-center gap-1 mt-0.5">
+               <span className="text-[9px] font-bold text-emerald-500">+{product.margin || 0}%</span>
+               <span className="text-[8px] text-slate-300 font-bold uppercase">Margin</span>
+            </div>
           </div>
         ),
       },
       {
-        id: 'margin',
-        header: 'Biên LN',
-        align: 'right',
-        widthClassName: 'w-24',
-        sortable: true,
-        sortAccessor: (p) => p.margin || 0,
+        id: 'performance',
+        header: 'Hiệu suất',
+        align: 'center',
+        widthClassName: 'w-28',
         cell: (product) => {
-          const margin = product.margin || 0
+          const data = product.trendData || []
+          const isUp = data.length > 1 ? data[data.length - 1].value >= data[0].value : true
+          const color = isUp ? '#10b981' : '#f43f5e'
+          
           return (
-            <span className="font-mono text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
-              +{margin}%
-            </span>
+            <div className="flex flex-col items-center gap-1">
+               <Sparkline data={data} color={color} />
+               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">30 ngày</p>
+            </div>
           )
         },
       },
       {
         id: 'quality',
-        header: 'Chất lượng',
+        header: 'Listing',
         align: 'center',
         widthClassName: 'w-24',
         sortable: true,
@@ -197,87 +252,33 @@ export function ProductsTable({
           const score = product.qualityScore || 0
           const color = score >= 80 ? "bg-emerald-500" : score >= 60 ? "bg-amber-500" : "bg-rose-500"
           return (
-            <div className="w-full max-w-[60px] mx-auto group relative cursor-help" title={`Điểm chất lượng Listing: ${score}/100`}>
-               <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                 <div className={cn("h-full rounded-full transition-all", color)} style={{ width: `${score}%` }} />
+            <div className="flex flex-col items-center gap-1">
+               <div className="h-1 w-12 bg-slate-100 rounded-full overflow-hidden">
+                 <div className={cn("h-full rounded-full transition-all duration-1000", color)} style={{ width: `${score}%` }} />
                </div>
-               <p className="text-[9px] font-bold text-slate-400 text-center mt-1 group-hover:text-slate-700 transition-colors">{score}/100</p>
+               <span className="text-[10px] font-black text-slate-700">{score}%</span>
             </div>
           )
         },
       },
       {
-        id: 'trend',
-        header: 'Xu hướng',
-        align: 'center',
-        widthClassName: 'w-24',
-        cell: (product) => {
-          const data = product.trendData || Array.from({ length: 7 }).map(() => ({ value: 0 }))
-          const isUp = data.length > 0 ? data[data.length - 1].value >= data[0].value : true
-          const color = isUp ? '#10b981' : '#f43f5e'
-          
-          return (
-            <div className="h-6 w-16 mx-auto opacity-80 group-hover:opacity-100 transition-opacity">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data}>
-                  <Line type="monotone" dataKey="value" stroke={color} strokeWidth={2} dot={false} isAnimationActive={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          )
-        },
-      },
-      {
-        id: 'revenue',
-        header: 'Doanh thu',
-        align: 'right',
-        widthClassName: 'w-32',
-        sortable: true,
-        sortAccessor: (p) => p.revenue || 0,
-        cell: (product) => {
-          const revenue = product.revenue || 0
-          return (
-            <div className="flex items-center justify-end w-full">
-              <span className="font-mono text-sm font-bold text-slate-900">
-                {revenue.toLocaleString('vi-VN')}
-              </span>
-              <span className="ml-1 text-xs font-semibold text-slate-500">₫</span>
-            </div>
-          )
-        },
-      },
-      {
-        id: 'stock',
-        header: 'Kho',
+        id: 'inventory',
+        header: 'Tồn kho',
         align: 'center',
         widthClassName: 'w-24',
         sortable: true,
         sortAccessor: (p) => p.stock || 0,
         cell: (product) => {
           const stock = product.stock || 0
-          const sold = product.sold || 0
-          const parLevel = 200
-          const percentage = Math.min(100, Math.max(0, (stock / parLevel) * 100))
-          
-          let tag = null
-          if (stock < 50) {
-             tag = <span className="mt-1.5 inline-block text-[9px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded whitespace-nowrap">🔴 Sắp hết</span>
-          } else if (sold < 100 && stock > 100) {
-             tag = <span className="mt-1.5 inline-block text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded whitespace-nowrap">🟡 Tồn đọng</span>
-          } else if (sold > 150) {
-             tag = <span className="mt-1.5 inline-block text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded whitespace-nowrap">🟢 Bán chạy</span>
-          }
-          
+          const isLow = stock < 50
           return (
             <div className="flex flex-col items-center">
-              <div className="flex items-baseline gap-1">
-                <p className={cn("text-sm font-bold font-mono", stock < 50 ? "text-rose-600" : "text-slate-900")}>{stock}</p>
-                <span className="text-[10px] text-slate-400 font-mono">/{parLevel}</span>
-              </div>
-              <div className="mt-1 w-12 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                 <div className={cn("h-full rounded-full", stock < 50 ? "bg-rose-500" : "bg-emerald-500")} style={{ width: `${percentage}%` }} />
-              </div>
-              {tag}
+              <span className={cn("font-mono text-sm font-black", isLow ? "text-rose-500" : "text-slate-900")}>
+                {stock}
+              </span>
+              {isLow && (
+                <span className="text-[8px] font-black text-rose-500 uppercase tracking-tighter">Sắp hết</span>
+              )}
             </div>
           )
         },
@@ -286,21 +287,21 @@ export function ProductsTable({
         id: 'status',
         header: 'Trạng thái',
         align: 'center',
-        widthClassName: 'w-28',
+        widthClassName: 'w-24',
         sortable: true,
         accessor: 'status',
         cell: (product) => {
           const colors: Record<string, string> = {
-            Active: 'text-emerald-800 bg-emerald-100 border-emerald-200',
-            Inactive: 'text-slate-700 bg-slate-100 border-slate-200',
-            Deleted: 'text-rose-800 bg-rose-100 border-rose-200',
+            Active: 'text-emerald-600 bg-emerald-50 border-emerald-100/50',
+            Inactive: 'text-slate-500 bg-slate-50 border-slate-200/50',
+            Deleted: 'text-rose-600 bg-rose-50 border-rose-100/50',
           }
           return (
             <span className={cn(
-              "inline-flex items-center justify-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold w-24",
+              "inline-flex items-center justify-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-bold w-20",
               colors[product.status] || colors.Inactive
             )}>
-              <div className="size-1.5 rounded-full bg-current" />
+              <div className="size-1 rounded-full bg-current animate-pulse" />
               {product.status === 'Active' ? 'Đang bán' : product.status === 'Deleted' ? 'Hết hàng' : 'Tạm dừng'}
             </span>
           )
@@ -310,25 +311,25 @@ export function ProductsTable({
         id: 'actions',
         header: '',
         align: 'right',
-        widthClassName: 'w-24',
+        widthClassName: 'w-20',
         cell: (product) => (
-          <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-2 group-hover:translate-x-0">
             <Button
-              variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all active:scale-90"
+              variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 active:scale-90"
               onClick={(e) => { e.stopPropagation(); onEdit?.(product) }}
-              title="Chỉnh sửa sản phẩm"
+              aria-label={`Chỉnh sửa ${product.name}`}
             >
-              <Edit className="size-4" />
+              <Edit className="size-3.5" />
             </Button>
             <Button
-              variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-90"
+              variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 active:scale-90"
               onClick={(e) => {
                 e.stopPropagation()
                 if (window.confirm('Xoá sản phẩm này?')) onDelete?.(product)
               }}
-              title="Xoá sản phẩm"
+              aria-label={`Xoá ${product.name}`}
             >
-              <Trash2 className="size-4" />
+              <Trash2 className="size-3.5" />
             </Button>
           </div>
         ),
@@ -343,7 +344,7 @@ export function ProductsTable({
       columns={columns}
       rowKey={(p) => p.id}
       disableScroll
-      rowClassName="group h-[72px] border-b border-border hover:bg-muted/50 transition-colors"
+      rowClassName="group h-[68px] border-b border-slate-50 hover:bg-slate-50/50 transition-colors"
       onRowClick={(p) => onViewVariants?.(p)}
       renderAfterRow={(product) => {
         if (!expandedRows.has(product.id)) return null

@@ -59,7 +59,19 @@ export interface CompetitorTrackingViewModel {
   errorMessage: string | null
   alertBanner: CompetitorAlertBanner
   totalProductsTracked: number
+  
+  // KPIs mới
+  avgPriceDiff: number
+  topPlatform: CompetitorPlatform | 'n/a'
+  totalAlerts: number
+  
+  // Dữ liệu và Phân trang
   filteredRows: CompetitorPriceRow[]
+  paginatedRows: CompetitorPriceRow[]
+  currentPage: number
+  pageSize: number
+  totalPages: number
+  
   topCompetitors: TopCompetitor[]
   alertSettings: PriceAlertSettings
   heatmap: PriceHeatmapRow[]
@@ -67,6 +79,8 @@ export interface CompetitorTrackingViewModel {
   thresholdPercentInput: string
   onSearchChange: (value: string) => void
   onThresholdChange: (value: string) => void
+  onPageChange: (page: number) => void
+  onPageSizeChange: (size: number) => void
   onOpenProductDetail: (productId: string) => void
   onRefresh: () => void
 }

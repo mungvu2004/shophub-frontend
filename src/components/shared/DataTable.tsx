@@ -226,6 +226,15 @@ export function DataTable<T>({
                 <TableRow
                   className={cn('min-h-[72px] border-b border-slate-100 bg-white transition-colors hover:bg-slate-50/90', rowClass, onRowClick ? 'cursor-pointer' : '')}
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  onKeyDown={onRowClick ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      onRowClick(row)
+                    }
+                  } : undefined}
+                  tabIndex={onRowClick ? 0 : undefined}
+                  role={onRowClick ? 'button' : undefined}
+                  aria-label={onRowClick ? 'Nhấp để xem chi tiết' : undefined}
                 >
                   {columns.map((column) => {
                     const cellClass = typeof column.cellClassName === 'function' ? column.cellClassName(row) : column.cellClassName

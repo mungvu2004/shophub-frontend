@@ -1,5 +1,6 @@
 import type { InventoryStockMovementsResponse } from '@/features/inventory/logic/inventoryStockMovements.types'
 import type {
+  InventoryStockMovementChartEntry,
   InventoryStockMovementDayGroup,
   InventoryStockMovementGroupFilter,
   InventoryStockMovementRecord,
@@ -135,36 +136,6 @@ function movementToneOf(group: InventoryStockMovementRecord['movementGroup']) {
   return movementToneMap[group]
 }
 
-function filterList(
-  items: InventoryStockMovementRecord[],
-  query: InventoryStockMovementsQueryState,
-) {
-  const search = query.search.trim().toLowerCase()
-
-  return items.filter((item) => {
-    const matchesSearch =
-      !search ||
-      [item.sku, item.productName, item.variantName ?? '', item.warehouseName, item.reason ?? '', item.note ?? '']
-        .join(' ')
-        .toLowerCase()
-        .includes(search)
-
-    const matchesPlatform = query.platform === 'all' || item.platform === query.platform
-    const matchesGroup = query.movementGroup === 'all' || item.movementGroup === query.movementGroup
-    const matchesWarehouse = !query.warehouseId || item.warehouseId === query.warehouseId
-
-    return matchesSearch && matchesPlatform && matchesGroup && matchesWarehouse
-  })
-}
-
-function paginate<T>(items: T[], page: number, pageSize: number) {
-  const safePage = Math.max(1, page)
-  const safeSize = Math.max(1, pageSize)
-  const start = (safePage - 1) * safeSize
-
-  return items.slice(start, start + safeSize)
-}
-
 function buildDayGroups(items: InventoryStockMovementRecord[]): InventoryStockMovementDayGroup[] {
   const groups = new Map<string, InventoryStockMovementRecord[]>()
 
@@ -241,8 +212,11 @@ export function buildInventoryStockMovementsViewModel(args: {
   response: InventoryStockMovementsResponse
   query: InventoryStockMovementsQueryState
   selectedMovementId: string | null
+  chartData: InventoryStockMovementChartEntry[]
+  performerOptions: Array<{ id: string; label: string }>
+  onExportLogs: () => void
 }): InventoryStockMovementsViewModel {
-  const { response, query, selectedMovementId } = args
+  const { response, query, selectedMovementId, chartData, performerOptions, onExportLogs } = args
   
   // Tin tưởng dữ liệu từ API (đã được lọc và phân trang ở Server/Mock)
   const displayMovements = response.movements
@@ -269,6 +243,9 @@ export function buildInventoryStockMovementsViewModel(args: {
     warehouseOptions: response.warehouseBreakdown.map((item) => ({ id: item.id, label: item.label })),
     platformOptions,
     groupOptions,
+    chartData,
+    performerOptions,
+    onExportLogs,
   }
 }
 

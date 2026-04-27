@@ -7,8 +7,14 @@ const svgPlaceholder = (label: string) => `
 </svg>
 `
 
+/**
+ * Assets Handlers
+ * CHỈ dùng để giả lập các hình ảnh từ bên ngoài nếu cần thiết.
+ * KHÔNG can thiệp vào local assets (/src/assets) hoặc các tài nguyên hệ thống.
+ */
 export const assetsHandlers = [
-  http.get(/https:\/\/via\.placeholder\.com\/.*/, ({ request }) => {
+  // Placeholder service fallback
+  http.get('https://via.placeholder.com/*', ({ request }) => {
     const url = new URL(request.url)
     const text = url.searchParams.get('text') ?? 'Image'
 
@@ -21,17 +27,8 @@ export const assetsHandlers = [
     })
   }),
 
-  // Handle local assets to prevent passthrough failures
-  http.get(/\/src\/assets\/.*/, () => {
-    return new HttpResponse(svgPlaceholder('Asset'), {
-      status: 200,
-      headers: {
-        'Content-Type': 'image/svg+xml; charset=utf-8',
-      },
-    })
-  }),
-
-  http.get(/https:\/\/images\.unsplash\.com\/.*/, () => {
+  // Unsplash fallback for mock data
+  http.get('https://images.unsplash.com/*', () => {
     return new HttpResponse(svgPlaceholder('Unsplash'), {
       status: 200,
       headers: {
@@ -39,52 +36,5 @@ export const assetsHandlers = [
         'Cache-Control': 'public, max-age=300',
       },
     })
-  }),
-
-  // Fallback only for external static assets (not localhost app/api requests).
-  http.get(/https?:\/\/.*/, ({ request }) => {
-    const url = new URL(request.url)
-    const isLocalOrigin =
-      url.hostname === 'localhost' ||
-      url.hostname === '127.0.0.1' ||
-      url.hostname === '[::1]'
-
-    if (isLocalOrigin) {
-      return undefined
-    }
-
-    const destination = request.destination
-    const accept = request.headers.get('accept') ?? ''
-
-    if (destination === 'image' || accept.includes('image/')) {
-      return new HttpResponse(svgPlaceholder('Image'), {
-        status: 200,
-        headers: {
-          'Content-Type': 'image/svg+xml; charset=utf-8',
-          'Cache-Control': 'public, max-age=120',
-        },
-      })
-    }
-
-    if (destination === 'style' || accept.includes('text/css')) {
-      return new HttpResponse('', {
-        status: 200,
-        headers: {
-          'Content-Type': 'text/css; charset=utf-8',
-          'Cache-Control': 'public, max-age=120',
-        },
-      })
-    }
-
-    if (destination === 'font' || accept.includes('font/')) {
-      return new HttpResponse(null, {
-        status: 204,
-        headers: {
-          'Cache-Control': 'public, max-age=120',
-        },
-      })
-    }
-
-    return undefined
   }),
 ]

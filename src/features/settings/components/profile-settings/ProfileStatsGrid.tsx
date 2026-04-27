@@ -7,12 +7,12 @@ type ProfileStatsGridProps = {
 
 export function ProfileStatsGrid({ stats }: ProfileStatsGridProps) {
   return (
-    <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <section className="grid grid-cols-1 gap-4 sm:grid-cols-3 xl:gap-6">
       {stats.map((stat) => (
-        <Card key={stat.id} className="border-slate-200 bg-white shadow-sm">
-          <CardContent className="space-y-1 pt-1">
-            <p className="text-xs font-semibold uppercase tracking-[1px] text-slate-500">{stat.label}</p>
-            <p className="text-2xl font-semibold text-slate-900">{stat.valueLabel}</p>
+        <Card key={stat.id} className="border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
+          <CardContent className="space-y-1.5 p-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-secondary-500">{stat.label}</p>
+            <p className="font-mono text-3xl font-bold tabular-nums text-secondary-900">{stat.valueLabel}</p>
           </CardContent>
         </Card>
       ))}

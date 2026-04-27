@@ -1,29 +1,23 @@
 import { apiClient } from '@/services/apiClient'
 import type {
   DynamicPricingPayload,
-  DynamicPricingRuleStatus,
 } from '@/features/products/logic/productsDynamicPricing.types'
 
-type DynamicPricingResponse = {
-  data?: DynamicPricingPayload
-} & Partial<DynamicPricingPayload>
-
-type ApplyAllPricingResponse = {
-  success: boolean
-  appliedCount: number
-  message: string
-}
-
-type UpdateRuleStatusResponse = {
-  success: boolean
-  ruleId: string
-  status: DynamicPricingRuleStatus
-  message: string
-}
-
 const fallbackPayload: DynamicPricingPayload = {
+  title: 'Định giá Động',
   subtitle: '',
-  periodLabel: '30 ngay qua',
+  recommendationsTitle: 'Gợi ý giá AI - Chờ xác nhận',
+  applyAllLabel: 'Áp dụng giá AI hàng loạt',
+  historyLabel: 'Lịch sử thay đổi giá',
+  periodLabel: '30 ngày qua',
+  tableHeaders: {
+    product: 'Sản phẩm',
+    platform: 'Sàn',
+    pricing: 'Phân tích giá',
+    confidence: 'Độ tin cậy',
+    actions: 'Xác nhận',
+  },
+  approveLabel: 'Duyệt',
   totalSuggestions: 0,
   displayedSuggestions: 0,
   selectedProductName: '',
@@ -35,42 +29,63 @@ const fallbackPayload: DynamicPricingPayload = {
     averagePrice: 0,
   },
   insights: [],
+  competitorGaps: [],
 }
 
-const normalizePayload = (payload: DynamicPricingResponse): DynamicPricingPayload => {
-  const source = payload.data ?? payload
+/**
+ * Xử lý dữ liệu trả về từ API để đảm bảo luôn đúng cấu trúc DynamicPricingPayload.
+ */
+const mapResponseToPayload = (raw: any): DynamicPricingPayload => {
+  const data = (raw && typeof raw === 'object' && 'success' in raw && 'data' in raw) ? raw.data : raw;
+
+  if (!data || typeof data !== 'object') {
+    return fallbackPayload
+  }
 
   return {
-    subtitle: source.subtitle ?? fallbackPayload.subtitle,
-    periodLabel: source.periodLabel ?? fallbackPayload.periodLabel,
-    totalSuggestions: source.totalSuggestions ?? fallbackPayload.totalSuggestions,
-    displayedSuggestions: source.displayedSuggestions ?? fallbackPayload.displayedSuggestions,
-    selectedProductName: source.selectedProductName ?? fallbackPayload.selectedProductName,
-    rules: Array.isArray(source.rules) ? source.rules : fallbackPayload.rules,
-    recommendations: Array.isArray(source.recommendations)
-      ? source.recommendations
-      : fallbackPayload.recommendations,
-    historyPoints: Array.isArray(source.historyPoints) ? source.historyPoints : fallbackPayload.historyPoints,
-    historySummary: source.historySummary ?? fallbackPayload.historySummary,
-    insights: Array.isArray(source.insights) ? source.insights : fallbackPayload.insights,
+    ...fallbackPayload,
+    ...data,
+    tableHeaders: {
+      ...fallbackPayload.tableHeaders,
+      ...(data.tableHeaders || {})
+    },
+    historySummary: {
+      ...fallbackPayload.historySummary,
+      ...(data.historySummary || {})
+    },
+    rules: Array.isArray(data.rules) ? data.rules : [],
+    recommendations: Array.isArray(data.recommendations) ? data.recommendations : [],
+    historyPoints: Array.isArray(data.historyPoints) ? data.historyPoints : [],
+    insights: Array.isArray(data.insights) ? data.insights : [],
+    competitorGaps: Array.isArray(data.competitorGaps) ? data.competitorGaps : [],
   }
 }
 
 export const productsDynamicPricingService = {
-  async getDynamicPricingData(): Promise<DynamicPricingPayload> {
-    const response = await apiClient.get<DynamicPricingResponse>('/products/dynamic-pricing')
-    return normalizePayload(response.data)
+  getDynamicPricingData: async (): Promise<DynamicPricingPayload> => {
+    try {
+      // Gỡ bỏ tiền tố /api vì baseURL đã có sẵn /api
+      const response = await apiClient.get<any>('/products/dynamic-pricing')
+      return mapResponseToPayload(response.data)
+    } catch (error) {
+      console.error('Lỗi khi gọi API Định giá động:', error)
+      return fallbackPayload
+    }
   },
 
-  async applyAllRecommendedPrices(): Promise<ApplyAllPricingResponse> {
-    const response = await apiClient.post<ApplyAllPricingResponse>('/products/dynamic-pricing/apply-all')
+  applyAllRecommendedPrices: async (): Promise<{ message: string }> => {
+    const response = await apiClient.post<{ message: string }>('/products/dynamic-pricing/apply-all', {})
     return response.data
   },
 
-  async updateRuleStatus(ruleId: string, isActive: boolean): Promise<UpdateRuleStatusResponse> {
-    const response = await apiClient.patch<UpdateRuleStatusResponse>(`/products/dynamic-pricing/rules/${ruleId}`, {
-      isActive,
-    })
+  updateRuleStatus: async (
+    ruleId: string,
+    isActive: boolean,
+  ): Promise<{ message: string; status: 'active' | 'inactive' }> => {
+    const response = await apiClient.patch<{ message: string; status: 'active' | 'inactive' }>(
+      `/products/dynamic-pricing/rules/${ruleId}`,
+      { isActive },
+    )
     return response.data
   },
 }

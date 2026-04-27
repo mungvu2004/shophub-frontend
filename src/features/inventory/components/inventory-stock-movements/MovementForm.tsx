@@ -1,5 +1,7 @@
 import { Input } from '@/components/ui/input'
-import type { StockLevel, Warehouse, MovementType } from '@/types/inventory.types'
+import { Upload } from 'lucide-react'
+import { toast } from 'sonner'
+import type { StockLevel, Warehouse } from '@/types/inventory.types'
 import type { CreateMovementFormState } from '@/features/inventory/hooks/useCreateMovement'
 
 type MovementFormProps = {
@@ -12,8 +14,6 @@ type MovementFormProps = {
 
 const importReasons = ['Nhập hàng bổ sung', 'Hoàn hàng từ khách', 'Kiểm kê định kỳ', 'Khác']
 const exportReasons = ['Xuất hàng đi đơn', 'Xuất hàng hỏng/hết hạn', 'Xuất hàng mẫu', 'Kiểm kê định kỳ', 'Khác']
-
-
 
 export function MovementForm({ form, inventoryItems, warehouses, type, onFieldChange }: MovementFormProps) {
   const reasons = type === 'IMPORT' ? importReasons : exportReasons
@@ -122,14 +122,6 @@ export function MovementForm({ form, inventoryItems, warehouses, type, onFieldCh
               <Upload className="size-5 text-slate-400 group-hover:text-primary-600" />
             </div>
             <p className="text-xs font-bold text-slate-500">Kéo thả hoặc bấm để tải lên</p>
-            <p className="text-[10px] text-slate-400 mt-1 font-medium italic">Hỗ trợ PDF, JPG, PNG (Max 5MB)</p>
-          </label>
-        </div>
-      </div>
-    </div>
-  )
-}
-ext-xs font-bold text-slate-500">Kéo thả hoặc bấm để tải lên</p>
             <p className="text-[10px] text-slate-400 mt-1 font-medium italic">Hỗ trợ PDF, JPG, PNG (Max 5MB)</p>
           </label>
         </div>

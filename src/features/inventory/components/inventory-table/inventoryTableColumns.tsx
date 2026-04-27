@@ -1,11 +1,17 @@
 import { Package, Smartphone, Store, Globe, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { DataTableColumn } from '@/components/shared/DataTable';
-import type { InventoryTableRow, InventoryTableViewModel } from './inventoryTable.types';
+import type { InventoryTableRow, InventoryTableViewModel } from '../../logic/inventoryTable.types';
 import { InventoryStatusBadge } from './InventoryStatusBadge';
 import { InventoryStockCell } from './InventoryStockCell';
 import { InventoryActionButtons } from './InventoryActionButtons';
 import { INVENTORY_STATUS_CONFIG, INVENTORY_COLORS } from '../../logic/inventory.constants';
+
+type CategoryColor = {
+  readonly bg: string;
+  readonly text: string;
+  readonly border: string;
+};
 
 export const getInventoryColumns = (model: InventoryTableViewModel): DataTableColumn<InventoryTableRow>[] => {
   const isAllSelected = model.selectedRows.length === model.rows.length && model.rows.length > 0;
@@ -30,7 +36,7 @@ export const getInventoryColumns = (model: InventoryTableViewModel): DataTableCo
         <div className="flex items-center justify-center relative h-full py-4">
           <div className={cn(
             "absolute left-0 top-0 bottom-0 w-1",
-            INVENTORY_STATUS_CONFIG[row.status].indicatorColor
+            INVENTORY_STATUS_CONFIG[row.status as keyof typeof INVENTORY_STATUS_CONFIG]?.indicatorColor || 'bg-slate-400'
           )} />
           <input
             type="checkbox"
@@ -91,7 +97,7 @@ export const getInventoryColumns = (model: InventoryTableViewModel): DataTableCo
       widthClassName: 'w-[120px]',
       cell: (row) => {
         const cat = row.category?.toLowerCase() || '';
-        let colors = INVENTORY_COLORS.CAT_DEFAULT;
+        let colors: CategoryColor = INVENTORY_COLORS.CAT_DEFAULT;
 
         if (cat.includes('áo')) colors = INVENTORY_COLORS.CAT_AO;
         else if (cat.includes('váy')) colors = INVENTORY_COLORS.CAT_VAY;
@@ -192,7 +198,7 @@ export const getInventoryColumns = (model: InventoryTableViewModel): DataTableCo
         model.activeActionMenuId === row.id ? 'z-[100] bg-slate-50 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.04)]' : 'z-20 bg-white',
         model.selectedRows.includes(row.id) && model.activeActionMenuId !== row.id ? 'bg-indigo-50/50' : ''
       ),
-      cell: (row, index) => {
+      cell: (row) => {
         const isLastRow = model.rows.indexOf(row) === model.rows.length - 1;
         return (
           <InventoryActionButtons 
@@ -213,7 +219,7 @@ export const getInventoryColumns = (model: InventoryTableViewModel): DataTableCo
   };
 
   // Tạo danh sách cột cuối cùng dựa trên model.columns
-  const baseColumns: DataTableColumn<InventoryTableRow>[] = model.columns.map(col => {
+  const baseColumns: DataTableColumn<InventoryTableRow>[] = model.columns.map((col: { id: string; label: string; align?: "left" | "center" | "right" }) => {
     const def = columnDefinitions[col.id] || {};
     const headerLabel = (def.header || col.label);
     

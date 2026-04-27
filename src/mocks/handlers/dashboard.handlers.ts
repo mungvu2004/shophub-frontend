@@ -9,7 +9,8 @@ import {
   alertHistoryMock,
   alertThresholdsMock,
   alertFrequencyMock,
-  mockAssignees
+  mockAssignees,
+  type AlertThreshold
 } from "@/mocks/data/dashboardAlertsNotifications";
 import {
   getDashboardTopProductsPayload,
@@ -139,7 +140,7 @@ export const dashboardHandlers = [
   }),
 
   http.post("/api/dashboard/alerts-notifications/read-all", () => {
-    dashboardAlertsNotificationsMock.alerts = dashboardAlertsNotificationsMock.alerts.map((item) => ({
+    dashboardAlertsNotificationsMock.alerts = dashboardAlertsNotificationsMock.alerts.map((item: any) => ({
       ...item,
       isRead: true,
     }));
@@ -155,7 +156,7 @@ export const dashboardHandlers = [
 
   http.post("/api/dashboard/alerts-notifications/:id/dismiss", ({ params }) => {
     const { id } = params;
-    const alert = dashboardAlertsNotificationsMock.alerts.find(a => a.id === id);
+    const alert = dashboardAlertsNotificationsMock.alerts.find((a: any) => a.id === id);
     if (alert) {
       alert.severity = 'resolved'; // Move to history instead of deleting for demo
     }
@@ -171,7 +172,7 @@ export const dashboardHandlers = [
 
   http.post("/api/dashboard/alerts-notifications/:id/undismiss", ({ params }) => {
     const { id } = params;
-    const alert = dashboardAlertsNotificationsMock.alerts.find(a => a.id === id);
+    const alert = dashboardAlertsNotificationsMock.alerts.find((a: any) => a.id === id);
     if (alert) {
       alert.severity = 'action'; // Revert to action
     }
@@ -186,7 +187,7 @@ export const dashboardHandlers = [
   }),
 
   http.get("/api/dashboard/alerts-notifications/history", () => {
-    const history = dashboardAlertsNotificationsMock.alerts.filter(a => a.severity === 'resolved');
+    const history = dashboardAlertsNotificationsMock.alerts.filter((a: any) => a.severity === 'resolved');
     return HttpResponse.json(
       {
         success: true,
@@ -208,7 +209,7 @@ export const dashboardHandlers = [
 
   http.put("/api/dashboard/alerts-notifications/thresholds", async ({ request }) => {
     const body = await request.json() as AlertThreshold;
-    const index = alertThresholdsMock.findIndex(t => t.id === body.id);
+    const index = alertThresholdsMock.findIndex((t: any) => t.id === body.id);
     if (index !== -1) {
       alertThresholdsMock[index] = body;
     }
@@ -224,7 +225,7 @@ export const dashboardHandlers = [
   http.post("/api/dashboard/alerts-notifications/:id/assign", async ({ params, request }) => {
     const { id } = params;
     const body = await request.json() as { userId: string | null };
-    const alert = dashboardAlertsNotificationsMock.alerts.find(a => a.id === id);
+    const alert = dashboardAlertsNotificationsMock.alerts.find((a: any) => a.id === id);
     
     if (alert) {
       if (body.userId === null) {

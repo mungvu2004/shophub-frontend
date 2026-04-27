@@ -426,7 +426,6 @@ export const revenueMlForecastMock: RevenueMlForecastResponse = {
         projectedRevenue: 48_500_000,
         note: 'Đối thủ flash sale + nhu cầu thấp',
         accent: 'negative',
-        metrics: { revenue: 48_500_000, growth: -16.7 },
       },
       {
         id: 'scenario-base',
@@ -435,7 +434,6 @@ export const revenueMlForecastMock: RevenueMlForecastResponse = {
         note: 'Điều kiện thị trường bình thường',
         accent: 'neutral',
         isRecommended: true,
-        metrics: { revenue: 58_200_000, growth: 19.5 },
       },
       {
         id: 'scenario-good',
@@ -443,7 +441,6 @@ export const revenueMlForecastMock: RevenueMlForecastResponse = {
         projectedRevenue: 67_800_000,
         note: 'Chiến dịch thành công + nhu cầu cao',
         accent: 'positive',
-        metrics: { revenue: 67_800_000, growth: 38.2 },
       },
     ],
   },

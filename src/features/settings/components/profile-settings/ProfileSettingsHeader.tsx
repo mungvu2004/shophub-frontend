@@ -10,13 +10,19 @@ type ProfileSettingsHeaderProps = {
 
 export function ProfileSettingsHeader({ title, subtitle, updatedAtLabel, isRefreshing }: ProfileSettingsHeaderProps) {
   return (
-    <header className="bg-abstract-geometric space-y-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <h2 className="text-2xl font-semibold tracking-tight text-slate-900">{title}</h2>
-        {isRefreshing ? <Badge variant="outline">Đang làm mới dữ liệu</Badge> : null}
+    <header className="bg-abstract-geometric space-y-3 pb-2">
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className="text-3xl font-bold tracking-tight text-secondary-900 xl:text-4xl">{title}</h1>
+        {isRefreshing ? (
+          <Badge variant="secondary" className="animate-pulse bg-primary-50 text-primary-700">
+            Đang cập nhật...
+          </Badge>
+        ) : null}
       </div>
-      <p className="text-sm text-slate-600">{subtitle}</p>
-      <p className="text-xs font-medium uppercase tracking-[1px] text-slate-400">{updatedAtLabel}</p>
+      <div className="space-y-1">
+        <p className="max-w-2xl text-base text-secondary-600">{subtitle}</p>
+        <p className="text-[10px] font-bold uppercase tracking-[2px] text-secondary-400">{updatedAtLabel}</p>
+      </div>
     </header>
   )
 }

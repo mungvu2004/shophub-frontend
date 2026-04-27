@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { TrendingUp, TrendingDown, DollarSign, Activity, ArrowRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import type { CostHistoryEntry } from '@/types/inventory.types';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';

@@ -1,10 +1,11 @@
-import { RefreshCcw } from 'lucide-react'
+import { RefreshCcw, Sparkles } from 'lucide-react'
 import { KpiCard } from '@/features/dashboard/components/dashboard-kpi-overview/KpiCard'
 import type { DashboardKPIOverviewViewModel } from '@/features/dashboard/logic/dashboardKpiOverview.types'
 import { useKPIReorderUI } from '@/features/dashboard/components/dashboard-kpi-overview/useKPIReorderUI'
 import { KPIPeriodSelector } from '@/features/dashboard/components/dashboard-kpi-overview/KPIPeriodSelector'
 import { DashboardExportActions } from '@/features/dashboard/components/dashboard-kpi-overview/DashboardExportActions'
 import { MonthlyGoalWidget } from '@/features/dashboard/components/dashboard-kpi-overview/MonthlyGoalWidget'
+import { ThemedPageHeader } from '@/components/shared/ThemedPageHeader'
 
 type DashboardKPIOverviewViewProps = {
   model: DashboardKPIOverviewViewModel
@@ -18,43 +19,37 @@ export function DashboardKPIOverviewView({ model }: DashboardKPIOverviewViewProp
 
   return (
     <section className="space-y-6" aria-label="KPI Overview Dashboard">
-      {/* Dynamic Header Section */}
-      <div className="flex flex-col gap-6 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-        {/* Top Row: Title & Actions */}
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
-              {model.title || 'Tổng quan Kinh doanh'}
-            </h1>
-            <p className="text-sm font-medium text-slate-500">
-              {model.description || 'Theo dõi các chỉ số hiệu suất chính và xu hướng doanh thu của gian hàng.'}
-            </p>
-          </div>
+      {/* Themed Page Header */}
+      <ThemedPageHeader
+        title={model.title || 'Tổng quan Kinh doanh'}
+        subtitle={model.description || 'Theo dõi các chỉ số hiệu suất chính và xu hướng doanh thu của gian hàng.'}
+        theme="dashboard"
+        badge={{ text: 'Control Panel', icon: <Sparkles className="size-3.5" /> }}
+      >
+        <div className="flex flex-wrap items-center gap-4">
+          {model.showMonthlyGoal && <MonthlyGoalWidget goal={model.monthlyGoal} />}
+          
+          <div className="flex items-center gap-3 lg:border-l lg:border-slate-200/50 lg:pl-4">
+            <DashboardExportActions isRefreshing={model.isRefreshing} />
 
-          <div className="flex flex-wrap items-center gap-4">
-            {model.showMonthlyGoal && <MonthlyGoalWidget goal={model.monthlyGoal} />}
-            
-            <div className="flex items-center gap-3 border-l border-slate-200 pl-4">
-              <DashboardExportActions isRefreshing={model.isRefreshing} />
-
-              {model.onRefresh ? (
-                <button
-                  type="button"
-                  onClick={model.onRefresh}
-                  disabled={model.isRefreshing}
-                  aria-label="Làm mới toàn bộ dữ liệu dashboard"
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 active:scale-95"
-                >
-                  <RefreshCcw className={`h-4 w-4 ${model.isRefreshing ? 'animate-spin' : ''}`} aria-hidden="true" />
-                  <span className="hidden sm:inline">Làm mới</span>
-                </button>
-              ) : null}
-            </div>
+            {model.onRefresh ? (
+              <button
+                type="button"
+                onClick={model.onRefresh}
+                disabled={model.isRefreshing}
+                aria-label="Làm mới toàn bộ dữ liệu dashboard"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white/80 backdrop-blur px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-white hover:text-indigo-600 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 active:scale-95"
+              >
+                <RefreshCcw className={`h-4 w-4 ${model.isRefreshing ? 'animate-spin' : ''}`} aria-hidden="true" />
+                <span className="hidden sm:inline">Làm mới</span>
+              </button>
+            ) : null}
           </div>
         </div>
+      </ThemedPageHeader>
 
-        {/* Bottom Row: Tabs & Filters */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-6">
+      {/* Bottom Row: Tabs & Filters */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <nav className="inline-flex max-w-fit items-center gap-2 rounded-xl bg-slate-50/80 p-1.5 border border-slate-100" aria-label="Lọc theo sàn thương mại điện tử" role="tablist">
             {model.tabs.map((tab) => {
               const isActive = tab.id === model.selectedTabId
@@ -90,7 +85,6 @@ export function DashboardKPIOverviewView({ model }: DashboardKPIOverviewViewProp
             onPeriodChange={model.onPeriodChange} 
           />
         </div>
-      </div>
 
       {/* KPI Cards Grid */}
       <div 

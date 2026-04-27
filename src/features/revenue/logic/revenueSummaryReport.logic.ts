@@ -410,6 +410,9 @@ export const pickDailyRevenueByRange = (
   rows: RevenueDailyPoint[],
   range: RevenueRange,
 ) => {
+  if (!rows || !Array.isArray(rows)) {
+    return []
+  }
   const sliceSize = rangeSliceSizeMap[range]
   const stableRows = rows.slice(-sliceSize)
 

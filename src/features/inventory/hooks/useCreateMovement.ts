@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
 import { inventoryService } from '@/features/inventory/services/inventoryService'
-import { inventoryStockMovementsService } from '@/features/inventory/services/inventoryStockMovementsService'
 import type { StockLevel, Warehouse, MovementType } from '@/types/inventory.types'
 import { toast } from 'sonner'
 

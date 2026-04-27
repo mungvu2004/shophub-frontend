@@ -1,6 +1,7 @@
-import { Plus } from 'lucide-react'
+import { Plus, Shield } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { ThemedPageHeader } from '@/components/shared/ThemedPageHeader'
 
 type StaffPermissionsHeaderProps = {
   title: string
@@ -11,14 +12,12 @@ type StaffPermissionsHeaderProps = {
 
 export function StaffPermissionsHeader({ title, subtitle, actionLabel, onActionClick }: StaffPermissionsHeaderProps) {
   return (
-    <div className="bg-abstract-geometric flex flex-col gap-4 rounded-[24px] border border-white/70 bg-white/80 px-6 py-6 shadow-[0px_10px_30px_rgba(15,23,42,0.04)] backdrop-blur sm:flex-row sm:items-end sm:justify-between">
-      <div className="space-y-2">
-        <h1 className="font-heading text-[clamp(1.6rem,2vw,2.2rem)] font-semibold tracking-[-0.04em] text-slate-900">
-          {title}
-        </h1>
-        <p className="max-w-2xl text-sm leading-6 text-slate-500 sm:text-[15px]">{subtitle}</p>
-      </div>
-
+    <ThemedPageHeader
+      title={title}
+      subtitle={subtitle}
+      theme="settings"
+      badge={{ text: 'Permissions', icon: <Shield className="size-3.5" /> }}
+    >
       <Button
         type="button"
         size="lg"
@@ -28,6 +27,6 @@ export function StaffPermissionsHeader({ title, subtitle, actionLabel, onActionC
         <Plus className="size-4" />
         <span>{actionLabel}</span>
       </Button>
-    </div>
+    </ThemedPageHeader>
   )
 }

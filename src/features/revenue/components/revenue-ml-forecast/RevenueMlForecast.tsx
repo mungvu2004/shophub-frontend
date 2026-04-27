@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { RefreshCcw, FileDown, Beaker, Database, Zap, Target, Activity, TrendingUp as HeaderIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { ThemedPageHeader } from '@/components/shared/ThemedPageHeader'
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { ForecastAccuracyTracker } from '@/features/revenue/components/revenue-ml-forecast/ForecastAccuracyTracker'
 import { ForecastComparisonView } from '@/features/revenue/components/revenue-ml-forecast/ForecastComparisonView'
@@ -37,13 +38,8 @@ export function RevenueMlForecast() {
 
   const scenarioViewModels = useMemo(() => {
     return allScenarios.map(s => ({
-      id: s.id,
-      title: s.title,
-      projectedRevenue: s.projectedRevenue,
+      ...s,
       valueLabel: new Intl.NumberFormat('vi-VN').format(s.projectedRevenue) + ' ₫',
-      note: s.note,
-      accent: s.accent,
-      isRecommended: s.isRecommended
     }))
   }, [allScenarios])
 
@@ -100,57 +96,49 @@ export function RevenueMlForecast() {
 
   return (
     <div className="space-y-6">
-      {/* 1. SYNCHRONIZED HEADER (Styled like Business Overview) */}
-      <header className="flex flex-col gap-6 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex size-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-200">
-               <HeaderIcon className="size-6" />
-            </div>
-            <div className="space-y-1">
-              <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
-                Dự báo doanh thu ML
-              </h1>
-              <div className="flex flex-wrap items-center gap-2 mt-1">
-                <span className="text-sm font-medium text-slate-500 uppercase tracking-wider">{forecast.modelLabel}</span>
-                <div className="size-1 rounded-full bg-slate-200" />
-                <span className="text-sm font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-1">
-                  <div className="size-1.5 rounded-full bg-emerald-500" />
-                  Dữ liệu trực tuyến
-                </span>
-              </div>
-            </div>
+      {/* 1. SYNCHRONIZED HEADER */}
+      <ThemedPageHeader
+        title="Dự báo doanh thu ML"
+        subtitle={
+          <div className="flex flex-wrap items-center gap-2 mt-1">
+            <span className="text-sm font-medium text-slate-500 uppercase tracking-wider">{forecast.modelLabel}</span>
+            <div className="size-1 rounded-full bg-slate-200" />
+            <span className="text-sm font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-1">
+              <div className="size-1.5 rounded-full bg-emerald-500" />
+              Dữ liệu trực tuyến
+            </span>
           </div>
-
-          {/* Accuracy Tracker integrated in header row or action area */}
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="hidden xl:block pr-4 border-r border-slate-100">
-               <ForecastAccuracyTracker accuracy={forecast.accuracy} />
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleRefresh}
-                className="h-10 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600"
-              >
-                <RefreshCcw className={cn("mr-2 size-4", isLoading && "animate-spin")} />
-                Làm mới
-              </Button>
-              <Button
-                type="button"
-                variant="default"
-                onClick={handleExportReport}
-                className="h-10 rounded-xl bg-slate-900 px-4 text-sm font-bold text-white shadow-sm transition-all hover:bg-slate-800"
-              >
-                <FileDown className="mr-2 size-4" />
-                Xuất báo cáo
-              </Button>
-            </div>
+        }
+        theme="revenue"
+        badge={{ text: 'Forecast', icon: <HeaderIcon className="size-3.5" /> }}
+      >
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="hidden xl:block pr-4 border-r border-slate-200/60">
+             <ForecastAccuracyTracker accuracy={forecast.accuracy} />
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleRefresh}
+              className="h-10 rounded-xl border border-slate-200 bg-white/80 px-4 text-sm font-bold text-slate-700 shadow-sm backdrop-blur transition-all hover:bg-slate-50 hover:text-indigo-600"
+            >
+              <RefreshCcw className={cn("mr-2 size-4", isLoading && "animate-spin")} />
+              Làm mới
+            </Button>
+            <Button
+              type="button"
+              variant="default"
+              onClick={handleExportReport}
+              className="h-10 rounded-xl bg-slate-900 px-4 text-sm font-bold text-white shadow-sm transition-all hover:bg-slate-800"
+            >
+              <FileDown className="mr-2 size-4" />
+              Xuất báo cáo
+            </Button>
           </div>
         </div>
-      </header>
+      </ThemedPageHeader>
 
       {/* Accuracy Tracker for Mobile/Tablet (Visible if not hidden in header) */}
       <div className="xl:hidden">

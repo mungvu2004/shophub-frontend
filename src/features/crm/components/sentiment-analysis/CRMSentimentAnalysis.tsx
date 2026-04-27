@@ -1,23 +1,50 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, startTransition } from 'react'
 
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { buildCRMSentimentAnalysisViewModel } from '@/features/crm/logic/crmSentimentAnalysis.logic'
 import { useCRMSentimentAnalysis, useCRMSentimentAnalysisActions } from '@/features/crm/hooks/useCRMSentimentAnalysis'
 import type { CRMSentimentPlatformFilter } from '@/types/crm.types'
+import { mockProducts } from '@/mocks/data/products'
 
 import { CRMSentimentAnalysisView } from './CRMSentimentAnalysisView'
 
 export function CRMSentimentAnalysis() {
+  const [selectedProductId, setSelectedProductId] = useState<string>(mockProducts[0].id)
+
   const [selectedWeek, setSelectedWeek] = useState<string>('all')
   const [selectedPlatform, setSelectedPlatform] = useState<CRMSentimentPlatformFilter>('all')
   const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null)
   const [activeReplyReviewId, setActiveReplyReviewId] = useState<string | null>(null)
 
   const { data, isLoading, isFetching, isError, refetch } = useCRMSentimentAnalysis({
+    productId: selectedProductId,
     platform: selectedPlatform,
     weekLabel: selectedWeek,
   })
   const { sendReplyMutation } = useCRMSentimentAnalysisActions()
+
+  const handleSelectProduct = useCallback((id: string) => {
+    // Đổi sản phẩm là tác vụ ưu tiên cao nhất
+    setSelectedProductId(id)
+    
+    // Các filter phụ có thể cập nhật sau
+    setSelectedWeek('all')
+    setSelectedPlatform('all')
+    setSelectedReviewId(null)
+    setActiveReplyReviewId(null)
+  }, [])
+
+  const handleSelectWeek = useCallback((week: string) => {
+    startTransition(() => {
+      setSelectedWeek(week)
+    })
+  }, [])
+
+  const handleSelectPlatform = useCallback((platform: CRMSentimentPlatformFilter) => {
+    startTransition(() => {
+      setSelectedPlatform(platform)
+    })
+  }, [])
 
   const model = useMemo(() => {
     if (!data) return null
@@ -31,21 +58,25 @@ export function CRMSentimentAnalysis() {
     return model.reviews.items.find((item) => item.id === activeReplyReviewId) ?? null
   }, [activeReplyReviewId, model])
 
+  // Sync selected review when model or filters change
   useEffect(() => {
     if (!model?.reviews.items.length) {
-      setSelectedReviewId(null)
-      setActiveReplyReviewId(null)
+      if (selectedReviewId !== null) setSelectedReviewId(null)
+      if (activeReplyReviewId !== null) setActiveReplyReviewId(null)
       return
     }
 
-    if (!selectedReviewId || !model.reviews.items.some((item) => item.id === selectedReviewId)) {
-      setSelectedReviewId(model.reviews.items[0].id)
+    const firstId = model.reviews.items[0].id
+    const currentStillExists = model.reviews.items.some((item) => item.id === selectedReviewId)
+
+    if (!selectedReviewId || !currentStillExists) {
+      setSelectedReviewId(firstId)
     }
 
     if (activeReplyReviewId && !model.reviews.items.some((item) => item.id === activeReplyReviewId)) {
       setActiveReplyReviewId(null)
     }
-  }, [activeReplyReviewId, model, selectedReviewId])
+  }, [model, selectedReviewId, activeReplyReviewId])
 
   const handleReplySubmit = useCallback(
     (content: string) => {
@@ -92,10 +123,12 @@ export function CRMSentimentAnalysis() {
     <CRMSentimentAnalysisView
       model={model}
       isRefreshing={isFetching}
+      selectedProductId={selectedProductId}
+      onSelectProduct={handleSelectProduct}
       selectedWeek={selectedWeek}
-      onSelectWeek={setSelectedWeek}
+      onSelectWeek={handleSelectWeek}
       selectedPlatform={selectedPlatform}
-      onSelectPlatform={setSelectedPlatform}
+      onSelectPlatform={handleSelectPlatform}
       selectedReviewId={selectedReviewId}
       onSelectReview={setSelectedReviewId}
       onReplyReview={(reviewId) => {

@@ -109,6 +109,7 @@ export type OrdersReturnsViewModel = {
   title: string
   subtitleLabel: string
   dateRangeLabel: string
+  aiInsightText: string
   statCards: OrdersReturnsStatCardModel[]
   reasonAnalysis: OrdersReturnsReasonAnalysis[]
   trendData: OrdersReturnsTrendPoint[]

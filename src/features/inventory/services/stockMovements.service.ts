@@ -6,7 +6,7 @@ import type {
 import { mockExtendedStockMovements, mockChartData, mockStockMovementPerformers } from '@/mocks/data/stockMovements.mock';
 
 export const stockMovementsService = {
-  async getMovements(query: InventoryStockMovementsQueryState): Promise<InventoryStockMovementsResponse> {
+  async getMovements(_query: InventoryStockMovementsQueryState): Promise<InventoryStockMovementsResponse> {
     await new Promise(resolve => setTimeout(resolve, 600)); // Network simulation
     
     // In real app, this would be an API call with query params

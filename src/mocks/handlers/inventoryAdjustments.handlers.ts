@@ -21,12 +21,12 @@ export const inventoryAdjustmentsHandlers = [
     return HttpResponse.json({ ...newAdjustment, id: `adj-${Date.now()}`, status: 'PENDING_APPROVAL' }, { status: 201 })
   }),
 
-  http.post('/api/inventory/adjustments/:id/approve', async ({ params }) => {
+  http.post('/api/inventory/adjustments/:id/approve', async ({ params: _params }) => {
     await delay(800)
     return HttpResponse.json({ success: true, status: 'APPROVED' })
   }),
 
-  http.post('/api/inventory/adjustments/:id/reject', async ({ params, request }) => {
+  http.post('/api/inventory/adjustments/:id/reject', async ({ params: _params, request }) => {
     await delay(800)
     const { reason } = (await request.json()) as any
     return HttpResponse.json({ success: true, status: 'REJECTED', reason })

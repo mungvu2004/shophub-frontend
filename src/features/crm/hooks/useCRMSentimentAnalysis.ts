@@ -3,23 +3,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { crmSentimentAnalysisService } from '@/features/crm/services/crmSentimentAnalysisService'
 import type {
   CRMSentimentAnalysisResponse,
-  CRMSentimentPlatformFilter,
   CRMSentimentReviewItem,
+  CRMSentimentFilters,
 } from '@/types/crm.types'
 
-export function useCRMSentimentAnalysis(filters: {
-  platform: CRMSentimentPlatformFilter
-  weekLabel: string
-}) {
-  const { data, isLoading, isFetching, isError, error, refetch } = useQuery({
-    queryKey: ['crm', 'sentiment-analysis', filters.platform, filters.weekLabel] as const,
+export function useCRMSentimentAnalysis(filters: CRMSentimentFilters) {
+  const { data, isLoading, isFetching, isError, refetch } = useQuery({
+    queryKey: ['crm', 'sentiment-analysis', filters.productId, filters.platform, filters.weekLabel] as const,
     queryFn: (): Promise<CRMSentimentAnalysisResponse> =>
-      crmSentimentAnalysisService.getAnalysis({
-        platform: filters.platform,
-        weekLabel: filters.weekLabel,
-      }),
-    placeholderData: (previousData) => previousData,
-    staleTime: 2 * 60 * 1000,
+      crmSentimentAnalysisService.getAnalysis(filters),
+    staleTime: 5 * 60 * 1000,
   })
 
   return {
@@ -27,7 +20,6 @@ export function useCRMSentimentAnalysis(filters: {
     isLoading,
     isFetching,
     isError,
-    error,
     refetch,
   }
 }

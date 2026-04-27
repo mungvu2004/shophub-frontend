@@ -15,10 +15,38 @@ import type { ProductInsightsData } from '@/features/products/logic/productsList
 
 interface ProductInsightsProps {
   data: ProductInsightsData
+  isCondensed?: boolean
 }
 
-export function ProductInsights({ data }: ProductInsightsProps) {
+export function ProductInsights({ data, isCondensed }: ProductInsightsProps) {
   if (!data) return null;
+
+  if (isCondensed) {
+    return (
+      <div className="flex items-center gap-6 h-full px-4 overflow-x-auto hide-scrollbar">
+        <div className="flex-1 min-w-[300px] h-full py-2">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data.categoryPerformance}>
+              <Bar dataKey="sales" fill="#6366f1" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="stock" fill="#e2e8f0" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="h-8 w-px bg-border shrink-0" />
+        <div className="flex shrink-0 items-center gap-4">
+          {data.platformAllocation.map((p) => (
+            <div key={p.name} className="flex items-center gap-2">
+              <div className="size-2 rounded-full" style={{ backgroundColor: p.color }} />
+              <div className="leading-none">
+                <p className="text-[10px] font-black uppercase text-slate-500 mb-1">{p.name}</p>
+                <p className="text-sm font-black text-slate-900">{p.value}%</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

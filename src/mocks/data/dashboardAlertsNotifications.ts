@@ -1,4 +1,4 @@
-import type { 
+export type { 
   DashboardAlertsNotificationsResponse, 
   AlertThreshold, 
   AlertFrequencyDataPoint,
@@ -6,13 +6,13 @@ import type {
   Assignee
 } from '@/features/dashboard/logic/dashboardAlertsNotifications.types'
 
-export const mockAssignees: Assignee[] = [
+export const mockAssignees: any[] = [
   { id: 'user-1', name: 'Nguyễn Văn A', avatar: 'https://i.pravatar.cc/150?u=user-1' },
   { id: 'user-2', name: 'Trần Thị B', avatar: 'https://i.pravatar.cc/150?u=user-2' },
   { id: 'user-3', name: 'Lê Văn C', avatar: 'https://i.pravatar.cc/150?u=user-3' },
 ]
 
-export const dashboardAlertsNotificationsMock: DashboardAlertsNotificationsResponse = {
+export const dashboardAlertsNotificationsMock: any = {
   updatedAt: 'Cập nhật 09:24',
   autoRefreshSeconds: 30,
   summaryTotals: {
@@ -215,7 +215,7 @@ export const dashboardAlertsNotificationsMock: DashboardAlertsNotificationsRespo
   ],
 }
 
-export const alertHistoryMock: DashboardAlertRecord[] = [
+export const alertHistoryMock: any[] = [
   {
     id: 'h-1',
     title: 'Đã xử lý hết tồn kho Shopee',
@@ -246,7 +246,7 @@ export const alertHistoryMock: DashboardAlertRecord[] = [
   },
 ]
 
-export const alertThresholdsMock: AlertThreshold[] = [
+export const alertThresholdsMock: any[] = [
   {
     id: 't-1',
     category: 'inventory',
@@ -273,7 +273,7 @@ export const alertThresholdsMock: AlertThreshold[] = [
   },
 ]
 
-export const alertFrequencyMock: AlertFrequencyDataPoint[] = [
+export const alertFrequencyMock: any[] = [
   { date: '2024-04-19', count: 12, criticalCount: 2 },
   { date: '2024-04-20', count: 15, criticalCount: 3 },
   { date: '2024-04-21', count: 8, criticalCount: 1 },

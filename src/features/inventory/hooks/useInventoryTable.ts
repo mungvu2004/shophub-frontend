@@ -79,7 +79,7 @@ export function useInventoryTable({ filters }: UseInventoryTableProps) {
       setPageSize(size);
       setCurrentPage(1);
     },
-    onEditRow: (rowId: string, productId?: string) => {
+    onEditRow: (_rowId: string, productId?: string) => {
       if (!productId) return;
       navigate(`/products/${productId}/edit`, {
         state: { from: `${location.pathname}${location.search}` },
@@ -124,12 +124,12 @@ export function useInventoryTable({ filters }: UseInventoryTableProps) {
       setModalType('BATCH');
       extendedDetails.fetchBatches();
     },
-    onOpenReorderConfig: (sku, name) => {
+    onOpenReorderConfig: (sku: string, name: string) => {
       setActiveSKU({ sku, name });
       setModalType('REORDER');
       extendedDetails.fetchReorderConfig();
     },
-    onOpenCostHistory: (sku, name) => {
+    onOpenCostHistory: (sku: string, name: string) => {
       setActiveSKU({ sku, name });
       setModalType('COST');
       extendedDetails.fetchCostHistory();

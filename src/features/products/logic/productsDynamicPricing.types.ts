@@ -50,9 +50,27 @@ export interface DynamicPricingHistorySummary {
   averagePrice: number
 }
 
+export interface DynamicPricingCompetitorGap {
+  platform: string
+  gapPercent: number // Ví dụ: -5 nghĩa là giá mình thấp hơn đối thủ 5%
+  competitorPrice: number
+}
+
 export interface DynamicPricingPayload {
+  title: string
   subtitle: string
+  recommendationsTitle: string
+  applyAllLabel: string
+  historyLabel: string
   periodLabel: string
+  tableHeaders: {
+    product: string
+    platform: string
+    pricing: string
+    confidence: string
+    actions: string
+  }
+  approveLabel: string
   totalSuggestions: number
   displayedSuggestions: number
   selectedProductName: string
@@ -61,6 +79,7 @@ export interface DynamicPricingPayload {
   historyPoints: DynamicPricingHistoryPoint[]
   historySummary: DynamicPricingHistorySummary
   insights: DynamicPricingInsight[]
+  competitorGaps: DynamicPricingCompetitorGap[]
 }
 
 export interface DynamicPricingViewModel {

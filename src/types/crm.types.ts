@@ -181,6 +181,12 @@ export type CRMCustomerProfilesResponse = {
 
 export type CRMSentimentPlatformFilter = 'all' | CRMReviewPlatform
 
+export interface CRMSentimentFilters {
+  productId: string
+  platform: CRMSentimentPlatformFilter
+  weekLabel: string
+}
+
 export type CRMSentimentTrendPoint = {
   weekLabel: string
   score: number

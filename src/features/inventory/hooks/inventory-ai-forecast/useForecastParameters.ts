@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 export function useForecastParameters() {
   const [isRecalculating, setIsRecalculating] = useState(false)
 
-  const recalculate = useCallback(async (params: any) => {
+  const recalculate = useCallback(async () => {
     setIsRecalculating(true)
     
     // Giả lập thời gian AI tính toán lại

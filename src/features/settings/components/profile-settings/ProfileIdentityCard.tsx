@@ -14,24 +14,30 @@ export function ProfileIdentityCard({ model }: ProfileIdentityCardProps) {
         <CardTitle>{model.title}</CardTitle>
         <CardDescription>{model.subtitle}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <div className="grid size-12 place-items-center rounded-full bg-slate-900 text-sm font-semibold text-white">{model.initials}</div>
-          <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-[1px] text-slate-500">Identity Badge</p>
-            <p className="text-sm font-semibold text-slate-900">{model.joinedAtLabel}</p>
+      <CardContent className="space-y-6">
+        <div className="flex items-center gap-4 rounded-xl bg-primary-50/50 p-4 transition-colors hover:bg-primary-50">
+          <div className="grid size-14 place-items-center rounded-full bg-primary-100 text-lg font-bold text-primary-700 shadow-inner">
+            {model.initials}
           </div>
-          <UserCircle2 className="ml-auto size-5 text-slate-400" />
+          <div className="flex-1 space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-primary-600/70">Member Identity</p>
+            <p className="text-sm font-semibold text-secondary-900">{model.joinedAtLabel}</p>
+          </div>
+          <UserCircle2 className="size-5 text-primary-400" />
         </div>
 
-        <div className="space-y-2 rounded-xl border border-slate-200 p-3">
-          <div className="flex items-center gap-2 text-sm text-slate-700">
-            <Mail className="size-4 text-slate-400" />
-            {model.email}
+        <div className="space-y-3 px-1">
+          <div className="flex items-center gap-3 text-sm text-secondary-600 transition-colors hover:text-secondary-900">
+            <div className="grid size-8 place-items-center rounded-lg bg-secondary-100">
+              <Mail className="size-4 text-secondary-500" />
+            </div>
+            <span className="font-medium">{model.email}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-slate-700">
-            <MapPin className="size-4 text-slate-400" />
-            {model.location}
+          <div className="flex items-center gap-3 text-sm text-secondary-600 transition-colors hover:text-secondary-900">
+            <div className="grid size-8 place-items-center rounded-lg bg-secondary-100">
+              <MapPin className="size-4 text-secondary-500" />
+            </div>
+            <span className="font-medium">{model.location}</span>
           </div>
         </div>
       </CardContent>

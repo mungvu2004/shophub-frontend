@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { SentimentAnalysisHeader } from './SentimentAnalysisHeader'
 import { SentimentAnalysisInsightsPanel } from './SentimentAnalysisInsightsPanel'
 import { SentimentAnalysisReplyComposer } from './SentimentAnalysisReplyComposer'
@@ -6,10 +7,13 @@ import { SentimentAnalysisScoreCard } from './SentimentAnalysisScoreCard'
 import { SentimentAnalysisTimelineCard } from './SentimentAnalysisTimelineCard'
 import type { CRMSentimentAnalysisViewModel } from '@/features/crm/logic/crmSentimentAnalysis.logic'
 import type { CRMSentimentPlatformFilter } from '@/types/crm.types'
+import { cn } from '@/lib/utils'
 
 type CRMSentimentAnalysisViewProps = {
   model: CRMSentimentAnalysisViewModel
   isRefreshing: boolean
+  selectedProductId: string
+  onSelectProduct: (productId: string) => void
   selectedWeek: string
   onSelectWeek: (weekLabel: string) => void
   selectedPlatform: CRMSentimentPlatformFilter
@@ -23,9 +27,11 @@ type CRMSentimentAnalysisViewProps = {
   isReplyPending: boolean
 }
 
-export function CRMSentimentAnalysisView({
+export const CRMSentimentAnalysisView = memo(function CRMSentimentAnalysisView({
   model,
   isRefreshing,
+  selectedProductId,
+  onSelectProduct,
   selectedWeek,
   onSelectWeek,
   selectedPlatform,
@@ -41,21 +47,34 @@ export function CRMSentimentAnalysisView({
   const activeReplyReview = model.reviews.items.find((item) => item.id === activeReplyReviewId) ?? null
 
   return (
-    <div className="space-y-6 pb-8">
-      <SentimentAnalysisHeader model={model} isRefreshing={isRefreshing} />
-
-      <SentimentAnalysisTimelineCard
-        title={model.chart.title}
-        description={model.chart.description}
-        annotationLabel={model.chart.annotationLabel}
-        legend={model.chart.legend}
-        points={model.chart.points}
-        selectedWeek={selectedWeek}
-        onSelectWeek={onSelectWeek}
+    <div className="flex min-h-screen flex-col">
+      {/* Header - Fixed/Sticky if needed, but here following Page pattern */}
+      <SentimentAnalysisHeader
+        model={model}
+        isRefreshing={isRefreshing}
+        selectedProductId={selectedProductId}
+        onSelectProduct={onSelectProduct}
       />
 
-      <section className="grid grid-cols-1 gap-8 xl:grid-cols-12">
-        <div className="xl:col-span-8">
+      <div
+        className={cn(
+          'mt-6 flex flex-1 gap-6 transition-opacity duration-300',
+          isRefreshing ? 'opacity-70' : 'opacity-100',
+        )}
+      >
+        {/* Main Content Area (Left) */}
+        <main className="flex-1 min-w-0 space-y-6">
+          {/* Timeline Chart - Hero of main area */}
+          <SentimentAnalysisTimelineCard
+            title={model.chart.title}
+            description={model.chart.description}
+            legend={model.chart.legend}
+            points={model.chart.points}
+            selectedWeek={selectedWeek}
+            onSelectWeek={onSelectWeek}
+          />
+
+          {/* Review List */}
           <SentimentAnalysisReviewList
             title={model.reviews.title}
             totalPrefix={model.reviews.totalPrefix}
@@ -67,40 +86,61 @@ export function CRMSentimentAnalysisView({
             onReplyReview={onReplyReview}
           />
 
-          {activeReplyReview ? (
-            <SentimentAnalysisReplyComposer
-              reviewId={activeReplyReview.id}
-              customerName={activeReplyReview.customerName}
-              comment={activeReplyReview.comment}
-              isPending={isReplyPending}
-              onSubmit={onSubmitReply}
-              onCancel={onCancelReply}
+          {/* Floating Reply Composer - Positioned bottom fixed for focus */}
+          {activeReplyReview && (
+            <div className="fixed inset-x-0 bottom-6 z-50 flex justify-center px-6 animate-in slide-in-from-bottom-10">
+              <div className="w-full max-w-2xl">
+                <SentimentAnalysisReplyComposer
+                  reviewId={activeReplyReview.id}
+                  customerName={activeReplyReview.customerName}
+                  comment={activeReplyReview.comment}
+                  isPending={isReplyPending}
+                  onSubmit={onSubmitReply}
+                  onCancel={onCancelReply}
+                />
+              </div>
+            </div>
+          )}
+        </main>
+
+        {/* Sidebar Widgets (Right) */}
+        <aside className="hidden w-80 shrink-0 xl:block">
+          <div className="sticky top-6 space-y-6">
+            <h3 className="px-1 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+              Chỉ số & Phân tích
+            </h3>
+
+            {/* Score Card Widget */}
+            <SentimentAnalysisScoreCard
+              label={model.score.label}
+              valueLabel={model.score.valueLabel}
+              targetLabel={model.score.targetLabel}
+              targetValueLabel={model.score.targetValueLabel}
+              changeLabel={model.score.changeLabel}
+              progressPercent={model.score.progressPercent}
             />
-          ) : null}
-        </div>
 
-        <div className="space-y-5 xl:col-span-4">
-          <SentimentAnalysisInsightsPanel
-            title={model.insights.title}
-            keywordTitle={model.insights.keywordTitle}
-            keywords={model.insights.keywords}
-            suggestionsTitle={model.insights.suggestionsTitle}
-            suggestions={model.insights.suggestions}
-            platformStats={model.insights.platformStats}
-            selectedPlatform={selectedPlatform}
-            onSelectPlatform={onSelectPlatform}
-          />
+            {/* Insights Panel Widget */}
+            <SentimentAnalysisInsightsPanel
+              title={model.insights.title}
+              keywordTitle={model.insights.keywordTitle}
+              keywords={model.insights.keywords}
+              suggestionsTitle={model.insights.suggestionsTitle}
+              suggestions={model.insights.suggestions}
+              platformStats={model.insights.platformStats}
+              selectedPlatform={selectedPlatform}
+              onSelectPlatform={onSelectPlatform}
+            />
 
-          <SentimentAnalysisScoreCard
-            label={model.score.label}
-            valueLabel={model.score.valueLabel}
-            targetLabel={model.score.targetLabel}
-            targetValueLabel={model.score.targetValueLabel}
-            changeLabel={model.score.changeLabel}
-            progressPercent={model.score.progressPercent}
-          />
-        </div>
-      </section>
+            {/* Decorative End-of-Sidebar info */}
+            <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-6 text-center">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-300">
+                End of Analysis
+              </p>
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
   )
-}
+})

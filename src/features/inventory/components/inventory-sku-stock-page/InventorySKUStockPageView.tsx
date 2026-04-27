@@ -8,6 +8,7 @@ import { BulkImportModal } from '@/features/inventory/components/inventory-sku-s
 import { Button } from '@/components/ui/button'
 import { Plus, Package } from 'lucide-react'
 import type { useInventorySKUStockPage } from '@/features/inventory/hooks/useInventorySKUStockPage'
+import { ThemedPageHeader } from '@/components/shared/ThemedPageHeader'
 
 export type InventorySKUStockPageViewProps = {
   model: ReturnType<typeof useInventorySKUStockPage>
@@ -23,9 +24,6 @@ export function InventorySKUStockPageView({ model }: InventorySKUStockPageViewPr
     lowStockCount,
     totalValue,
     lastUpdated,
-    categoryOptions,
-    handleFilterChange,
-    handleViewModeChange,
     handleAdjustStock,
     handleExportData,
     handleImportData,
@@ -45,48 +43,46 @@ export function InventorySKUStockPageView({ model }: InventorySKUStockPageViewPr
     <div className="space-y-6 pb-10">
       <BulkImportModal model={bulkImport} />
       
-      {/* Page Header - Đồng bộ với Revenue Summary */}
-      <header className="rounded-xl border border-secondary-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-[28px] font-bold tracking-tight text-secondary-900 leading-tight">Quản lý Tồn kho SKU</h1>
-            <p className="text-sm text-secondary-500 font-medium">Theo dõi sức khỏe tồn kho đa kênh và dự báo rủi ro hàng hóa</p>
-            
-            <div className="flex items-center gap-3 pt-3">
-              <Button 
-                onClick={handleAddSKU}
-                className="bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-lg px-6 shadow-sm shadow-primary-200"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Thêm SKU mới
-              </Button>
-            </div>
-          </div>
-
+      {/* Page Header - Tích hợp ThemedPageHeader */}
+      <ThemedPageHeader
+        title="Quản lý Tồn kho SKU"
+        subtitle="Theo dõi sức khỏe tồn kho đa kênh và dự báo rủi ro hàng hóa"
+        theme="inventory"
+        badge={{ text: 'Inventory', icon: <Package className="size-3.5" /> }}
+      >
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
           <div className="flex items-stretch gap-4">
-            <div className="bg-secondary-50 px-5 py-4 rounded-xl border border-secondary-100 min-w-[140px] text-center">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-secondary-400 mb-1">SKU theo dõi</p>
-              <p className="text-2xl font-bold text-secondary-900 font-mono tracking-tight">{totalSKUs.toLocaleString()}</p>
+            <div className="bg-white/80 px-5 py-3 rounded-xl border border-emerald-200/50 min-w-[120px] text-center shadow-sm backdrop-blur">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 mb-1">SKU theo dõi</p>
+              <p className="text-2xl font-bold text-slate-900 font-mono tracking-tight">{totalSKUs.toLocaleString()}</p>
             </div>
-            <div className="bg-secondary-50 px-5 py-4 rounded-xl border border-secondary-100 min-w-[140px] text-center">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-secondary-400 mb-1">Bộ lọc active</p>
+            <div className="bg-white/80 px-5 py-3 rounded-xl border border-emerald-200/50 min-w-[120px] text-center shadow-sm backdrop-blur">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 mb-1">Bộ lọc active</p>
               <div className="flex items-baseline justify-center gap-1">
-                <p className="text-2xl font-bold text-secondary-900 font-mono tracking-tight">{activeFilterCount}</p>
-                <span className="text-[10px] font-bold text-secondary-500 uppercase">Mục</span>
+                <p className="text-2xl font-bold text-slate-900 font-mono tracking-tight">{activeFilterCount}</p>
+                <span className="text-[10px] font-bold text-emerald-600 uppercase">Mục</span>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="mt-8 pt-6 border-t border-secondary-100">
-          <SKUInventoryHeader
-            totalSKUs={totalSKUs}
-            lowStockCount={lowStockCount}
-            totalValue={totalValue}
-            lastUpdated={lastUpdated}
-          />
+          <Button 
+            onClick={handleAddSKU}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl px-6 h-[76px] shadow-sm shadow-emerald-200"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Thêm SKU
+          </Button>
         </div>
-      </header>
+      </ThemedPageHeader>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <SKUInventoryHeader
+          totalSKUs={totalSKUs}
+          lowStockCount={lowStockCount}
+          totalValue={totalValue}
+          lastUpdated={lastUpdated}
+        />
+      </div>
 
       {/* Stats & Actions Section */}
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
@@ -129,18 +125,6 @@ export function InventorySKUStockPageView({ model }: InventorySKUStockPageViewPr
         <SKUInventorySection
           title={viewMode === 'table' ? 'Danh sách SKU dạng bảng' : 'Danh sách SKU dạng lưới'}
           description="Dữ liệu được cập nhật theo bộ lọc và từ khóa tìm kiếm hiện tại."
-        >
-          {viewMode === 'table' ? (
-            <InventoryTableView filters={filterPayload} />
-          ) : (
-            <InventoryGridView filters={filterPayload} />
-          )}
-        </SKUInventorySection>
-      </section>
-    </div>
-  )
-}
-ếm hiện tại."
         >
           {viewMode === 'table' ? (
             <InventoryTableView filters={filterPayload} />

@@ -6,6 +6,10 @@ export type InventoryAdjustmentMovementType =
   | 'DAMAGE_LOSS'
   | 'TRANSFER_OUT'
   | 'TRANSFER_IN'
+  | 'ORDER_FULFILL'
+  | 'ORDER_RESERVE'
+  | 'ORDER_RELEASE'
+  | 'RETURN_RECEIVED'
 
 export type InventoryPageHeaderTab = {
   id: ViewMode

@@ -75,6 +75,37 @@ export function getCollapsedVisibleRankingCount() {
   return INITIAL_VISIBLE_ROWS
 }
 
+export function buildTopProductsCsv(
+  rows: TopProductsRankingRowViewModel[],
+  visibleColumns: VisibleColumns,
+): string {
+  const headers = ['"Hạng"', '"Sản phẩm"']
+  if (visibleColumns.sku) headers.push('"SKU"')
+  if (visibleColumns.platform) headers.push('"Sàn"')
+  if (visibleColumns.sold) headers.push('"Đã bán"')
+  if (visibleColumns.revenue) headers.push('"Doanh thu"')
+  if (visibleColumns.avgPrice) headers.push('"Giá TB"')
+  if (visibleColumns.returnRate) headers.push('"Tỷ lệ hoàn"')
+
+  const csvRows = [headers.join(',')]
+
+  rows.forEach((row) => {
+    const productNameEscaped = `"${row.name.replace(/"/g, '""')}"`
+    const line = [`"${row.rankLabel}"`, productNameEscaped]
+
+    if (visibleColumns.sku) line.push(`"${row.sku}"`)
+    if (visibleColumns.platform) line.push(`"${row.platformLabel}"`)
+    if (visibleColumns.sold) line.push(`"${row.soldLabel}"`)
+    if (visibleColumns.revenue) line.push(`"${row.revenueLabel}"`)
+    if (visibleColumns.avgPrice) line.push(`"${row.avgPriceLabel}"`)
+    if (visibleColumns.returnRate) line.push(`"${row.returnRateLabel}"`)
+
+    csvRows.push(line.join(','))
+  })
+
+  return csvRows.join('\n')
+}
+
 function compareUnknown(a: any, b: any): number {
   if (typeof a === 'number' && typeof b === 'number') return a - b
   const valA = a === null || a === undefined ? '' : String(a)

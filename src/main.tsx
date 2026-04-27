@@ -11,10 +11,23 @@ async function enableMocking() {
 
   const { worker } = await import('@/mocks/browser')
   await worker.start({
-    onUnhandledRequest: 'bypass', // Bỏ qua hoàn toàn các request không có handler để tránh lỗi passthrough
+    onUnhandledRequest(request) {
+      const url = new URL(request.url)
+      
+      // DANH SÁCH CÁC TIỀN TỐ API
+      if (url.pathname.startsWith('/api/')) {
+        // Nếu là API mà thiếu handler, cảnh báo để debug
+        return 'warn'
+      }
+
+      // TẤT CẢ CÁC REQUEST KHÔNG PHẢI /api/ THÌ BỎ QUA (BYPASS)
+      // Điều này ngăn chặn triệt để lỗi Failed to fetch cho HMR, assets, v.v.
+      return 'bypass'
+    },
     serviceWorker: {
       url: '/mockServiceWorker.js',
     },
+    quiet: true,
   })
 }
 

@@ -5,6 +5,7 @@ import {
   PLACEHOLDER_TABS,
 } from '@/features/dashboard/logic/dashboardKpiOverview.constants'
 import type {
+  ComparisonPeriod,
   DashboardKPIOverviewPageProps,
   DashboardKPIOverviewViewModel,
   MetricCardData,

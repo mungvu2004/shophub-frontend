@@ -96,9 +96,11 @@ export function buildCRMSentimentAnalysisViewModel(data: CRMSentimentAnalysisRes
     backLabel: data.backLabel,
     title: data.productName,
     subtitle: data.subtitle,
+    sku: data.sku,
     skuLabel: `SKU: ${data.sku}`,
     reportButtonLabel: data.reportButtonLabel,
     compareButtonLabel: data.compareButtonLabel,
+    totalReviews: data.totalReviews,
     chart: {
       title: data.chartTitle,
       description: data.chartDescription,

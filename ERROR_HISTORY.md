@@ -1,80 +1,66 @@
 # Lịch sử lỗi và bài học kinh nghiệm
 
-## [2024-04-25] Lỗi compilation và MSW trên trang Nhập/Xuất kho
+## [2026-04-26] Lỗi ReferenceError, Vi phạm Rule of Hooks và Syntax Error làm sập hệ thống (TRANG DANH MỤC SẢN PHẨM)
 
-### 1. Lỗi: Identifier `Search` has already been declared
-- **Nguyên nhân**: Khi dùng `replace`, tôi đã chèn thêm một khối code chứa các khai báo `import` và `type` đã tồn tại, dẫn đến việc khai báo trùng lặp.
-- **Khắc phục**: Dọn dẹp lại file, xóa bỏ các phần trùng lặp, gộp chung các `import` từ cùng một thư viện.
-- **Bài học**: Luôn kiểm tra toàn bộ nội dung file sau khi `replace` để đảm bảo không có code dư thừa.
+### 1. Lỗi: Uncaught ReferenceError: onSaveProduct is not defined
+- **Triệu chứng**: Trang web bị trắng xóa (White Screen of Death).
+- **Nguyên nhân**: Tôi đã thêm `onSaveProduct` vào danh sách các hàm trả về của `useProductsPageLogic` nhưng lại quên định nghĩa nó bằng `const onSaveProduct = ...` bên trong hook.
+- **Khắc phục**: Định nghĩa đầy đủ tất cả các hàm trước khi trả về chúng trong object ViewModel.
+- **Bài học**: Phải kiểm tra sự tồn tại của mọi định danh (identifier) được trả về. `tsc` đôi khi không bắt được lỗi này nếu object literal được khai báo nhưng biến bên trong nó bị thiếu (ReferenceError at runtime).
 
-### 2. Lỗi: ReferenceError: ArrowLeftRight / Search is not defined
-- **Nguyên nhân**: Sử dụng icon từ `lucide-react` trong JSX nhưng quên không import ở đầu file.
-- **Khắc phục**: Thêm các import thiếu vào `InventoryStockMovementsView.tsx`.
-- **Bài học**: Kiểm tra kỹ danh sách icon được sử dụng trước khi lưu file.
+### 2. Lỗi: React has detected a change in the order of Hooks
+- **Nguyên nhân**: Hệ thống crash do ReferenceError dẫn đến việc render bị ngắt quãng. Khi HMR (Hot Module Replacement) cố gắng cập nhật, thứ tự hook bị lệch.
+- **Khắc phục**: Khôi phục luồng render ổn định bằng cách sửa lỗi ReferenceError đầu tiên.
+- **Bài học**: Luôn đảm bảo code không có lỗi runtime cơ bản trước khi tin tưởng vào HMR.
 
-### 3. Lỗi: MSW Failed to fetch
-- **Nguyên nhân**: Thường do lỗi logic bên trong Handler hoặc dữ liệu trả về chứa tham chiếu vòng (circular reference). Trong trường hợp này, lỗi compilation (OxC) làm gián đoạn việc tải script, khiến trình duyệt báo lỗi fetch.
-- **Khắc phục**: Sửa lỗi compilation và tối ưu hóa logic builder dữ liệu để tin tưởng hoàn toàn vào API.
-- **Bài học**: Lỗi fetch trong MSW đôi khi chỉ là "triệu chứng" của lỗi compilation ở các file liên quan.
+### 3. Lỗi: Vite 500 Internal Server Error (Unexpected token)
+- **Nguyên nhân**: Có ký tự lạ hoặc thẻ đóng Component bị sai cú pháp trong `ProductsListView.tsx` khi sử dụng `replace`.
+- **Khắc phục**: Rà soát lại toàn bộ cú pháp JSX và dùng `write_file` để đảm bảo file sạch sẽ hoàn toàn.
 
-### 5. Lỗi lặp lại: ReferenceError (Missing Imports)
-- **Triệu chứng**: Trình duyệt báo lỗi `X is not defined` và MSW báo `Failed to fetch`.
-- **Nguyên nhân**: Khi dùng `replace` để cấu trúc lại các khối mã lớn, các dòng `import` ở đầu file bị vô tình xóa mất hoặc không được cập nhật đầy đủ.
-- **Khắc phục**: Luôn kiểm tra danh sách các thành phần (Component, Icon, Hook) được sử dụng trong JSX và đảm bảo chúng có mặt trong phần Import.
-### 6. Lỗi: In HTML, <button> cannot be a descendant of <button>
-- **Nguyên nhân**: Sử dụng `DropdownMenuTrigger` (từ Base UI) với thuộc tính `asChild` và bọc một component `Button` (cũng render thẻ `button`) bên trong. Khác với Radix UI, Base UI `Trigger` mặc định render `button` và không thay thế nó khi dùng `asChild` một cách đơn giản, dẫn đến việc thẻ `button` bị lồng nhau.
-- **Khắc phục**: Sử dụng thuộc tính `render` của Base UI: `<DropdownMenuTrigger render={<Button ... />} />`.
-- **Bài học**: Phải nắm vững API của thư viện UI đang sử dụng. Với Base UI, ưu tiên dùng `render` prop để tùy chỉnh element trigger thay vì `asChild` nếu có component phức tạp bên trong.
+---
 
-### 7. Lỗi: Không hiển thị dữ liệu khi chọn bộ lọc "Tất cả"
-- **Nguyên nhân**: Giá trị `"all"` từ state bộ lọc được gửi trực tiếp lên API/Mock. Mock Handler thực hiện so sánh chính xác (`item.warehouseId === "all"`), dẫn đến việc không có kết quả nào khớp (vì ID thực tế là `"wh-001"`, `"wh-002"`).
-- **Khắc phục**: Chuyển đổi giá trị `"all"` thành `undefined` ở tầng Service hoặc xử lý ngoại lệ `"all"` trong Mock Handler.
-- **Bài học**: Luôn kiểm tra cách tầng API/Mock xử lý các giá trị mặc định của bộ lọc. Giá trị `"all"` ở UI thường tương ứng với việc "không lọc" (không gửi tham số) ở phía Server.
+## [2026-04-26] Khắc phục 50 lỗi TypeScript trong quá trình Build hệ thống
 
-## [2026-04-26] Lỗi giật lag và Failed to fetch trên trang Dự báo ML
+### 1. Lỗi: Thiếu export/import và sai đường dẫn Type
+- **Triệu chứng**: `tsc` báo lỗi `no exported member`, `Cannot find name`, `Cannot find module`.
+- **Nguyên nhân**: Quên export helper function (`buildTopProductsCsv`), quên import type (`ComparisonPeriod`), hoặc sai đường dẫn tương đối khi chuyển component vào thư mục con.
+- **Khắc phục**: Thêm các export thiếu, cập nhật import path chính xác (`../../logic/...`), và đồng bộ hóa type định nghĩa giữa các file.
 
-### 1. Lỗi: Trang bị "load lại" và giật lag khi chuyển đổi 7/30/90 ngày
-- **Triệu chứng**: Khi người dùng nhấn nút chọn khoảng thời gian, toàn bộ nội dung biến mất, hiện spinner rồi mới hiện lại biểu đồ kèm hiệu ứng fade-in.
-- **Nguyên nhân**: 
-    - Thiếu `placeholderData: keepPreviousData` trong hook `useRevenueMlForecast`. Khi query key thay đổi, TanStack Query xóa data cũ, làm `isLoading && !forecast` trở thành `true`.
-    - Logic render trong component cha unmount toàn bộ nội dung chính để hiện spinner, làm mất trạng thái DOM và kích hoạt lại animation khi mount lại.
-- **Khắc phục**: 
-    - Thêm `placeholderData: keepPreviousData` vào `useQuery`.
-    - Tách biệt `isInitialLoading` (chỉ true khi lần đầu tiên không có dữ liệu) để giữ UI cũ hiển thị trong khi tải dữ liệu mới ở background.
-- **Bài học**: Luôn sử dụng chiến lược "giữ dữ liệu cũ" cho các biểu đồ hoặc trang dashboard khi thay đổi bộ lọc để tránh trải nghiệm người dùng bị ngắt quãng.
+### 2. Lỗi: Sai lệch kiểu dữ liệu giữa Mock Data và Interface
+- **Triệu chứng**: `Property 'X' is missing in type`, `metrics does not exist in type`.
+- **Nguyên nhân**: Mock data chứa các thuộc tính cũ hoặc thừa so với Interface định nghĩa cho ViewModel. Ngược lại, một số ViewModel thiếu các thuộc tính cần thiết cho UI.
+- **Khắc phục**: Cập nhật Interface (ví dụ: thêm `aiInsightText` vào `OrdersReturnsViewModel`) và dọn dẹp Mock data để khớp hoàn toàn với Type hệ thống.
 
-### 2. Lỗi: MSW Uncaught (in promise) TypeError: Failed to fetch (mockServiceWorker.js:238)
-- **Triệu chứng**: Console báo lỗi fetch không mong muốn từ Service Worker.
-- **Nguyên nhân**: Một số yêu cầu không khớp chính xác với Handler (do sai lệch tham số hoặc path) bị đẩy ra mạng thật (`passthrough`) và thất bại vì không có server thật.
-- **Khắc phục**: 
-    - Bổ sung Handler catch-all (`http.all('/api/revenue/*', ...)`) để bắt các yêu cầu không khớp và trả về 404 thay vì để nó thoát ra ngoài.
-    - Thêm các kiểm tra phòng vệ (defensive checks) trong Handler để tránh crash logic (như check `baseline?.[0]`).
-- **Bài học**: Khi sử dụng MSW, luôn có một handler catch-all cho mỗi prefix API để dễ dàng debug các request bị bỏ sót.
+### 3. Lỗi: Biến không sử dụng (Unused Variables)
+- **Triệu chứng**: `is declared but its value is never read`.
+- **Nguyên nhân**: Để lại các biến rác sau khi refactor hoặc copy-paste code.
+- **Khắc phục**: Xóa các import và khai báo không dùng đến. Với các tham số callback bắt buộc của thư viện nhưng không dùng, sử dụng tiền tố `_` (ví dụ: `_query`).
 
-## [2024-04-26] Lỗi import Label và sai lệch kiểu dữ liệu trong ML Forecast
-
-### 1. Lỗi: Failed to resolve import "@/components/ui/label"
-- **Nguyên nhân**: Sử dụng component `Label` trong UI nhưng component này chưa tồn tại trong thư mục `src/components/ui`.
-- **Khắc phục**: Tạo mới file `src/components/ui/label.tsx` với phong cách thiết kế nhất quán với hệ thống.
-- **Bài học**: Khi sử dụng các component UI cơ bản (atoms), cần kiểm tra xem chúng đã được triển khai trong thư mục `ui/` hay chưa trước khi import.
-
-### 2. Lỗi: Type mismatch in Recharts Tooltip formatter
-- **Nguyên nhân**: Kiểu dữ liệu của tham số trong `formatter` của Recharts không khớp với mong đợi (nhận `number | string` nhưng khai báo `number`).
-- **Khắc phục**: Ép kiểu hoặc xử lý linh hoạt tham số đầu vào bằng `Number(val)`.
-
-### 3. Lỗi: Invalid variant for Badge component
-- **Nguyên nhân**: Sử dụng variant `"destructive"` cho `Badge` trong khi hệ thống chỉ hỗ trợ `"danger"`.
-- **Khắc phục**: Chỉnh sửa variant về đúng giá trị hợp lệ của hệ thống thiết kế.
+---
 
 ## [2026-04-26] Lỗi thiết kế AI Slop và Thiếu Accessibility trong trang Dự báo ML
 
 ### 1. Lỗi: Giao diện bị nhiễu thị giác (Visual Noise) và lạm dụng ngôn ngữ AI
 - **Nguyên nhân**: Sử dụng quá nhiều hiệu ứng blur, shadow và tiêu đề phóng đại ("Simulation Lab Cockpit", "AI Strategic Deck").
-- **Khắc phục**: Loại bỏ blur nền, đơn giản hóa UX writing sang tiếng Việt chuyên môn (Ví dụ: "Giả lập kịch bản").
-- **Bài học**: Ưu tiên sự rõ ràng của dữ liệu hơn các hiệu ứng thị giác hào nhoáng.
+- **Khắc phục**: Loại bỏ blur nền, đơn giản hóa UX writing sang tiếng Việt chuyên môn.
+- **Bài học**: Ưu tiên sự rõ ràng của dữ liệu hơn các hiệu ứng thị giác hào ngoáng.
 
 ### 2. Lỗi: Thiếu hỗ trợ Accessibility và Hard-coded colors
 - **Nguyên nhân**: Quên bổ sung ARIA labels cho slider/chart và gán mã hex trực tiếp cho biểu đồ.
-- **Khắc phục**: Thêm `role="region"`, `aria-label` và chuyển mã hex sang palette màu hệ thống. Giảm thời gian animation biểu đồ để tăng tốc độ phản hồi.
-- **Bài học**: Luôn kiểm tra Accessibility cho các thành phần custom và sử dụng design tokens.
+- **Khắc phục**: Thêm `role="region"`, `aria-label` và chuyển mã hex sang palette màu hệ thống. 
 
+---
+
+## [2026-04-27] Lỗi MSW 'TypeError: Failed to fetch' và Kẹt giao diện (Sentiment Analysis)
+
+### 1. Lỗi: TypeError: Failed to fetch tại mockServiceWorker.js
+- **Triệu chứng**: Console log tràn ngập lỗi `Failed to fetch` từ Service Worker, đôi khi gây treo tab.
+- **Nguyên nhân**: MSW cố gắng can thiệp (passthrough) vào các request nội bộ của Vite như HMR (`/@vite/client`, `hot-update.json`) hoặc static assets. Khi trình duyệt chặn các request này tại tầng Service Worker, nó ném lỗi `TypeError`.
+- **Khắc phục**: Cập nhật `onUnhandledRequest` trong `worker.start` để chủ động trả về `'bypass'` cho tất cả các request hệ thống, HMR và static assets. Chỉ cho phép xử lý các request bắt đầu bằng `/api/`.
+- **Bài học**: Luôn cấu hình phạm vi (scope) hẹp nhất có thể cho Mock Service Worker để tránh xung đột với tài nguyên hệ thống.
+
+### 2. Lỗi: Hiện tượng giật lag và không chọn được sản phẩm (Sentiment Analysis)
+- **Triệu chứng**: Bấm vào biểu đồ bị grayscale/khóa click (lag), chọn sản phẩm mới nhưng dữ liệu không đổi hoặc phản hồi rất chậm.
+- **Nguyên nhân**: Sử dụng `useDeferredValue` cho `productId` gây trễ nhân tạo, kết hợp với hiệu ứng `pointer-events-none` và `grayscale` mỗi khi `isRefreshing=true` làm khóa toàn bộ UI trong thời gian fetch.
+- **Khắc phục**: Loại bỏ `useDeferredValue` để fetch tức thì, gỡ bỏ `pointer-events-none` để cho phép tương tác liên tục khi đang refresh ngầm.
+- **Bài học**: Không nên khóa tương tác người dùng (blocking UI) cho các tác vụ cập nhật dữ liệu thường xuyên trừ khi thực sự cần thiết.
