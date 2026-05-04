@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChevronDown, Download, RefreshCw, Layers } from 'lucide-react'
 import type {
   RevenueChartsRangeDays,

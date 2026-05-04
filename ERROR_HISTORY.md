@@ -64,3 +64,23 @@
 - **Nguyên nhân**: Sử dụng `useDeferredValue` cho `productId` gây trễ nhân tạo, kết hợp với hiệu ứng `pointer-events-none` và `grayscale` mỗi khi `isRefreshing=true` làm khóa toàn bộ UI trong thời gian fetch.
 - **Khắc phục**: Loại bỏ `useDeferredValue` để fetch tức thì, gỡ bỏ `pointer-events-none` để cho phép tương tác liên tục khi đang refresh ngầm.
 - **Bài học**: Không nên khóa tương tác người dùng (blocking UI) cho các tác vụ cập nhật dữ liệu thường xuyên trừ khi thực sự cần thiết.
+
+---
+
+## [2026-05-04] Lỗi ESLint `react-hooks/set-state-in-effect` khi đồng bộ dữ liệu Form Dialog
+
+### 1. Lỗi: Calling setState synchronously within an effect
+- **Triệu chứng**: ESLint chặn build bước lint ở `KpiCrudFormDialog.tsx` với rule `react-hooks/set-state-in-effect`.
+- **Nguyên nhân**: Dùng `useEffect` để gọi `setMetricId`, `setTitle`, `setStatus` mỗi khi mở dialog/chuyển mode Create/Edit.
+- **Khắc phục**: Bỏ đồng bộ state bằng `useEffect`; chuyển sang khởi tạo state từ giá trị ban đầu và dùng `key` trên component dialog để remount form khi mode/item thay đổi.
+- **Bài học**: Với form modal, ưu tiên cơ chế remount có kiểm soát (`key`) hoặc init state một lần thay vì setState hàng loạt trong effect.
+
+---
+
+## [2026-05-04] Lỗi lint `react-hooks/set-state-in-effect` khi đồng bộ form/modal
+
+### 1. Lỗi: `setState` trong `useEffect` gây vi phạm rule hooks
+- **Triệu chứng**: ESLint báo lỗi `react-hooks/set-state-in-effect` tại các component đồng bộ draft state theo props khi mở dialog.
+- **Nguyên nhân**: Sử dụng `useEffect` chỉ để sao chép state từ props (`setDraft(...)`) làm phát sinh cập nhật state đồng bộ trong effect.
+- **Khắc phục**: Chuyển form modal sang mô hình **controlled component** (state đặt ở parent), truyền `values` + `onValuesChange` xuống form thay vì copy state trong effect.
+- **Bài học**: Với modal/form có dữ liệu khởi tạo từ parent, ưu tiên controlled pattern để tránh effect đồng bộ state và giảm nguy cơ vòng lặp render.

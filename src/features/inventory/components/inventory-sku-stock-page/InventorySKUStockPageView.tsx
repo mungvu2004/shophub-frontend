@@ -5,6 +5,7 @@ import { SKUInventoryActions } from '@/features/inventory/components/inventory-s
 import { SKULowStockAlert } from '@/features/inventory/components/inventory-sku-stock-page/SKULowStockAlert'
 import { SKUInventorySection } from '@/features/inventory/components/inventory-sku-stock-page/SKUInventorySection'
 import { BulkImportModal } from '@/features/inventory/components/inventory-sku-stock-page/BulkImportModal'
+import { SKUFormModal } from '@/features/inventory/components/inventory-sku-stock-page/SKUFormModal'
 import { Button } from '@/components/ui/button'
 import { Plus, Package } from 'lucide-react'
 import type { useInventorySKUStockPage } from '@/features/inventory/hooks/useInventorySKUStockPage'
@@ -28,6 +29,9 @@ export function InventorySKUStockPageView({ model }: InventorySKUStockPageViewPr
     handleExportData,
     handleImportData,
     handleAddSKU,
+    handleEditSKU,
+    skuForm,
+    skuActions,
   } = model
 
   const activeFilterCount = Object.values(filters).filter(Boolean).flat().length
@@ -42,6 +46,7 @@ export function InventorySKUStockPageView({ model }: InventorySKUStockPageViewPr
   return (
     <div className="space-y-6 pb-10">
       <BulkImportModal model={bulkImport} />
+      <SKUFormModal {...skuForm} />
       
       {/* Page Header - Tích hợp ThemedPageHeader */}
       <ThemedPageHeader
@@ -67,7 +72,8 @@ export function InventorySKUStockPageView({ model }: InventorySKUStockPageViewPr
 
           <Button 
             onClick={handleAddSKU}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl px-6 h-[76px] shadow-sm shadow-emerald-200"
+            disabled={skuActions.isProcessing}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl px-6 h-[76px] shadow-sm shadow-emerald-200 disabled:opacity-50"
           >
             <Plus className="w-4 h-4 mr-2" />
             Thêm SKU
@@ -127,7 +133,7 @@ export function InventorySKUStockPageView({ model }: InventorySKUStockPageViewPr
           description="Dữ liệu được cập nhật theo bộ lọc và từ khóa tìm kiếm hiện tại."
         >
           {viewMode === 'table' ? (
-            <InventoryTableView filters={filterPayload} />
+            <InventoryTableView filters={filterPayload} onEditSKU={handleEditSKU} skuActions={skuActions} />
           ) : (
             <InventoryGridView filters={filterPayload} />
           )}

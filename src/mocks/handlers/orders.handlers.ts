@@ -1,9 +1,10 @@
-import { http, HttpResponse } from 'msw'
+import { http, HttpResponse, delay } from 'msw'
 
 import { mockRevenueOrders } from '@/mocks/data/dashboardRevenueOrders'
 import { mockOrders } from '@/mocks/data/orders'
 import { mockOrdersReturns } from '@/mocks/data/ordersReturns'
-import { buildOrdersPendingActionsResponse } from '@/mocks/data/ordersPendingActions'
+import { ordersPendingActionsHandlers } from '@/features/orders/handlers/ordersPendingActions.handlers'
+import type { Order } from '@/types/order.types'
 
 const pendingStatuses = new Set(['Pending', 'PendingPayment', 'Confirmed', 'Packed', 'ReadyToShip', 'Shipped'])
 
@@ -20,7 +21,9 @@ function parseDateTime(value: string | null) {
 }
 
 export const ordersHandlers = [
-  http.get('/api/orders', ({ request }) => {
+  ...ordersPendingActionsHandlers,
+  http.get('/api/orders', async ({ request }) => {
+    await delay(600)
     const url = new URL(request.url)
 
     const revenueDateFrom = url.searchParams.get('dateFrom')
@@ -101,9 +104,11 @@ export const ordersHandlers = [
       return true
     })
 
+    const sorted = filtered.sort((a, b) => new Date(b.createdAt || b.createdAt_platform).getTime() - new Date(a.createdAt || a.createdAt_platform).getTime())
+
     const offset = (normalizedPage - 1) * normalizedPageSize
-    const paginatedItems = filtered.slice(offset, offset + normalizedPageSize)
-    const hasMore = offset + normalizedPageSize < filtered.length
+    const paginatedItems = sorted.slice(offset, offset + normalizedPageSize)
+    const hasMore = offset + normalizedPageSize < sorted.length
 
     const summary = {
       totalOrders: baseFiltered.length,
@@ -132,7 +137,7 @@ export const ordersHandlers = [
         items: paginatedItems,
         hasMore,
         nextCursor: hasMore ? String(normalizedPage + 1) : undefined,
-        totalCount: filtered.length,
+        totalCount: sorted.length,
         summary,
       },
       { status: 200 },
@@ -140,6 +145,7 @@ export const ordersHandlers = [
   }),
 
   http.post('/api/orders/bulk-confirm', async ({ request }) => {
+    await delay(800)
     const body = (await request.json().catch(() => null)) as { orderIds?: unknown } | null
     const orderIds = Array.isArray(body?.orderIds)
       ? body.orderIds.filter((item): item is string => typeof item === 'string')
@@ -164,6 +170,58 @@ export const ordersHandlers = [
     }
 
     return HttpResponse.json({ updatedCount }, { status: 200 })
+  }),
+
+  http.post('/api/orders', async ({ request }) => {
+    await delay(700)
+    const body = (await request.json()) as Partial<Order>
+    const newOrder: Order = {
+      ...body,
+      id: `ord-new-${Date.now()}`,
+      status: body.status || 'Pending',
+      platform: body.platform || 'shopee',
+      totalAmount: body.totalAmount || 0,
+      createdAt: new Date().toISOString(),
+      createdAt_platform: new Date().toISOString(),
+    } as Order
+    mockOrders.unshift(newOrder)
+    return HttpResponse.json(newOrder, { status: 201 })
+  }),
+
+  http.put('/api/orders/:id', async ({ params, request }) => {
+    await delay(700)
+    const id = params.id
+    const body = (await request.json()) as Partial<Order>
+    const index = mockOrders.findIndex((o) => o.id === id)
+    if (index !== -1) {
+      mockOrders[index] = { ...mockOrders[index], ...body, updatedAt: new Date().toISOString() }
+      return HttpResponse.json(mockOrders[index], { status: 200 })
+    }
+    return new HttpResponse(null, { status: 404 })
+  }),
+
+  http.patch('/api/orders/:id/status', async ({ params, request }) => {
+    await delay(600)
+    const id = params.id
+    const body = (await request.json()) as { status: Order['status'] }
+    const order = mockOrders.find((o) => o.id === id)
+    if (order) {
+      order.status = body.status
+      order.updatedAt = new Date().toISOString()
+      return HttpResponse.json(order, { status: 200 })
+    }
+    return new HttpResponse(null, { status: 404 })
+  }),
+
+  http.delete('/api/orders/:id', async ({ params }) => {
+    await delay(700)
+    const id = params.id
+    const index = mockOrders.findIndex((o) => o.id === id)
+    if (index !== -1) {
+      mockOrders.splice(index, 1)
+      return new HttpResponse(null, { status: 204 })
+    }
+    return new HttpResponse(null, { status: 404 })
   }),
 
   http.post('/api/orders/:id/confirm', ({ params }) => {
@@ -286,34 +344,6 @@ export const ordersHandlers = [
       },
       { status: 200 },
     )
-  }),
-
-  http.get('/api/orders/pending-actions', ({ request }) => {
-    const url = new URL(request.url)
-    const search = (url.searchParams.get('search') ?? '').trim()
-    const platform = (url.searchParams.get('platform') ?? 'all').trim()
-    const sla = (url.searchParams.get('sla') ?? 'all').trim()
-    const dateFrom = (url.searchParams.get('dateFrom') ?? '').trim()
-    const dateTo = (url.searchParams.get('dateTo') ?? '').trim()
-    const page = Number(url.searchParams.get('page') ?? 1)
-    const pageSize = Number(url.searchParams.get('pageSize') ?? url.searchParams.get('limit') ?? 10)
-
-    const normalizedPage = Number.isNaN(page) || page < 1 ? 1 : page
-    const normalizedPageSize = Number.isNaN(pageSize) || pageSize < 1 ? 10 : pageSize
-
-    const payload = buildOrdersPendingActionsResponse({
-      search,
-      platform: platform === 'all' || platform === 'shopee' || platform === 'lazada' || platform === 'tiktok_shop'
-        ? platform
-        : 'all',
-      sla: sla === 'all' || sla === 'critical' || sla === 'warning' || sla === 'safe' ? sla : 'all',
-      dateFrom: dateFrom || undefined,
-      dateTo: dateTo || undefined,
-      page: normalizedPage,
-      pageSize: normalizedPageSize,
-    })
-
-    return HttpResponse.json(payload, { status: 200 })
   }),
 
   http.get('/api/orders/:id', ({ params }) => {

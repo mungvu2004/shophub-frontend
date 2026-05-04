@@ -1,11 +1,13 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useInventoryAlerts, useInventorySKUs } from '@/features/inventory/hooks/useInventoryData'
 import { inventoryService } from '@/features/inventory/services/inventoryService'
 import type { ViewMode } from '@/features/inventory/logic/inventoryPageHeader.types'
 import { useBulkImport } from '@/features/inventory/hooks/useBulkImport'
 import { toast } from 'sonner'
+import { useInventorySKUStockActions } from './useInventorySKUStockActions'
+import type { StockLevel } from '@/types/inventory.types'
 
 export interface InventorySKUStockPageFilters {
   search: string
@@ -16,6 +18,7 @@ export interface InventorySKUStockPageFilters {
 
 export function useInventorySKUStockPage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const bulkImport = useBulkImport()
   const [showAlert, setShowAlert] = useState(true)
   const [viewMode, setViewMode] = useState<ViewMode>('table')
@@ -25,6 +28,17 @@ export function useInventorySKUStockPage() {
     platform: undefined,
     status: undefined,
   })
+
+  // Modal State cho SKU Form
+  const [isSKUFormOpen, setIsSKUFormOpen] = useState(false)
+  const [skuToEdit, setSkuToEdit] = useState<StockLevel | null>(null)
+
+  const refreshData = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['inventory', 'skus'] })
+    queryClient.invalidateQueries({ queryKey: ['inventory', 'summary'] })
+  }, [queryClient])
+
+  const skuActions = useInventorySKUStockActions(refreshData)
 
   // Lấy danh mục động từ API
   const { data: categoryOptions = [] } = useQuery({
@@ -47,7 +61,7 @@ export function useInventorySKUStockPage() {
     offset: 0,
   })
 
-  // Logic xử lý cảnh báo tồn kho thấp (Khôi phục logic bị mất)
+  // Logic xử lý cảnh báo tồn kho thấp
   const lowStockAlerts = useMemo(() => {
     return alertsData?.items?.filter((a) => a.severity === 'Warning' || a.severity === 'Critical') || []
   }, [alertsData])
@@ -113,7 +127,22 @@ export function useInventorySKUStockPage() {
   }
 
   const handleAddSKU = () => {
-    navigate('/products/new', { state: { from: '/inventory/sku-stock' } })
+    setSkuToEdit(null)
+    setIsSKUFormOpen(true)
+  }
+
+  const handleEditSKU = (sku: StockLevel) => {
+    setSkuToEdit(sku)
+    setIsSKUFormOpen(true)
+  }
+
+  const handleSubmitSKU = async (data: Partial<StockLevel>) => {
+    if (skuToEdit) {
+      await skuActions.handleUpdate(skuToEdit.id, data)
+    } else {
+      await skuActions.handleCreate(data)
+    }
+    setIsSKUFormOpen(false)
   }
 
   // Lấy dữ liệu tổng quan kho
@@ -140,11 +169,20 @@ export function useInventorySKUStockPage() {
     lastUpdated,
     categoryOptions,
     isLoading: isSummaryLoading,
+    skuActions,
+    skuForm: {
+      isOpen: isSKUFormOpen,
+      onClose: () => setIsSKUFormOpen(false),
+      initialData: skuToEdit,
+      onSubmit: handleSubmitSKU,
+      isProcessing: skuActions.isProcessing && (skuActions.actionType === 'creating' || skuActions.actionType === 'updating'),
+    },
     handleFilterChange,
     handleViewModeChange,
     handleAdjustStock,
     handleExportData,
     handleImportData,
     handleAddSKU,
+    handleEditSKU,
   }
 }

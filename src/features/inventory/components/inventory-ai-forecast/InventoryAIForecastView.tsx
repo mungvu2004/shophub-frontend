@@ -22,12 +22,12 @@ type InventoryAIForecastViewProps = {
   isRecalculating: boolean
   onFilterChange: (filter: ForecastTableFilter) => void
   onOpenDetail: (sku: string) => void
-  onRecalculate: (params: any) => void
+  onRecalculate: (params: unknown) => void
   onRefresh: () => void
   onExport: () => void
 }
 
-const statusMapping: Record<InventoryAIForecastTableRowViewModel['status'], { variant: "success" | "warning" | "danger" | "info" | "outline"; label: string; icon: any }> = {
+const statusMapping: Record<InventoryAIForecastTableRowViewModel['status'], { variant: "success" | "warning" | "danger" | "info" | "outline"; label: string; icon: unknown }> = {
   urgent: { variant: 'danger', label: 'Cần nhập gấp', icon: AlertTriangle },
   warning: { variant: 'warning', label: 'Tồn kho thấp', icon: Info },
   healthy: { variant: 'success', label: 'An toàn', icon: Circle },

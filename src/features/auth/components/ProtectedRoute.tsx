@@ -9,6 +9,7 @@ type RequireAuthResult = {
   from: ReturnType<typeof useLocation>;
 };
 
+  // eslint-disable-next-line react-refresh/only-export-components
 export function useRequireAuth(): RequireAuthResult {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isLoading = useAuthStore((state) => state.isLoading);

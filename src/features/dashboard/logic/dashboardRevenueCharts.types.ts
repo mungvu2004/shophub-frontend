@@ -3,6 +3,14 @@ export type RevenueChartsRangeDays = 7 | 30
 export type RevenueChartExportTarget = 'daily-trend' | 'hourly-distribution' | 'category-breakdown' | 'order-heatmap'
 export type RevenueChartExportFormat = 'csv' | 'excel'
 
+export type RevenueTimelineEvent = {
+  id: string
+  date: string
+  label: string
+  type: 'flash_sale' | 'holiday'
+  impactPercent: number
+}
+
 export type RevenueChartsResponse = {
   updatedAt: string
   platform: RevenueChartsPlatformId
@@ -58,13 +66,7 @@ export type RevenueChartsResponse = {
     growthPercent: number
   }>
   peakHoursLabel: string
-  timelineEvents: Array<{
-    id: string
-    date: string
-    label: string
-    type: 'flash_sale' | 'holiday'
-    impactPercent: number
-  }>
+  timelineEvents: RevenueTimelineEvent[]
   hourlyHeatmap: Array<{
     dayIndex: number
     hour: number

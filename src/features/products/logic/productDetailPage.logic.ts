@@ -28,7 +28,7 @@ const EMPTY_INVENTORY_SUMMARY = {
   items: [],
 }
 
-export function buildProductDetailViewModel(): ProductDetailViewModel {
+export function useProductDetailViewModel(): ProductDetailViewModel {
   const navigate = useNavigate()
   const location = useLocation()
   const { id } = useParams<{ id: string }>()

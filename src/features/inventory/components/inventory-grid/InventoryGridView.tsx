@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { InventoryGrid } from '@/features/inventory/components/inventory-grid/InventoryGrid'
 import { useInventorySKUs } from '@/features/inventory/hooks/useInventoryData'
@@ -42,10 +42,16 @@ export function InventoryGridView({ filters }: InventoryGridViewProps) {
     return displayData.map(mapStockLevelToTableRow)
   }, [displayData])
 
-  // Reset to page 1 when filters change
-  useEffect(() => {
+  const [prevFilters, setPrevFilters] = useState(filters)
+  if (
+    prevFilters?.search !== filters?.search ||
+    prevFilters?.status !== filters?.status ||
+    prevFilters?.category !== filters?.category ||
+    prevFilters?.platform !== filters?.platform
+  ) {
+    setPrevFilters(filters)
     setCurrentPage(1)
-  }, [filters?.search, filters?.status, filters?.category, filters?.platform])
+  }
 
   const model: InventoryGridViewModel = useMemo(() => {
     return {
@@ -85,6 +91,7 @@ export function InventoryGridView({ filters }: InventoryGridViewProps) {
             break
         }
       },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
       onOpenProductDetail: (_rowId, _productId) => {
         const selectedRow = rows.find((row) => row.id === _rowId)
         if (!selectedRow) {

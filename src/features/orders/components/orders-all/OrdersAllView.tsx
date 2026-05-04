@@ -36,6 +36,10 @@ type OrdersAllViewProps = {
   onToggleAll: () => void
   onToggleOne: (id: string) => void
   onOpenDetail?: (row: OrdersAllTableRowModel) => void
+  onDeleteVisible: (row: OrdersAllTableRowModel) => void
+  onCancelVisible: (row: OrdersAllTableRowModel) => void
+  onShipVisible: (row: OrdersAllTableRowModel) => void
+  onConfirmOneVisible: (row: OrdersAllTableRowModel) => void
   onConfirmVisible: () => void
   onExportVisibleCsv: () => void
   onPrintVisibleWaybills: () => void
@@ -135,6 +139,10 @@ export function OrdersAllView({
   onToggleAll,
   onToggleOne,
   onOpenDetail,
+  onDeleteVisible,
+  onCancelVisible,
+  onShipVisible,
+  onConfirmOneVisible,
   onConfirmVisible,
   onExportVisibleCsv,
   onPrintVisibleWaybills,
@@ -230,6 +238,10 @@ export function OrdersAllView({
             onToggleAll={onToggleAll}
             onToggleOne={onToggleOne}
             onOpenDetail={onOpenDetail}
+            onDeleteVisible={onDeleteVisible}
+            onCancelVisible={onCancelVisible}
+            onShipVisible={onShipVisible}
+            onConfirmOneVisible={onConfirmOneVisible}
             onExportData={onExportVisibleCsv}
             sortState={sortState}
             onSortChange={onSortChange}

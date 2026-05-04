@@ -137,7 +137,7 @@ export const RevenueMlForecastView = memo(({
               }}
               itemStyle={{ color: '#0f172a', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '2px' }}
               labelStyle={{ color: '#64748b', fontSize: '10px', marginBottom: '8px', fontWeight: 600, letterSpacing: '0.05em' }}
-              formatter={(val: any) => {
+              formatter={(val: unknown) => {
                 return [new Intl.NumberFormat('vi-VN').format(Number(val)) + ' đ', 'Giá trị']
               }}
               position={{ y: 0 }}

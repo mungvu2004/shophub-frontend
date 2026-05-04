@@ -7,6 +7,7 @@ import {
   type OrdersPendingActionsTableRowModel,
   type OrdersPendingActionsViewModel,
 } from '@/features/orders/logic/ordersPendingActions.types'
+import type { OrderStatus } from '@/types/order.types'
 
 const CURRENCY_FORMATTER = new Intl.NumberFormat('vi-VN', {
   style: 'currency',
@@ -131,6 +132,34 @@ function getWaitingPresentation(item: OrdersPendingActionItem): Pick<OrdersPendi
   }
 }
 
+function getOrderStatusLabel(status: OrderStatus): string {
+  if (status === 'Pending') return 'Chờ xử lý'
+  if (status === 'PendingPayment') return 'Chờ thanh toán'
+  if (status === 'Confirmed') return 'Đã xác nhận'
+  if (status === 'Packed') return 'Đã đóng gói'
+  if (status === 'ReadyToShip') return 'Sẵn sàng giao'
+  if (status === 'Shipped') return 'Đang vận chuyển'
+  if (status === 'Delivered') return 'Đã giao'
+  if (status === 'FailedDelivery') return 'Giao thất bại'
+  if (status === 'Cancelled') return 'Đã hủy'
+  if (status === 'Returned') return 'Đã hoàn'
+  if (status === 'Refunded') return 'Đã hoàn tiền'
+  if (status === 'Lost') return 'Thất lạc'
+  return status
+}
+
+function getOrderStatusBadgeClass(status: OrderStatus): string {
+  if (status === 'ReadyToShip' || status === 'Shipped' || status === 'Delivered' || status === 'Confirmed') {
+    return 'border-emerald-200 bg-emerald-50 text-emerald-700'
+  }
+
+  if (status === 'Cancelled' || status === 'FailedDelivery' || status === 'Returned' || status === 'Refunded' || status === 'Lost') {
+    return 'border-rose-200 bg-rose-50 text-rose-700'
+  }
+
+  return 'border-amber-200 bg-amber-50 text-amber-700'
+}
+
 function toTableRows(items: OrdersPendingActionItem[]): OrdersPendingActionsTableRowModel[] {
   return items.map((item) => {
     const waiting = getWaitingPresentation(item)
@@ -144,6 +173,7 @@ function toTableRows(items: OrdersPendingActionItem[]): OrdersPendingActionsTabl
     return {
       id: item.id,
       orderCode: item.orderCode,
+      platform: item.platform,
       platformLabel: getPlatformLabel(item.platform),
       platformMarkText: getPlatformMarkText(item.platform),
       platformMarkClass: getPlatformMarkClass(item.platform),
@@ -157,7 +187,9 @@ function toTableRows(items: OrdersPendingActionItem[]): OrdersPendingActionsTabl
       productThumbnailUrl: item.thumbnailUrl,
       amountValue: item.amount,
       amountLabel: CURRENCY_FORMATTER.format(item.amount),
-      statusLabel: item.status,
+      status: item.status,
+      statusLabel: getOrderStatusLabel(item.status),
+      statusBadgeClassName: getOrderStatusBadgeClass(item.status),
       printStatus: item.printStatus,
       printStatusLabel: item.printStatus === 'printed' ? 'Đã in' : 'Chưa in',
       waitingLabel: waiting.waitingLabel,

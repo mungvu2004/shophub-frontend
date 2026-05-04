@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { Loader2, SendHorizontal, X } from 'lucide-react'
 
@@ -22,10 +22,12 @@ export function SentimentAnalysisReplyComposer({
   onCancel,
 }: SentimentAnalysisReplyComposerProps) {
   const [draft, setDraft] = useState('')
+  const [prevReviewId, setPrevReviewId] = useState(reviewId)
 
-  useEffect(() => {
+  if (reviewId !== prevReviewId) {
+    setPrevReviewId(reviewId)
     setDraft('')
-  }, [reviewId])
+  }
 
   return (
     <section className="rounded-[18px] border border-indigo-200 bg-indigo-50/70 p-5">

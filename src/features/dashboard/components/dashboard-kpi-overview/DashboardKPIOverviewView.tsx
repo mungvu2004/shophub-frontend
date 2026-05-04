@@ -5,6 +5,7 @@ import { useKPIReorderUI } from '@/features/dashboard/components/dashboard-kpi-o
 import { KPIPeriodSelector } from '@/features/dashboard/components/dashboard-kpi-overview/KPIPeriodSelector'
 import { DashboardExportActions } from '@/features/dashboard/components/dashboard-kpi-overview/DashboardExportActions'
 import { MonthlyGoalWidget } from '@/features/dashboard/components/dashboard-kpi-overview/MonthlyGoalWidget'
+import { DashboardKpiCrudSection } from '@/features/dashboard/components/dashboard-kpi-overview/DashboardKpiCrudSection'
 import { ThemedPageHeader } from '@/components/shared/ThemedPageHeader'
 
 type DashboardKPIOverviewViewProps = {
@@ -106,6 +107,8 @@ export function DashboardKPIOverviewView({ model }: DashboardKPIOverviewViewProp
           />
         ))}
       </div>
+
+      <DashboardKpiCrudSection />
 
       {!model.hasRealMetrics && model.noDataHint.trim() ? (
         <p className="text-center text-sm text-slate-500 py-4 italic border border-dashed border-slate-200 rounded-xl" role="alert">

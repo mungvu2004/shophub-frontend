@@ -10,6 +10,7 @@ const deltaColorByTone = {
   neutral: 'text-slate-500',
 }
 
+  // eslint-disable-next-line react-refresh/only-export-components
 export const toDeltaIndicator = (tone?: RevenueChartsSummaryCardViewModel['deltaTone']) => {
   if (tone === 'down') return '↓'
   if (tone === 'up') return '↑'

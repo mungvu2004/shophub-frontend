@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { BellRing, ShieldCheck, Zap, HelpCircle } from 'lucide-react';
+import { BellRing, ShieldCheck, Zap, HelpCircle, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import type { ReorderConfig } from '@/types/inventory.types';
 import { toast } from 'sonner';
@@ -13,9 +13,10 @@ export type SKUReorderPointConfigProps = {
   productName: string;
   initialConfig?: ReorderConfig | null;
   onSave: (config: ReorderConfig) => void;
+  isProcessing?: boolean;
 };
 
-export function SKUReorderPointConfig({ isOpen, onClose, sku, productName, initialConfig, onSave }: SKUReorderPointConfigProps) {
+export function SKUReorderPointConfig({ isOpen, onClose, sku, productName, initialConfig, onSave, isProcessing = false }: SKUReorderPointConfigProps) {
   const [minThreshold, setMinThreshold] = useState(initialConfig?.minThreshold || 10);
   const [reorderQty, setReorderQty] = useState(initialConfig?.reorderQty || 50);
   const [isAutoReorder, setIsAutoReorder] = useState(initialConfig?.isAutoReorder || false);
@@ -32,7 +33,7 @@ export function SKUReorderPointConfig({ isOpen, onClose, sku, productName, initi
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && !isProcessing && onClose()}>
       <DialogContent className="max-w-md rounded-3xl border-slate-200 bg-white p-0 shadow-2xl overflow-hidden">
         <div className="relative isolate px-6 py-8 sm:px-10">
           <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,_rgba(249,115,22,0.06),_transparent_40%)]" />
@@ -63,6 +64,7 @@ export function SKUReorderPointConfig({ isOpen, onClose, sku, productName, initi
                     type="number" 
                     value={minThreshold}
                     onChange={(e) => setMinThreshold(parseInt(e.target.value))}
+                    disabled={isProcessing}
                     className="rounded-2xl border-slate-200 bg-slate-50/50 py-6 pl-4 pr-12 text-lg font-black focus:ring-orange-500/20 focus:border-orange-500"
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 italic">đơn vị</span>
@@ -80,14 +82,15 @@ export function SKUReorderPointConfig({ isOpen, onClose, sku, productName, initi
                     type="number" 
                     value={reorderQty}
                     onChange={(e) => setReorderQty(parseInt(e.target.value))}
+                    disabled={isProcessing}
                     className="rounded-2xl border-slate-200 bg-slate-50/50 py-6 pl-4 pr-12 text-lg font-black focus:ring-orange-500/20 focus:border-orange-500"
                   />
                 </div>
               </div>
 
               <div 
-                onClick={() => setIsAutoReorder(!isAutoReorder)}
-                className={`flex items-center gap-4 p-4 rounded-3xl border transition-all cursor-pointer ${isAutoReorder ? 'bg-orange-50/50 border-orange-200 shadow-sm' : 'bg-slate-50/50 border-slate-100 hover:border-slate-200'}`}
+                onClick={() => !isProcessing && setIsAutoReorder(!isAutoReorder)}
+                className={`flex items-center gap-4 p-4 rounded-3xl border transition-all ${isProcessing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${isAutoReorder ? 'bg-orange-50/50 border-orange-200 shadow-sm' : 'bg-slate-50/50 border-slate-100 hover:border-slate-200'}`}
               >
                 <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl transition-all ${isAutoReorder ? 'bg-orange-500 text-white shadow-lg' : 'bg-white text-slate-400 border border-slate-200'}`}>
                   <Zap className="h-5 w-5" />
@@ -102,10 +105,12 @@ export function SKUReorderPointConfig({ isOpen, onClose, sku, productName, initi
 
           <DialogFooter className="mt-10">
             <Button 
-              className="w-full rounded-2xl bg-slate-900 py-6 text-sm font-black uppercase tracking-widest text-white shadow-xl hover:bg-slate-800 transition-all active:scale-95"
+              className="w-full rounded-2xl bg-slate-900 py-6 text-sm font-black uppercase tracking-widest text-white shadow-xl hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-50"
               onClick={handleSave}
+              disabled={isProcessing}
             >
-              Lưu cấu hình
+              {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isProcessing ? 'Đang lưu...' : 'Lưu cấu hình'}
             </Button>
           </DialogFooter>
         </div>

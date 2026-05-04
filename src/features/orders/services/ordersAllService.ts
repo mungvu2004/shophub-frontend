@@ -146,6 +146,24 @@ class OrdersAllService {
         : 0,
     }
   }
+
+  async deleteOrder(id: string): Promise<void> {
+    await apiClient.delete(`/orders/${id}`)
+  }
+
+  async updateOrderStatus(id: string, status: string): Promise<void> {
+    await apiClient.patch(`/orders/${id}/status`, { status })
+  }
+
+  async createOrder(data: Partial<Order>): Promise<Order> {
+    const response = await apiClient.post<Order>('/orders', data)
+    return response.data
+  }
+
+  async updateOrder(id: string, data: Partial<Order>): Promise<Order> {
+    const response = await apiClient.put<Order>(`/orders/${id}`, data)
+    return response.data
+  }
 }
 
 export const ordersAllService = new OrdersAllService()

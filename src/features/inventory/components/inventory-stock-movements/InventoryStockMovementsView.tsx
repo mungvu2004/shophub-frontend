@@ -15,13 +15,13 @@ import type { useCreateMovement } from '@/features/inventory/hooks/useCreateMove
 
 interface InventoryStockMovementsViewProps {
   model: InventoryStockMovementsViewModel & { 
-    chartData: any[]; 
-    performerOptions: any[];
+    chartData: unknown[]; 
+    performerOptions: unknown[];
   }
   isRefreshing: boolean
   onSearchChange: (value: string) => void
-  onPlatformChange: (value: any) => void
-  onMovementGroupChange: (value: any) => void
+  onPlatformChange: (value: unknown) => void
+  onMovementGroupChange: (value: unknown) => void
   onWarehouseChange: (value: string) => void
   onPerformerChange: (value: string) => void
   onRefresh: () => void

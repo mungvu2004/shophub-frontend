@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { X } from 'lucide-react'
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 
@@ -23,15 +23,18 @@ export function SettingsStaffPermissionsInviteDrawer({ open, onOpenChange, model
   const [selectedRoleId, setSelectedRoleId] = useState(defaultRoleId)
   const [selectedPermissionIds, setSelectedPermissionIds] = useState<string[]>([])
 
-  useEffect(() => {
-    if (!open || !model) {
-      return
-    }
+  const [prevOpen, setPrevOpen] = useState(open)
+  const [prevModel, setPrevModel] = useState(model)
 
-    setSelectedRoleId(model.defaultRoleOptions[0]?.id ?? '')
-    setSelectedPermissionIds(model.permissions.filter((permission) => permission.defaultChecked).map((permission) => permission.id))
-    setEmail('')
-  }, [model, open])
+  if (open !== prevOpen || model !== prevModel) {
+    setPrevOpen(open)
+    setPrevModel(model)
+    if (open && model) {
+      setSelectedRoleId(model.defaultRoleOptions[0]?.id ?? '')
+      setSelectedPermissionIds(model.permissions.filter((permission) => permission.defaultChecked).map((permission) => permission.id))
+      setEmail('')
+    }
+  }
 
   if (!model) {
     return null

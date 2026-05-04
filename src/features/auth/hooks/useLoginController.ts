@@ -50,7 +50,7 @@ export function useLoginController(): LoginController {
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [captchaVerified, setCaptchaVerified] = useState(false);
   const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
-  const [currentTime, setCurrentTime] = useState(Date.now());
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
 
   const redirectTo =
     (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ||
@@ -92,12 +92,10 @@ export function useLoginController(): LoginController {
     };
   }, [isLocked]);
 
-  useEffect(() => {
-    if (lockoutSeconds === 0 && lockoutUntil) {
-      setLockoutUntil(null);
-      setCaptchaVerified(false);
-    }
-  }, [lockoutSeconds, lockoutUntil]);
+  if (lockoutSeconds === 0 && lockoutUntil) {
+    setLockoutUntil(null);
+    setCaptchaVerified(false);
+  }
 
   const mutation = useMutation({
     mutationFn: authService.login,

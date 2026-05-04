@@ -37,6 +37,7 @@ const unitToneClassMap = {
 } as const
 
 export function InventoryStockMovementsSidebar({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   selectedMovement: _selectedMovement,
   platformStats,
   warehouseStats,

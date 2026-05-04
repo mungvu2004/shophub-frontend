@@ -66,6 +66,7 @@ export function OrdersReturnsTable({
       if (type === 'auto-refund') await ordersReturnsService.autoRefund(orderId)
       
       toast.success(`${type === 'approve' ? 'Phê duyệt' : type === 'reject' ? 'Từ chối' : 'Hoàn tiền'} đơn hàng ${orderCode} thành công`, { id: loadingToast })
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error(`Có lỗi xảy ra khi xử lý đơn hàng ${orderCode}`, { id: loadingToast })
     }

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Download, FileText, Printer, Settings2 } from 'lucide-react'
 
 import { DataTable, type DataTableColumn, type DataTableSortState } from '@/components/shared/DataTable'
+import { Button } from '@/components/ui/button'
 import { Pagination } from '@/components/ui/pagination'
 import {
   canToggleColumn,
@@ -9,6 +10,7 @@ import {
   type PendingActionsTableColumnKey as ColumnKey,
 } from '@/features/orders/logic/ordersPendingActionsTable.logic'
 import type { OrdersPendingActionsTableRowModel } from '@/features/orders/logic/ordersPendingActions.types'
+import type { ActionType } from '@/features/shared/hooks/useCRUDActions'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 type OrdersPendingActionsTableProps = {
@@ -22,6 +24,11 @@ type OrdersPendingActionsTableProps = {
   onToggleAll: () => void
   onToggleOne: (id: string) => void
   onOpenDetail?: (row: OrdersPendingActionsTableRowModel) => void
+  isProcessing: boolean
+  actionType: ActionType
+  onCreateOrder: () => void
+  onEditOrder: (row: OrdersPendingActionsTableRowModel) => void
+  onDeleteOrder: (row: OrdersPendingActionsTableRowModel) => void
   onPageChange: (page: number) => void
   onPageSizeChange: (pageSize: number) => void
 }
@@ -37,6 +44,11 @@ export function OrdersPendingActionsTable({
   onToggleAll,
   onToggleOne,
   onOpenDetail,
+  isProcessing,
+  actionType,
+  onCreateOrder,
+  onEditOrder,
+  onDeleteOrder,
   onPageChange,
   onPageSizeChange,
 }: OrdersPendingActionsTableProps) {
@@ -204,6 +216,20 @@ export function OrdersPendingActionsTable({
       })
     }
 
+    if (visibleColumns.status) {
+      base.push({
+        id: 'status',
+        header: 'Trạng thái đơn',
+        align: 'center',
+        widthClassName: 'min-w-[150px]',
+        cell: (row) => (
+          <span className={`inline-flex h-7 min-w-[118px] items-center justify-center rounded-full border px-2.5 text-[11px] font-semibold ${row.statusBadgeClassName}`}>
+            {row.statusLabel}
+          </span>
+        ),
+      })
+    }
+
     if (visibleColumns.printStatus) {
       base.push({
         id: 'printStatus',
@@ -226,11 +252,41 @@ export function OrdersPendingActionsTable({
         id: 'action',
         header: 'Hành động',
         align: 'center',
-        widthClassName: 'min-w-[140px]',
+        widthClassName: 'min-w-[210px]',
         cell: (row) => (
-          <span className={`inline-flex h-7 min-w-[112px] items-center justify-center rounded-full px-2.5 text-[11px] font-semibold ${row.actionClassName}`}>
-            {row.actionLabel}
-          </span>
+          <div className="flex items-center justify-center gap-1.5">
+            <span className={`inline-flex h-7 min-w-[92px] items-center justify-center rounded-full px-2.5 text-[11px] font-semibold ${row.actionClassName}`}>
+              {row.actionLabel}
+            </span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-7 px-2 text-[11px]"
+              onClick={(event) => {
+                stopRowClickPropagation(event)
+                onEditOrder(row)
+              }}
+              disabled={isProcessing}
+            >
+              Sửa
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="danger"
+              className="h-7 px-2 text-[11px]"
+              isLoading={isProcessing && actionType === 'deleting'}
+              loadingText="Đang xóa..."
+              onClick={(event) => {
+                stopRowClickPropagation(event)
+                onDeleteOrder(row)
+              }}
+              disabled={isProcessing && actionType !== 'deleting'}
+            >
+              Xóa
+            </Button>
+          </div>
         ),
       })
     }
@@ -249,7 +305,7 @@ export function OrdersPendingActionsTable({
     }
 
     return base
-  }, [isAllSelected, onToggleAll, onToggleOne, selectedIds, visibleColumns])
+  }, [actionType, isAllSelected, isProcessing, onDeleteOrder, onEditOrder, onToggleAll, onToggleOne, selectedIds, visibleColumns])
 
   const renderColumnToggleItem = (column: ColumnKey, label: string) => (
     <button
@@ -292,10 +348,11 @@ export function OrdersPendingActionsTable({
               <div className="my-1 h-px bg-slate-200" />
             {renderColumnToggleItem('platform', 'Sàn')}
             {renderColumnToggleItem('product', 'Sản phẩm')}
-            {renderColumnToggleItem('amount', 'Giá trị')}
-            {renderColumnToggleItem('waiting', 'Chờ xử lý')}
-            {renderColumnToggleItem('printStatus', 'Trạng thái in')}
-            {renderColumnToggleItem('action', 'Hành động')}
+             {renderColumnToggleItem('amount', 'Giá trị')}
+             {renderColumnToggleItem('status', 'Trạng thái đơn')}
+             {renderColumnToggleItem('waiting', 'Chờ xử lý')}
+             {renderColumnToggleItem('printStatus', 'Trạng thái in')}
+             {renderColumnToggleItem('action', 'Hành động')}
             {renderColumnToggleItem('updated', 'Cập nhật')}
             </div>
           ) : null}
@@ -304,6 +361,7 @@ export function OrdersPendingActionsTable({
         <button
           type="button"
           onClick={onExportData}
+          disabled={isProcessing}
           className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-600 transition-colors hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
           aria-label="Xuất dữ liệu đơn cần xử lý"
           title="Xuất CSV"
@@ -311,6 +369,16 @@ export function OrdersPendingActionsTable({
           <Download className="size-3.5" />
           Xuất
         </button>
+        <Button
+          type="button"
+          size="sm"
+          onClick={onCreateOrder}
+          isLoading={isProcessing && actionType === 'creating'}
+          loadingText="Đang thêm..."
+          disabled={isProcessing && actionType !== 'creating'}
+        >
+          Thêm đơn
+        </Button>
         </div>
       </div>
 

@@ -197,7 +197,7 @@ const categoryBase = [
   },
 ];
 
-const timelineEventsBase: RevenueTimelineEvent[] = [
+let timelineEventsBase: RevenueTimelineEvent[] = [
   {
     id: "flash-1503",
     date: "2026-03-15",
@@ -220,6 +220,33 @@ const timelineEventsBase: RevenueTimelineEvent[] = [
     impactPercent: 31.7,
   },
 ];
+
+export const getTimelineEvents = () => timelineEventsBase;
+
+export const createTimelineEvent = (payload: Omit<RevenueTimelineEvent, "id">) => {
+  const newEvent: RevenueTimelineEvent = {
+    ...payload,
+    id: `event-${Date.now()}`,
+  };
+  timelineEventsBase = [newEvent, ...timelineEventsBase];
+  return newEvent;
+};
+
+export const updateTimelineEvent = (id: string, payload: Partial<RevenueTimelineEvent>) => {
+  const index = timelineEventsBase.findIndex((e) => e.id === id);
+  if (index === -1) return null;
+
+  timelineEventsBase[index] = { ...timelineEventsBase[index], ...payload };
+  return timelineEventsBase[index];
+};
+
+export const deleteTimelineEvent = (id: string) => {
+  const index = timelineEventsBase.findIndex((e) => e.id === id);
+  if (index === -1) return false;
+
+  timelineEventsBase = timelineEventsBase.filter((e) => e.id !== id);
+  return true;
+};
 
 const weeklyBase: RevenueChartsWeeklyPoint[] = [
   {

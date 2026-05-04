@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Search } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -57,11 +57,16 @@ export function OrdersPendingActionsFilters({
   const [isDateDialogOpen, setIsDateDialogOpen] = useState(false)
   const [draftDateFilters, setDraftDateFilters] = useState<OrdersPendingActionsDateFilters>(dateFilters)
 
-  useEffect(() => {
+  const [prevIsDateDialogOpen, setPrevIsDateDialogOpen] = useState(isDateDialogOpen)
+  const [prevDateFilters, setPrevDateFilters] = useState(dateFilters)
+
+  if (isDateDialogOpen !== prevIsDateDialogOpen || dateFilters !== prevDateFilters) {
+    setPrevIsDateDialogOpen(isDateDialogOpen)
+    setPrevDateFilters(dateFilters)
     if (isDateDialogOpen) {
       setDraftDateFilters(dateFilters)
     }
-  }, [dateFilters, isDateDialogOpen])
+  }
 
   return (
     <>

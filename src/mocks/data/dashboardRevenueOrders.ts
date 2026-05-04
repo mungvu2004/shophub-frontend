@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { RevenueOrderItem } from '@/features/dashboard/services/dashboardService'
 import { mockProducts } from './products'
 

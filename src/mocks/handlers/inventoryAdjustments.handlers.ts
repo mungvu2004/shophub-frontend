@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { http, HttpResponse, delay } from 'msw'
 import { mockAdjustments } from '../data/inventoryAdjustments'
 
@@ -21,11 +22,13 @@ export const inventoryAdjustmentsHandlers = [
     return HttpResponse.json({ ...newAdjustment, id: `adj-${Date.now()}`, status: 'PENDING_APPROVAL' }, { status: 201 })
   }),
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   http.post('/api/inventory/adjustments/:id/approve', async ({ params: _params }) => {
     await delay(800)
     return HttpResponse.json({ success: true, status: 'APPROVED' })
   }),
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   http.post('/api/inventory/adjustments/:id/reject', async ({ params: _params, request }) => {
     await delay(800)
     const { reason } = (await request.json()) as any

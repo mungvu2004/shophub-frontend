@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { Location } from 'react-router-dom'
 
 import { navItems, type SidebarNavChild } from './sidebarMenu.config'
@@ -52,21 +52,21 @@ function getActiveSectionLabels(location: SidebarLocation) {
 export function useSidebarMenuState(location: SidebarLocation) {
   const activeSectionLabels = useMemo(
     () => getActiveSectionLabels(location),
-    [location.hash, location.pathname, location.search],
+    [location],
   )
 
   const [expandedSection, setExpandedSection] = useState<string | null>(
     activeSectionLabels[0] ?? null,
   )
 
-  useEffect(() => {
-    if (activeSectionLabels.length === 0) {
-      return
+  const [prevActiveSectionLabels, setPrevActiveSectionLabels] = useState(activeSectionLabels)
+  if (activeSectionLabels !== prevActiveSectionLabels) {
+    setPrevActiveSectionLabels(activeSectionLabels)
+    if (activeSectionLabels.length > 0) {
+      const nextActive = activeSectionLabels[0]
+      setExpandedSection((prev) => (prev === nextActive ? prev : nextActive))
     }
-
-    const nextActive = activeSectionLabels[0]
-    setExpandedSection((prev) => (prev === nextActive ? prev : nextActive))
-  }, [activeSectionLabels])
+  }
 
   const isChildActive = (childTo: SidebarNavChild['to']) => getIsChildActive(location, childTo)
 

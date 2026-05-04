@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { http, HttpResponse } from "msw";
 import {
   dashboardKPIOverview,
@@ -23,6 +24,8 @@ import {
   type RevenueChartsPlatform,
   type RevenueChartsRange,
 } from "@/mocks/data/dashboardRevenueCharts";
+import { kpiOverviewCrudHandlers } from '@/features/dashboard/handlers/kpiOverviewCrud.handlers'
+import { dashboardRevenueChartsCrudHandlers } from '@/features/dashboard/handlers/dashboardRevenueChartsCrud.handlers'
 
 export const dashboardHandlers = [
   http.get("/api/dashboard/kpi-overview", () => {
@@ -231,7 +234,7 @@ export const dashboardHandlers = [
       if (body.userId === null) {
         alert.assignedTo = undefined;
       } else {
-        const user = mockAssignees.find(u => u.id === body.userId);
+        const user = mockAssignees.find((u: any) => u.id === body.userId);
         if (user) {
           alert.assignedTo = user;
         }
@@ -266,4 +269,6 @@ export const dashboardHandlers = [
       { status: 200 },
     );
   }),
+  ...kpiOverviewCrudHandlers,
+  ...dashboardRevenueChartsCrudHandlers,
 ];

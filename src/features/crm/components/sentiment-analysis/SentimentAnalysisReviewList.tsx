@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Inbox } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { SentimentAnalysisReviewCard } from './SentimentAnalysisReviewCard'

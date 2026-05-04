@@ -6,12 +6,13 @@ export type {
   Assignee
 } from '@/features/dashboard/logic/dashboardAlertsNotifications.types'
 
-export const mockAssignees: any[] = [
+export const mockAssignees: unknown[] = [
   { id: 'user-1', name: 'Nguyễn Văn A', avatar: 'https://i.pravatar.cc/150?u=user-1' },
   { id: 'user-2', name: 'Trần Thị B', avatar: 'https://i.pravatar.cc/150?u=user-2' },
   { id: 'user-3', name: 'Lê Văn C', avatar: 'https://i.pravatar.cc/150?u=user-3' },
 ]
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const dashboardAlertsNotificationsMock: any = {
   updatedAt: 'Cập nhật 09:24',
   autoRefreshSeconds: 30,
@@ -215,7 +216,7 @@ export const dashboardAlertsNotificationsMock: any = {
   ],
 }
 
-export const alertHistoryMock: any[] = [
+export const alertHistoryMock: unknown[] = [
   {
     id: 'h-1',
     title: 'Đã xử lý hết tồn kho Shopee',
@@ -246,7 +247,7 @@ export const alertHistoryMock: any[] = [
   },
 ]
 
-export const alertThresholdsMock: any[] = [
+export const alertThresholdsMock: unknown[] = [
   {
     id: 't-1',
     category: 'inventory',
@@ -273,7 +274,7 @@ export const alertThresholdsMock: any[] = [
   },
 ]
 
-export const alertFrequencyMock: any[] = [
+export const alertFrequencyMock: unknown[] = [
   { date: '2024-04-19', count: 12, criticalCount: 2 },
   { date: '2024-04-20', count: 15, criticalCount: 3 },
   { date: '2024-04-21', count: 8, criticalCount: 1 },

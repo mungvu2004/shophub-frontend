@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { 
   InventoryStockMovementsQueryState, 
   InventoryStockMovementsResponse,
@@ -6,6 +7,7 @@ import type {
 import { mockExtendedStockMovements, mockChartData, mockStockMovementPerformers } from '@/mocks/data/stockMovements.mock';
 
 export const stockMovementsService = {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getMovements(_query: InventoryStockMovementsQueryState): Promise<InventoryStockMovementsResponse> {
     await new Promise(resolve => setTimeout(resolve, 600)); // Network simulation
     

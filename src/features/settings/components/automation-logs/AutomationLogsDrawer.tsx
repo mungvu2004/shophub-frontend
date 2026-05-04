@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { AutomationLogsFooter } from '@/features/settings/components/automation-logs/AutomationLogsFooter'
 import { AutomationLogsHeader } from '@/features/settings/components/automation-logs/AutomationLogsHeader'
@@ -19,11 +19,17 @@ export function AutomationLogsDrawer({ open, ruleId, onClose }: AutomationLogsDr
   const [page, setPage] = useState(1)
   const pageSize = 10
 
-  useEffect(() => {
-    if (!open) return
-    setStatus('all')
-    setPage(1)
-  }, [open, ruleId])
+  const [prevOpen, setPrevOpen] = useState(open)
+  const [prevRuleId, setPrevRuleId] = useState(ruleId)
+
+  if (open !== prevOpen || ruleId !== prevRuleId) {
+    setPrevOpen(open)
+    setPrevRuleId(ruleId)
+    if (open) {
+      setStatus('all')
+      setPage(1)
+    }
+  }
 
   const { data, isLoading, isError, refetch } = useSettingsAutomationLogs({
     ruleId: ruleId ?? '',

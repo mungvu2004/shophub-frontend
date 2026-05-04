@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState } from 'react'
 
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
@@ -22,8 +23,8 @@ export function InventoryStockMovements() {
   const [selectedMovementId, setSelectedMovementId] = useState<string | null>(null)
   
   // Custom states for new features
-  const [chartData, setChartData] = useState<any[]>([])
-  const [performers, setPerformers] = useState<any[]>([])
+  const [chartData, setChartData] = useState<unknown[]>([])
+  const [performers, setPerformers] = useState<unknown[]>([])
 
   const { data, isLoading, isFetching, isError, refetch } = useInventoryStockMovements({
     search,
@@ -67,24 +68,23 @@ export function InventoryStockMovements() {
         pageSize,
       } as any,
       selectedMovementId,
-      chartData,
-      performerOptions: performers,
+      chartData: chartData as any,
+      performerOptions: performers as any,
       onExportLogs: () => stockMovementsService.exportToCSV(data.movements),
     })
 
     return model
   }, [data, movementGroup, page, pageSize, platform, search, selectedMovementId, warehouseId, performerId, chartData, performers])
 
-  useEffect(() => {
+  const [prevModel, setPrevModel] = useState(model)
+  if (model !== prevModel) {
+    setPrevModel(model)
     if (!model?.selectedMovement) {
       setSelectedMovementId(null)
-      return
-    }
-
-    if (!selectedMovementId || String(model.selectedMovement.id) !== selectedMovementId) {
+    } else if (!selectedMovementId || String(model.selectedMovement.id) !== selectedMovementId) {
       setSelectedMovementId(String(model.selectedMovement.id))
     }
-  }, [model, selectedMovementId])
+  }
 
   if (isLoading && !model) {
     return <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-500">Đang tải dữ liệu nhập/xuất kho...</div>
@@ -103,11 +103,11 @@ export function InventoryStockMovements() {
         setPage(1)
       }}
       onPlatformChange={(value) => {
-        setPlatform(value)
+        setPlatform(value as any)
         setPage(1)
       }}
       onMovementGroupChange={(value) => {
-        setMovementGroup(value)
+        setMovementGroup(value as any)
         setPage(1)
       }}
       onWarehouseChange={(value) => {

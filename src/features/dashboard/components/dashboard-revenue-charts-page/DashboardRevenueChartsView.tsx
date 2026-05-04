@@ -15,6 +15,7 @@ import { RevenueHourlyDistributionCard } from './RevenueHourlyDistributionCard'
 import { RevenueCategoryBreakdownCard } from './RevenueCategoryBreakdownCard'
 import { RevenueGoalBanner } from './RevenueGoalBanner'
 import { RevenueOrderHeatmapCard } from './RevenueOrderHeatmapCard'
+import { RevenueTimelineEventCrud } from './RevenueTimelineEventCrud'
 
 type DashboardRevenueChartsViewProps = {
   model: RevenueChartsViewModel
@@ -43,7 +44,6 @@ export function DashboardRevenueChartsView({
 }: DashboardRevenueChartsViewProps) {
   return (
     <div className="bg-secondary-50 pb-10 font-sans relative">
-      {/* Settings Modal Overlay */}
       {isSettingsOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-secondary-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200">
@@ -134,54 +134,55 @@ export function DashboardRevenueChartsView({
         />
 
         {model.hasData ? (
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-            {/* Hàng 1: Trend (8) + Hourly (4) */}
-            <div className="xl:col-span-8">
-              <RevenueTrendCard
-                title={model.dailyChartTitle}
-                points={model.dailyChartPoints}
-                selectedPlatform={model.selectedPlatform}
-                timelineEvents={model.timelineEvents}
-                onExport={(format) => onExportChart('daily-trend', format)}
-              />
-            </div>
+          <>
+            <RevenueTimelineEventCrud />
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+              <div className="xl:col-span-8">
+                <RevenueTrendCard
+                  title={model.dailyChartTitle}
+                  points={model.dailyChartPoints}
+                  selectedPlatform={model.selectedPlatform}
+                  timelineEvents={model.timelineEvents}
+                  onExport={(format) => onExportChart('daily-trend', format)}
+                />
+              </div>
 
-            <div className="xl:col-span-4">
-              <RevenueHourlyDistributionCard
-                title={model.hourlyChartTitle}
-                peakHoursLabel={model.peakHoursLabel}
-                points={model.hourlyPoints}
-                onExport={(format) => onExportChart('hourly-distribution', format)}
-              />
-            </div>
+              <div className="xl:col-span-4">
+                <RevenueHourlyDistributionCard
+                  title={model.hourlyChartTitle}
+                  peakHoursLabel={model.peakHoursLabel}
+                  points={model.hourlyPoints}
+                  onExport={(format) => onExportChart('hourly-distribution', format)}
+                />
+              </div>
 
-            {/* Hàng 2: Category (12) - Giờ đã có không gian rộng rãi để dàn hàng ngang */}
-            <div className="xl:col-span-12">
-              <RevenueCategoryBreakdownCard
-                title={model.categoryChartTitle}
-                items={model.categoryItems}
-                selectedCategoryId={selectedCategoryId}
-                onCategorySelect={onCategorySelect}
-                onExport={(format) => onExportChart('category-breakdown', format)}
-              />
-            </div>
+              <div className="xl:col-span-12">
+                <RevenueCategoryBreakdownCard
+                  title={model.categoryChartTitle}
+                  items={model.categoryItems}
+                  selectedCategoryId={selectedCategoryId}
+                  onCategorySelect={onCategorySelect}
+                  onExport={(format) => onExportChart('category-breakdown', format)}
+                />
+              </div>
 
-            <div className="xl:col-span-12">
-              <RevenueOrderHeatmapCard
-                title={model.heatmapTitle}
-                cells={model.heatmapCells}
-                onExport={(format) => onExportChart('order-heatmap', format)}
-              />
-            </div>
+              <div className="xl:col-span-12">
+                <RevenueOrderHeatmapCard
+                  title={model.heatmapTitle}
+                  cells={model.heatmapCells}
+                  onExport={(format) => onExportChart('order-heatmap', format)}
+                />
+              </div>
 
-            <div className="xl:col-span-12">
-              <RevenueComparisonCard
-                title={model.weeklyTableTitle}
-                rows={model.weeklyRows}
-                selectedPlatform={model.selectedPlatform}
-              />
+              <div className="xl:col-span-12">
+                <RevenueComparisonCard
+                  title={model.weeklyTableTitle}
+                  rows={model.weeklyRows}
+                  selectedPlatform={model.selectedPlatform}
+                />
+              </div>
             </div>
-          </div>
+          </>
         ) : (
           <div className="flex h-80 flex-col items-center justify-center rounded-2xl border border-secondary-200 bg-white p-10 text-center shadow-sm">
              <div className="mb-4 rounded-full bg-secondary-50 p-4">

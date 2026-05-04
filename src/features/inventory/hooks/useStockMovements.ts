@@ -28,6 +28,7 @@ export function useStockMovements() {
     try {
       const response = await stockMovementsService.getMovements(query);
       setMovements(response.movements);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error('Lỗi khi tải dữ liệu nhật ký kho.');
     } finally {

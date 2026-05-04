@@ -151,30 +151,29 @@ export function RevenueProfitFlowSection({
   profitFlowMax,
 }: RevenueProfitFlowSectionProps) {
   const waterfallData = useMemo(() => {
-    let runningTotal = 0
-
-    return profitFlow.map((item) => {
+    return profitFlow.reduce((acc, item) => {
+      const runningTotal = acc.length > 0 ? acc[acc.length - 1].end : 0
       let start = runningTotal
       let end = runningTotal
 
       if (item.kind === 'decrease') {
         end = runningTotal - item.amount
-        runningTotal = end
       } else if (item.kind === 'total') {
         start = 0
         end = item.amount
-        runningTotal = item.amount
       } else {
         end = runningTotal + item.amount
-        runningTotal = end
       }
 
-      return {
+      acc.push({
         ...item,
         base: Math.min(start, end),
         delta: Math.abs(end - start),
-      }
-    })
+        end,
+      })
+
+      return acc
+    }, [] as Array<RevenueSummaryReportViewModel['profitFlow'][0] & { base: number; delta: number; end: number }>)
   }, [profitFlow])
 
   const maxValue = Math.max(

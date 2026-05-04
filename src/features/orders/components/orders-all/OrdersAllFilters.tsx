@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { CalendarDays, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 
 import { Input } from '@/components/ui/input'
@@ -60,14 +60,19 @@ function DateFieldPicker({ label, value, onChange, placeholder = 'Chọn ngày' 
     return Number.isNaN(parsed.getTime()) ? new Date() : parsed
   })
 
-  useEffect(() => {
-    if (!isOpen || !value) return
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen)
+  const [prevValue, setPrevValue] = useState(value)
 
-    const parsed = new Date(`${value}T00:00:00`)
-    if (!Number.isNaN(parsed.getTime())) {
-      setCalendarMonth(parsed)
+  if (isOpen !== prevIsOpen || value !== prevValue) {
+    setPrevIsOpen(isOpen)
+    setPrevValue(value)
+    if (isOpen && value) {
+      const parsed = new Date(`${value}T00:00:00`)
+      if (!Number.isNaN(parsed.getTime())) {
+        setCalendarMonth(parsed)
+      }
     }
-  }, [isOpen, value])
+  }
 
   const selectedDateKey = useMemo(() => value || '', [value])
 
@@ -201,11 +206,16 @@ export function OrdersAllFilters({
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false)
   const [draftFilters, setDraftFilters] = useState<OrdersAllAdvancedFilters>(advancedFilters)
 
-  useEffect(() => {
+  const [prevIsAdvancedOpen, setPrevIsAdvancedOpen] = useState(isAdvancedOpen)
+  const [prevAdvancedFilters, setPrevAdvancedFilters] = useState(advancedFilters)
+
+  if (isAdvancedOpen !== prevIsAdvancedOpen || advancedFilters !== prevAdvancedFilters) {
+    setPrevIsAdvancedOpen(isAdvancedOpen)
+    setPrevAdvancedFilters(advancedFilters)
     if (isAdvancedOpen) {
       setDraftFilters(advancedFilters)
     }
-  }, [advancedFilters, isAdvancedOpen])
+  }
 
   const handleOpenAdvancedFilters = () => {
     setDraftFilters(advancedFilters)

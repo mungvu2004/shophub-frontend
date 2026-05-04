@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { toast } from '@/components/ui/toast'
 import { useSettingsProfile, useUpdateSettingsProfile } from '@/features/settings/hooks/useSettingsProfile'
@@ -20,27 +20,27 @@ export function useProfileSettingsController() {
   const [draft, setDraft] = useState<ProfileFormDraft>(emptyDraft)
   const [preferenceDraft, setPreferenceDraft] = useState<Record<string, boolean>>({})
 
-  // Đồng bộ dữ liệu từ API vào draft
-  useEffect(() => {
-    if (!data) {
-      return
+  const [prevData, setPrevData] = useState(data)
+
+  if (data !== prevData) {
+    setPrevData(data)
+    if (data) {
+      setDraft({
+        fullName: data.identity.fullName,
+        phone: data.identity.phone,
+        jobTitle: data.identity.jobTitle,
+        timezone: data.identity.timezone,
+        bio: data.identity.bio,
+      })
+
+      setPreferenceDraft(
+        data.preferences.reduce<Record<string, boolean>>((acc, item) => {
+          acc[item.id] = item.enabled
+          return acc
+        }, {}),
+      )
     }
-
-    setDraft({
-      fullName: data.identity.fullName,
-      phone: data.identity.phone,
-      jobTitle: data.identity.jobTitle,
-      timezone: data.identity.timezone,
-      bio: data.identity.bio,
-    })
-
-    setPreferenceDraft(
-      data.preferences.reduce<Record<string, boolean>>((acc, item) => {
-        acc[item.id] = item.enabled
-        return acc
-      }, {}),
-    )
-  }, [data])
+  }
 
   const model = useMemo(() => {
     if (!data) {

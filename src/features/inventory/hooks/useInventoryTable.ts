@@ -1,14 +1,15 @@
-import { useState, useMemo, useEffect } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useInventorySKUs } from './useInventoryData';
 import { useSKUExtendedDetails } from './useSKUExtendedDetails';
 import { mapStockLevelToTableRow } from '../logic/inventoryTableLogic';
-import { inventoryService } from '../services/inventoryService';
 import type { 
   InventorySortState, 
   InventoryTableRow, 
 } from '../logic/inventoryTable.types';
+import type { StockLevel } from '@/types/inventory.types'
 
 type UseInventoryTableProps = {
   filters?: {
@@ -17,9 +18,11 @@ type UseInventoryTableProps = {
     category?: string;
     platform?: string;
   };
+  onEditSKU?: (sku: StockLevel) => void;
+  skuActions?: any;
 };
 
-export function useInventoryTable({ filters }: UseInventoryTableProps) {
+export function useInventoryTable({ filters, onEditSKU, skuActions }: UseInventoryTableProps) {
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -37,12 +40,21 @@ export function useInventoryTable({ filters }: UseInventoryTableProps) {
   const [modalType, setModalType] = useState<'QR' | 'BATCH' | 'REORDER' | 'COST' | null>(null);
   const [activeActionMenuId, setActiveActionMenuId] = useState<string | null>(null);
 
+  // State quản lý xóa
+  const [itemToDelete, setItemToDelete] = useState<{ id: string, name: string } | null>(null);
+
   const extendedDetails = useSKUExtendedDetails(activeSKU?.sku || '');
 
-  // Reset trang khi bộ lọc thay đổi
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filters?.search, filters?.status, filters?.category, filters?.platform]);
+  const [prevFilters, setPrevFilters] = useState(filters)
+  if (
+    prevFilters?.search !== filters?.search ||
+    prevFilters?.status !== filters?.status ||
+    prevFilters?.category !== filters?.category ||
+    prevFilters?.platform !== filters?.platform
+  ) {
+    setPrevFilters(filters)
+    setCurrentPage(1)
+  }
 
   // Lấy dữ liệu từ API Hook
   const { data, isLoading } = useInventorySKUs({
@@ -79,30 +91,37 @@ export function useInventoryTable({ filters }: UseInventoryTableProps) {
       setPageSize(size);
       setCurrentPage(1);
     },
-    onEditRow: (_rowId: string, productId?: string) => {
+    onEditRow: (rowId: string, productId?: string) => {
+      if (onEditSKU) {
+        const item = data?.items?.find((i) => i.id === rowId);
+        if (item) {
+          onEditSKU(item);
+          return;
+        }
+      }
       if (!productId) return;
       navigate(`/products/${productId}/edit`, {
         state: { from: `${location.pathname}${location.search}` },
       });
     },
-    onDeleteRow: async (rowId: string) => {
-      try {
-        await inventoryService.deleteSKUs([rowId]);
-        setSelectedRows(prev => prev.filter(id => id !== rowId));
-        toast.success('Đã xóa SKU thành công.');
-        // Trigger refetch hoặc update local state nếu cần
-      } catch (error) {
-        toast.error('Có lỗi xảy ra khi xóa SKU.');
-      }
+    // Mở modal xác nhận xóa
+    onConfirmDeleteRow: (rowId: string, productName: string) => {
+      setItemToDelete({ id: rowId, name: productName });
+    },
+    onCancelDelete: () => {
+      setItemToDelete(null);
+    },
+    // Hành động xóa thực sự
+    onExecuteDelete: async () => {
+      if (!itemToDelete || !skuActions) return;
+      await skuActions.handleDelete([itemToDelete.id]);
+      setSelectedRows((prev) => prev.filter((id) => id !== itemToDelete.id));
+      setItemToDelete(null);
     },
     onDeleteRows: async (rowIds: string[]) => {
-      try {
-        await inventoryService.deleteSKUs(rowIds);
-        setSelectedRows((prev) => prev.filter((id) => !rowIds.includes(id)));
-        toast.success(`Đã xóa ${rowIds.length} SKU thành công.`);
-      } catch (error) {
-        toast.error('Có lỗi xảy ra khi xóa hàng loạt.');
-      }
+      if (!skuActions) return;
+      await skuActions.handleDelete(rowIds);
+      setSelectedRows((prev) => prev.filter((id) => !rowIds.includes(id)));
     },
     onBulkAdjust: () => {
       toast.info(`Bắt đầu điều chỉnh hàng loạt cho ${selectedRows.length} SKU.`);
@@ -151,6 +170,11 @@ export function useInventoryTable({ filters }: UseInventoryTableProps) {
       activeActionMenuId,
       extendedDetails,
       pageSizeOptions: [10, 20, 50, 100],
+      itemToDelete,
+      crudState: {
+        isProcessing: skuActions?.isProcessing || false,
+        actionType: skuActions?.actionType || null,
+      },
     },
     handlers: {
       ...handlers,

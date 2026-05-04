@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 interface BulkImportDialogProps {
   isOpen: boolean
   onClose: () => void
-  onImport: (data: any[]) => void
+  onImport: (data: unknown[]) => void
 }
 
 export function BulkImportDialog({ isOpen, onClose, onImport }: BulkImportDialogProps) {

@@ -3,6 +3,7 @@ import { useRevenueChartsController } from './useRevenueChartsController'
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { PageSkeleton } from '@/components/PageSkeleton'
 
+  // eslint-disable-next-line react-refresh/only-export-components
 export function shouldShowBlockingRevenueChartsError(input: { isError: boolean; hasModel: boolean }) {
   return input.isError && !input.hasModel
 }

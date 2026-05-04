@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 
 type ForecastParameterFormProps = {
   isRecalculating: boolean
-  onRecalculate: (params: any) => void
+  onRecalculate: (params: unknown) => void
 }
 
 const PRESETS = [

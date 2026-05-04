@@ -1,5 +1,4 @@
 import { apiClient } from '@/services/apiClient'
-import { buildOrdersPendingActionsResponse } from '@/mocks/data/ordersPendingActions'
 
 import type {
   OrdersPendingActionItem,
@@ -9,6 +8,7 @@ import type {
   OrdersPendingActionsSummary,
 } from '@/features/orders/logic/ordersPendingActions.types'
 import type { PlatformCode } from '@/types/platform.types'
+import type { Order, OrderStatus } from '@/types/order.types'
 
 type OrdersPendingActionsApiResponse = {
   items?: unknown
@@ -77,6 +77,21 @@ function isSla(value: unknown): value is OrdersPendingActionItem['slaLevel'] {
   return value === 'critical' || value === 'warning' || value === 'safe'
 }
 
+function isOrderStatus(value: unknown): value is OrderStatus {
+  return value === 'Pending'
+    || value === 'PendingPayment'
+    || value === 'Confirmed'
+    || value === 'Packed'
+    || value === 'ReadyToShip'
+    || value === 'Shipped'
+    || value === 'Delivered'
+    || value === 'FailedDelivery'
+    || value === 'Cancelled'
+    || value === 'Returned'
+    || value === 'Refunded'
+    || value === 'Lost'
+}
+
 function toItems(value: unknown): OrdersPendingActionItem[] {
   if (!Array.isArray(value)) return []
 
@@ -94,7 +109,7 @@ function toItems(value: unknown): OrdersPendingActionItem[] {
       thumbnailUrl?: string
       customerNote?: string
       amount: number
-      status: string
+      status: OrderStatus
       printStatus: OrdersPendingActionItem['printStatus']
       waitingMinutes: number
       slaLevel: OrdersPendingActionItem['slaLevel']
@@ -109,7 +124,7 @@ function toItems(value: unknown): OrdersPendingActionItem[] {
         && typeof item.productName === 'string'
         && typeof item.amount === 'number'
         && Number.isFinite(item.amount)
-        && typeof item.status === 'string'
+        && isOrderStatus(item.status)
         && (item.printStatus === 'printed' || item.printStatus === 'not_printed')
         && typeof item.waitingMinutes === 'number'
         && Number.isFinite(item.waitingMinutes)
@@ -140,19 +155,11 @@ function toItems(value: unknown): OrdersPendingActionItem[] {
 }
 
 class OrdersPendingActionsService {
-  async getPendingActions(params: GetOrdersPendingActionsParams): Promise<OrdersPendingActionsResponse> {
-    if (import.meta.env.DEV) {
-      return buildOrdersPendingActionsResponse({
-        search: params.search,
-        platform: params.platform,
-        sla: params.sla,
-        dateFrom: params.dateFrom,
-        dateTo: params.dateTo,
-        page: params.page,
-        pageSize: params.pageSize,
-      })
-    }
+  private normalizeOrderId(id: string) {
+    return id.startsWith('pending-') ? id.replace('pending-', '') : id
+  }
 
+  async getPendingActions(params: GetOrdersPendingActionsParams): Promise<OrdersPendingActionsResponse> {
     const response = await apiClient.get<OrdersPendingActionsApiResponse>('/orders/pending-actions', {
       params: {
         search: params.search,
@@ -174,6 +181,39 @@ class OrdersPendingActionsService {
       nextCursor: typeof response.data?.nextCursor === 'string' ? response.data.nextCursor : undefined,
       summary: toSummary(response.data?.summary),
     }
+  }
+
+  async bulkApprove(orderIds: string[]): Promise<void> {
+    await apiClient.post('/orders/pending-actions/bulk-approve', { orderIds })
+  }
+
+  async bulkPrint(orderIds: string[]): Promise<void> {
+    await apiClient.post('/orders/pending-actions/bulk-print', { orderIds })
+  }
+
+  async bulkCancel(orderIds: string[]): Promise<void> {
+    await apiClient.post('/orders/pending-actions/bulk-cancel', { orderIds })
+  }
+
+  async createPendingAction(data: Partial<Order>): Promise<Order> {
+    const response = await apiClient.post<Order>('/orders', data)
+    return response.data
+  }
+
+  async updatePendingAction(id: string, data: Partial<Order>): Promise<Order> {
+    const normalizedId = this.normalizeOrderId(id)
+    const response = await apiClient.put<Order>(`/orders/${normalizedId}`, data)
+    return response.data
+  }
+
+  async deletePendingAction(id: string): Promise<void> {
+    const normalizedId = this.normalizeOrderId(id)
+    await apiClient.delete(`/orders/${normalizedId}`)
+  }
+
+  async updatePendingActionStatus(id: string, status: OrderStatus): Promise<void> {
+    const normalizedId = this.normalizeOrderId(id)
+    await apiClient.patch(`/orders/${normalizedId}/status`, { status })
   }
 }
 

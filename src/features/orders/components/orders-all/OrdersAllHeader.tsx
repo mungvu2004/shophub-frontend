@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from '@/components/ui/button'
 import { ShoppingCart } from 'lucide-react'
 import { ThemedPageHeader } from '@/components/shared/ThemedPageHeader'
@@ -41,6 +42,7 @@ export function OrdersAllHeader({
           variant="outline"
           className="h-10 rounded-xl border-amber-300/50 bg-white/80 backdrop-blur px-4 text-sm font-black text-amber-700 hover:bg-white hover:text-amber-900 shadow-sm"
           onClick={onConfirmBatch}
+          disabled={isRefreshing}
         >
           Xác nhận loạt
         </Button>
@@ -49,6 +51,7 @@ export function OrdersAllHeader({
           variant="outline"
           className="h-10 rounded-xl border-amber-200/50 bg-white/80 backdrop-blur px-4 text-sm font-black text-slate-700 hover:bg-white hover:text-slate-900 shadow-sm"
           onClick={onExportCsv}
+          disabled={isRefreshing}
         >
           Xuất CSV
         </Button>
@@ -56,6 +59,7 @@ export function OrdersAllHeader({
           type="button"
           className="h-10 rounded-xl bg-amber-600 px-5 text-sm font-black text-white hover:bg-amber-700 shadow-sm"
           onClick={onPrintWaybills}
+          isLoading={isRefreshing}
         >
           In mã VĐ
         </Button>

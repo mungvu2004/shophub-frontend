@@ -41,6 +41,7 @@ export function useStockAdjustment(initialAdjustment: StockAdjustment) {
       await new Promise(resolve => setTimeout(resolve, 1500))
       setAdjustment(prev => ({ ...prev, status: prev.requiresApproval ? 'PENDING_APPROVAL' : 'COMPLETED' }))
       toast.success(adjustment.requiresApproval ? 'Đã gửi yêu cầu phê duyệt.' : 'Điều chỉnh kho thành công.')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error('Có lỗi xảy ra khi lưu điều chỉnh.')
     } finally {

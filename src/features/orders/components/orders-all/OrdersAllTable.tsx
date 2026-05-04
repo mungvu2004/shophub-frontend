@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { CheckCircle2, Copy, Download, Eye, MoreHorizontal, Printer } from 'lucide-react'
+import { CheckCircle2, Copy, Download, Eye, MoreHorizontal, Printer, Trash2, XCircle, Truck, User } from 'lucide-react'
 
 import { DataTable, type DataTableColumn, type DataTableSortState } from '@/components/shared/DataTable'
 import { Pagination } from '@/components/ui/pagination'
@@ -45,6 +45,10 @@ type OrdersAllTableProps = {
   onToggleAll: () => void
   onToggleOne: (id: string) => void
   onOpenDetail?: (row: OrdersAllTableRowModel) => void
+  onDeleteVisible?: (row: OrdersAllTableRowModel) => void
+  onCancelVisible?: (row: OrdersAllTableRowModel) => void
+  onShipVisible?: (row: OrdersAllTableRowModel) => void
+  onConfirmOneVisible?: (row: OrdersAllTableRowModel) => void
   onExportData: () => void
   sortState: DataTableSortState
   onSortChange: (sort: DataTableSortState) => void
@@ -77,6 +81,10 @@ export function OrdersAllTable({
   onToggleAll,
   onToggleOne,
   onOpenDetail,
+  onDeleteVisible,
+  onCancelVisible,
+  onShipVisible,
+  onConfirmOneVisible,
   onExportData,
   sortState,
   onSortChange,
@@ -284,6 +292,9 @@ export function OrdersAllTable({
         widthClassName: 'w-[70px]',
         cell: (row) => {
           const isSelected = selectedIds.includes(row.id)
+          const isPending = row.status === 'Pending' || row.status === 'PendingPayment'
+          const isConfirmed = row.status === 'Confirmed' || row.status === 'Packed' || row.status === 'ReadyToShip'
+          const isCancellable = isPending || isConfirmed
 
           return (
             <DropdownMenu>
@@ -294,13 +305,21 @@ export function OrdersAllTable({
               >
                 <MoreHorizontal className="size-4" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48" onClick={stopRowClickPropagation}>
+              <DropdownMenuContent align="end" className="w-56" onClick={stopRowClickPropagation}>
                 <DropdownMenuItem className="cursor-pointer" onClick={(event) => {
                   stopRowClickPropagation(event)
                   openOrderDetail(row)
                 }}>
                   <Eye className="size-4" />
-                  Xem chi tiết
+                  Xem chi tiết đơn
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer" onClick={(event) => {
+                  stopRowClickPropagation(event)
+                  // Logic dẫn tới CRM
+                  navigate(`/crm?search=${encodeURIComponent(row.buyerName)}`)
+                }}>
+                  <User className="size-4" />
+                  Xem hồ sơ khách hàng
                 </DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer" onClick={(event) => {
                   stopRowClickPropagation(event)
@@ -309,7 +328,49 @@ export function OrdersAllTable({
                   <Copy className="size-4" />
                   Sao chép mã đơn
                 </DropdownMenuItem>
+                
                 <DropdownMenuSeparator />
+                
+                {isPending && (
+                  <DropdownMenuItem className="cursor-pointer text-indigo-600 focus:bg-indigo-50" onClick={(event) => {
+                    stopRowClickPropagation(event)
+                    onConfirmOneVisible?.(row)
+                  }}>
+                    <CheckCircle2 className="size-4" />
+                    Xác nhận đơn hàng
+                  </DropdownMenuItem>
+                )}
+
+                {isConfirmed && (
+                  <DropdownMenuItem className="cursor-pointer text-blue-600 focus:bg-blue-50" onClick={(event) => {
+                    stopRowClickPropagation(event)
+                    onShipVisible?.(row)
+                  }}>
+                    <Truck className="size-4" />
+                    Giao đơn vị vận chuyển
+                  </DropdownMenuItem>
+                )}
+
+                {isCancellable && (
+                  <DropdownMenuItem className="cursor-pointer text-amber-600 focus:bg-amber-50" onClick={(event) => {
+                    stopRowClickPropagation(event)
+                    onCancelVisible?.(row)
+                  }}>
+                    <XCircle className="size-4" />
+                    Hủy đơn hàng
+                  </DropdownMenuItem>
+                )}
+
+                <DropdownMenuItem className="cursor-pointer text-rose-600 focus:bg-rose-50 focus:text-rose-700" onClick={(event) => {
+                  stopRowClickPropagation(event)
+                  onDeleteVisible?.(row)
+                }}>
+                  <Trash2 className="size-4" />
+                  Xóa đơn này
+                </DropdownMenuItem>
+                
+                <DropdownMenuSeparator />
+                
                 <DropdownMenuItem className="cursor-pointer" onClick={(event) => {
                   stopRowClickPropagation(event)
                   onToggleOne(row.id)
@@ -323,7 +384,7 @@ export function OrdersAllTable({
         },
       },
     ],
-    [isAllSelected, onToggleAll, selectedIds, onToggleOne, isPrinted, renderStatus],
+    [isAllSelected, onToggleAll, selectedIds, onToggleOne, isPrinted, renderStatus, onDeleteVisible, onCancelVisible, onShipVisible, onConfirmOneVisible, navigate, openOrderDetail, handleCopyOrderCode, togglePrintStatus],
   )
 
   return (

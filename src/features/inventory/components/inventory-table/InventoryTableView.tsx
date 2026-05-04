@@ -5,6 +5,9 @@ import { SKUReorderPointConfig } from '@/features/inventory/components/inventory
 import { SKUCostHistoryChart } from '@/features/inventory/components/inventory-sku-stock-page/SKUCostHistoryChart'
 import { useInventoryTable } from '@/features/inventory/hooks/useInventoryTable'
 import type { InventoryTableViewModel } from '@/features/inventory/logic/inventoryTable.types'
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
+import { MESSAGES } from '@/constants/messages'
+import type { StockLevel } from '@/types/inventory.types'
 
 type InventoryTableViewProps = {
   filters?: {
@@ -13,10 +16,12 @@ type InventoryTableViewProps = {
     category?: string
     platform?: string
   }
+  onEditSKU?: (sku: StockLevel) => void
+  skuActions?: unknown
 }
 
-export function InventoryTableView({ filters }: InventoryTableViewProps) {
-  const { state, handlers } = useInventoryTable({ filters });
+export function InventoryTableView({ filters, onEditSKU, skuActions }: InventoryTableViewProps) {
+  const { state, handlers } = useInventoryTable({ filters, onEditSKU, skuActions });
 
   const tableModel: InventoryTableViewModel = {
     ...state,
@@ -61,6 +66,7 @@ export function InventoryTableView({ filters }: InventoryTableViewProps) {
             productName={state.activeSKU.name} 
             initialConfig={state.extendedDetails.reorderConfig}
             onSave={state.extendedDetails.updateReorderConfig}
+            isProcessing={state.extendedDetails.isLoading}
           />
           <SKUCostHistoryChart 
             isOpen={state.modalType === 'COST'} 
@@ -72,6 +78,21 @@ export function InventoryTableView({ filters }: InventoryTableViewProps) {
           />
         </>
       )}
+
+      <ConfirmDialog
+        open={!!state.itemToDelete}
+        onOpenChange={(open) => {
+          if (!open) handlers.onCancelDelete()
+        }}
+        onConfirm={handlers.onExecuteDelete}
+        title={MESSAGES.CONFIRM.DELETE_TITLE}
+        description={
+          <>
+            Bạn có chắc chắn muốn xóa <strong>{state.itemToDelete?.name}</strong>? Hành động này không thể hoàn tác.
+          </>
+        }
+        isConfirming={state.crudState.isProcessing && state.crudState.actionType === 'deleting'}
+      />
     </>
   );
 }

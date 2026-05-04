@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback, memo } from 'react'
+import { useMemo, useState, useCallback, memo } from 'react'
 import type { Product } from '@/types/product.types'
 import { DataTable, type DataTableColumn } from '@/components/shared/DataTable'
 import { TableCell, TableRow } from '@/components/ui/table'
@@ -80,7 +80,9 @@ export function ProductsTable({
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
 
-  useEffect(() => {
+  const [prevProducts, setPrevProducts] = useState(products)
+  if (products !== prevProducts) {
+    setPrevProducts(products)
     const validIds = new Set(products.map((p) => p.id))
     setSelectedRows((prev) => {
       const filtered = new Set([...prev].filter((id) => validIds.has(id)))
@@ -89,7 +91,7 @@ export function ProductsTable({
       }
       return prev
     })
-  }, [products])
+  }
 
   const toggleRow = useCallback((productId: string) => {
     setSelectedRows((prev) => {

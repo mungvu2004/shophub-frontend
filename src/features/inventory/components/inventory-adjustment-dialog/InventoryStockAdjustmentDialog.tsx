@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import { X } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -114,31 +114,29 @@ export function InventoryStockAdjustmentDialog({
     return Array.from(uniqueWarehouses.values())
   }, [inventoryItems, warehouses])
 
-  useEffect(() => {
-    if (!open) {
-      return
+  const [prevDefaultWarehouseId, setPrevDefaultWarehouseId] = useState(defaultWarehouseId)
+  const [prevOpen, setPrevOpen] = useState(open)
+
+  if (defaultWarehouseId !== prevDefaultWarehouseId || open !== prevOpen) {
+    setPrevDefaultWarehouseId(defaultWarehouseId)
+    setPrevOpen(open)
+    if (open) {
+      setForm(getInitialState(defaultWarehouseId))
+      setErrors({})
     }
+  }
 
-    setForm(getInitialState(defaultWarehouseId))
-    setErrors({})
-  }, [defaultWarehouseId, open])
+  const [prevSelectedItem, setPrevSelectedItem] = useState(selectedItem)
 
-  useEffect(() => {
-    if (!selectedItem) {
-      return
-    }
-
-    setForm((current) => {
-      if (current.warehouseId === selectedItem.warehouseId) {
-        return current
-      }
-
-      return {
+  if (selectedItem !== prevSelectedItem) {
+    setPrevSelectedItem(selectedItem)
+    if (selectedItem && form.warehouseId !== selectedItem.warehouseId) {
+      setForm((current) => ({
         ...current,
         warehouseId: selectedItem.warehouseId,
-      }
-    })
-  }, [selectedItem])
+      }))
+    }
+  }
 
   const selectedWarehouse = warehouseOptions.find((warehouse) => warehouse.id === form.warehouseId)
 

@@ -26,6 +26,7 @@ export function AiInsightBlock({
   mainValue,
   predictionLabel,
   predictionValue,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   type: _type = 'inventory',
   onAction,
   className

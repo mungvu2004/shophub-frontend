@@ -2,12 +2,13 @@ import type { OrdersPendingActionsTableRowModel } from '@/features/orders/logic/
 
 export type PendingActionsTableSortKey = 'amount' | 'waiting' | 'updated'
 export type PendingActionsTableSortDirection = 'asc' | 'desc'
-export type PendingActionsTableColumnKey = 'platform' | 'product' | 'amount' | 'waiting' | 'printStatus' | 'action' | 'updated'
+export type PendingActionsTableColumnKey = 'platform' | 'product' | 'amount' | 'status' | 'waiting' | 'printStatus' | 'action' | 'updated'
 
 export const PENDING_ACTIONS_INITIAL_VISIBLE_COLUMNS: Record<PendingActionsTableColumnKey, boolean> = {
   platform: true,
   product: true,
   amount: true,
+  status: true,
   waiting: true,
   printStatus: true,
   action: true,

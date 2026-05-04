@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,7 @@ import { PLATFORM_CONFIG } from '../../constants/platformConfig'
 interface ProductFormDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSave?: (productData: any) => void
   product?: Product | null
 }
@@ -34,7 +35,12 @@ export function ProductFormDrawer({
 
   const isEditing = !!product
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(open)
+  const [prevProduct, setPrevProduct] = useState(product)
+
+  if (open !== prevOpen || product !== prevProduct) {
+    setPrevOpen(open)
+    setPrevProduct(product)
     if (open) {
       if (product) {
         setName(product.name)
@@ -60,7 +66,7 @@ export function ProductFormDrawer({
       }
       setErrors({})
     }
-  }, [open, product])
+  }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]

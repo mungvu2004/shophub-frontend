@@ -73,6 +73,7 @@ export function OrdersReturnsDetailDialog({ isOpen, onOpenChange, order }: Order
       
       toast.success(`${type === 'approve' ? 'Phê duyệt' : 'Từ chối'} đơn hàng ${order.orderCode} thành công`, { id: loadingToast })
       onOpenChange(false)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error('Có lỗi xảy ra khi xử lý yêu cầu', { id: loadingToast })
     } finally {
@@ -91,6 +92,7 @@ export function OrdersReturnsDetailDialog({ isOpen, onOpenChange, order }: Order
       await ordersReturnsService.sendResponse(order.id, message)
       toast.success('Đã gửi phản hồi cho khách hàng thành công', { id: loadingToast })
       onOpenChange(false)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error('Không thể gửi phản hồi lúc này', { id: loadingToast })
     } finally {
@@ -105,6 +107,7 @@ export function OrdersReturnsDetailDialog({ isOpen, onOpenChange, order }: Order
       try {
         await ordersReturnsService.uploadEvidence(order.id, Array.from(files))
         toast.success(`Đã tải lên minh chứng thành công`, { id: loadingToast })
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         toast.error('Lỗi khi tải lên tệp tin', { id: loadingToast })
       }

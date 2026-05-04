@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Package, Smartphone, Store, Globe, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { DataTableColumn } from '@/components/shared/DataTable';

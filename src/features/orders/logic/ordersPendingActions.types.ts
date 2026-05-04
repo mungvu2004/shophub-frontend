@@ -1,4 +1,5 @@
 import type { PlatformCode } from '@/types/platform.types'
+import type { OrderStatus } from '@/types/order.types'
 
 export type OrdersPendingActionsPlatformFilter = 'all' | PlatformCode
 export type OrdersPendingActionsSlaFilter = 'all' | 'critical' | 'warning' | 'safe'
@@ -17,7 +18,7 @@ export type OrdersPendingActionItem = {
   thumbnailUrl: string
   customerNote?: string
   amount: number
-  status: string
+  status: OrderStatus
   printStatus: 'printed' | 'not_printed'
   waitingMinutes: number
   slaLevel: OrdersPendingActionSlaLevel
@@ -77,6 +78,7 @@ export type OrdersPendingActionsCardModel = {
 export type OrdersPendingActionsTableRowModel = {
   id: string
   orderCode: string
+  platform: PlatformCode
   platformLabel: string
   platformMarkText: string
   platformMarkClass: string
@@ -90,7 +92,9 @@ export type OrdersPendingActionsTableRowModel = {
   productThumbnailUrl: string
   amountLabel: string
   amountValue: number
+  status: OrderStatus
   statusLabel: string
+  statusBadgeClassName: string
   printStatus: 'printed' | 'not_printed'
   printStatusLabel: string
   waitingLabel: string

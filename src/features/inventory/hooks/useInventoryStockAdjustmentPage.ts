@@ -81,7 +81,7 @@ export function useInventoryStockAdjustmentPage() {
   const { data: warehousesData } = useWarehouses()
   const adjustmentMutation = useInventoryStockAdjustment()
 
-  const inventoryItems = stockSource?.items ?? []
+  const inventoryItems = useMemo(() => stockSource?.items ?? [], [stockSource?.items])
 
   const warehouseOptions = useMemo<Warehouse[]>(() => {
     if ((warehousesData ?? []).length > 0) {

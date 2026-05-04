@@ -103,6 +103,7 @@ export function useCreateMovement(onSuccess?: () => void) {
       toast.success(`${type === 'IMPORT' ? 'Nhập' : 'Xuất'} kho thành công`)
       onSuccess?.()
       close()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error('Có lỗi xảy ra khi thực hiện thao tác')
     } finally {

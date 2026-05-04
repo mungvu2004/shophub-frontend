@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import { OrdersPendingActionsFilters } from '@/features/orders/components/orders-pending-actions/OrdersPendingActionsFilters'
 import { OrdersPendingActionsHeader } from '@/features/orders/components/orders-pending-actions/OrdersPendingActionsHeader'
 import { OrdersPendingActionsSummaryCards } from '@/features/orders/components/orders-pending-actions/OrdersPendingActionsSummaryCards'
@@ -10,10 +11,13 @@ import type {
   OrdersPendingActionsTableRowModel,
   OrdersPendingActionsViewModel,
 } from '@/features/orders/logic/ordersPendingActions.types'
+import type { ActionType } from '@/features/shared/hooks/useCRUDActions'
 
 type OrdersPendingActionsViewProps = {
   model: OrdersPendingActionsViewModel
   isRefreshing: boolean
+  isProcessing: boolean
+  actionType: ActionType
   onSearchChange: (value: string) => void
   onPlatformChange: (value: OrdersPendingActionsPlatformFilter) => void
   onSlaChange: (value: OrdersPendingActionsSlaFilter) => void
@@ -30,6 +34,9 @@ type OrdersPendingActionsViewProps = {
   onToggleAll: () => void
   onToggleOne: (id: string) => void
   onOpenDetail: (row: OrdersPendingActionsTableRowModel) => void
+  onCreateOrder: () => void
+  onEditOrder: (row: OrdersPendingActionsTableRowModel) => void
+  onDeleteOrder: (row: OrdersPendingActionsTableRowModel) => void
   onClearSelection: () => void
   onExportVisibleCsv: () => void
   onApproveSelected: () => void
@@ -117,6 +124,8 @@ function PendingActionsPlatformChart({ items }: { items: ChartItem[] }) {
 export function OrdersPendingActionsView({
   model,
   isRefreshing,
+  isProcessing,
+  actionType,
   onSearchChange,
   onPlatformChange,
   onSlaChange,
@@ -133,6 +142,9 @@ export function OrdersPendingActionsView({
   onToggleAll,
   onToggleOne,
   onOpenDetail,
+  onCreateOrder,
+  onEditOrder,
+  onDeleteOrder,
   onClearSelection,
   onExportVisibleCsv,
   onApproveSelected,
@@ -175,10 +187,47 @@ export function OrdersPendingActionsView({
         <section className="pointer-events-none fixed inset-x-0 bottom-4 z-40 flex justify-center px-4">
           <div className="pointer-events-auto flex w-full max-w-5xl flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white/95 px-3 py-2 shadow-[0_20px_45px_-24px_rgba(15,23,42,0.55)] backdrop-blur">
             <p className="mr-1 text-[13px] font-semibold text-slate-700">Đã chọn {selectedCount} đơn</p>
-            <button type="button" className="h-8 rounded-lg bg-indigo-600 px-3 text-[12px] font-semibold text-white" onClick={onApproveSelected}>Duyệt hàng loạt</button>
-            <button type="button" className="h-8 rounded-lg border border-indigo-200 bg-indigo-50 px-3 text-[12px] font-semibold text-indigo-700" onClick={onPrintSelected}>In vận đơn</button>
-            <button type="button" className="h-8 rounded-lg border border-rose-200 bg-rose-50 px-3 text-[12px] font-semibold text-rose-700" onClick={onCancelSelected}>Hủy đơn</button>
-            <button type="button" className="h-8 px-2 text-[12px] font-semibold text-slate-500" onClick={onClearSelection}>Đóng</button>
+            <Button
+              variant="default"
+              size="sm"
+              isLoading={isProcessing && actionType === 'status-changing'}
+              loadingText="Đang duyệt..."
+              disabled={isProcessing && actionType !== 'status-changing'}
+              onClick={onApproveSelected}
+            >
+              Duyệt hàng loạt
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              isLoading={isProcessing && actionType === 'updating'}
+              loadingText="Đang in..."
+              disabled={isProcessing && actionType !== 'updating'}
+              className="border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
+              onClick={onPrintSelected}
+            >
+              In vận đơn
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              isLoading={isProcessing && actionType === 'deleting'}
+              loadingText="Đang hủy..."
+              disabled={isProcessing && actionType !== 'deleting'}
+              className="border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800"
+              onClick={onCancelSelected}
+            >
+              Hủy đơn
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-slate-500"
+              onClick={onClearSelection}
+              disabled={isProcessing}
+            >
+              Đóng
+            </Button>
           </div>
         </section>
       ) : null}
@@ -194,20 +243,25 @@ export function OrdersPendingActionsView({
           />
         </aside>
 
-        <OrdersPendingActionsTable
-          rows={model.rows}
-          totalCount={model.totalCount}
-          page={model.page}
-          pageSize={model.pageSize}
-          onExportData={onExportVisibleCsv}
-          selectedIds={selectedIds}
-          isAllSelected={isAllSelected}
-          onToggleAll={onToggleAll}
-          onToggleOne={onToggleOne}
-          onOpenDetail={onOpenDetail}
-          onPageChange={onPageChange}
-          onPageSizeChange={onPageSizeChange}
-        />
+          <OrdersPendingActionsTable
+            rows={model.rows}
+            totalCount={model.totalCount}
+            page={model.page}
+            pageSize={model.pageSize}
+            onExportData={onExportVisibleCsv}
+            selectedIds={selectedIds}
+            isAllSelected={isAllSelected}
+            onToggleAll={onToggleAll}
+            onToggleOne={onToggleOne}
+            onOpenDetail={onOpenDetail}
+            isProcessing={isProcessing}
+            actionType={actionType}
+            onCreateOrder={onCreateOrder}
+            onEditOrder={onEditOrder}
+            onDeleteOrder={onDeleteOrder}
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
+          />
       </div>
     </div>
   )

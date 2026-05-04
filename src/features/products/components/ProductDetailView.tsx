@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { ArrowLeft, PencilLine, Save, Wallet, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,21 +34,21 @@ export function ProductDetailView({ model }: ProductDetailViewProps) {
   const [editGalleryImageUrlsText, setEditGalleryImageUrlsText] = useState('')
   const [editStatus, setEditStatus] = useState<'Active' | 'Inactive' | 'Deleted'>('Active')
 
-  useEffect(() => {
-    if (!model.product) {
-      return
+  const [prevProduct, setPrevProduct] = useState(model.product)
+  if (model.product !== prevProduct) {
+    setPrevProduct(model.product)
+    if (model.product) {
+      setEditName(model.product.name)
+      setEditBrand(model.product.brand ?? '')
+      setEditShortDescription(model.product.shortDescription ?? '')
+      setEditDescription(model.product.description ?? '')
+      setEditModel(model.product.model ?? '')
+      setEditWarrantyInfo(model.product.warrantyInfo ?? '')
+      setEditMainImageUrl(model.product.variants[0]?.mainImageUrl ?? '')
+      setEditGalleryImageUrlsText((model.product.variants[0]?.imagesJson ?? []).join('\n'))
+      setEditStatus(model.product.status)
     }
-
-    setEditName(model.product.name)
-    setEditBrand(model.product.brand ?? '')
-    setEditShortDescription(model.product.shortDescription ?? '')
-    setEditDescription(model.product.description ?? '')
-    setEditModel(model.product.model ?? '')
-    setEditWarrantyInfo(model.product.warrantyInfo ?? '')
-    setEditMainImageUrl(model.product.variants[0]?.mainImageUrl ?? '')
-    setEditGalleryImageUrlsText((model.product.variants[0]?.imagesJson ?? []).join('\n'))
-    setEditStatus(model.product.status)
-  }, [model.product])
+  }
 
   if (model.isLoading) {
     return (

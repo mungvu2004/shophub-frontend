@@ -99,8 +99,16 @@ class InventoryService {
   /**
    * Create a new SKU
    */
-  async createSKU(data: any): Promise<StockLevel> {
+  async createSKU(data: unknown): Promise<StockLevel> {
     const response = await apiClient.post('/inventory', data);
+    return response.data;
+  }
+
+  /**
+   * Update a SKU
+   */
+  async updateSKU(id: string, data: unknown): Promise<StockLevel> {
+    const response = await apiClient.put(`/inventory/${id}`, data);
     return response.data;
   }
 

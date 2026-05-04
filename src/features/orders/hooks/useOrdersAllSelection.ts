@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 export function useOrdersAllSelection(visibleRowIds: string[]) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
 
-  useEffect(() => {
+  const [prevVisibleRowIds, setPrevVisibleRowIds] = useState(visibleRowIds)
+  if (visibleRowIds !== prevVisibleRowIds) {
+    setPrevVisibleRowIds(visibleRowIds)
     setSelectedIds((current) => current.filter((id) => visibleRowIds.includes(id)))
-  }, [visibleRowIds])
+  }
 
   const selectedCount = selectedIds.length
 

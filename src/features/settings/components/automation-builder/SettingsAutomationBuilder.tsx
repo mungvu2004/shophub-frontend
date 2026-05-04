@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
@@ -36,21 +36,24 @@ export function SettingsAutomationBuilder() {
     Record<string, Record<string, AutomationBuilderTriggerParameterValue>>
   >({})
 
-  useEffect(() => {
-    if (!data?.defaultTriggerId) return
+  const [prevData, setPrevData] = useState(data)
 
-    setTriggerParameterValuesByTriggerId((current) => {
-      if (Object.keys(current).length > 0) {
-        return current
-      }
+  if (data !== prevData) {
+    setPrevData(data)
+    if (data?.defaultTriggerId) {
+      setTriggerParameterValuesByTriggerId((current) => {
+        if (Object.keys(current).length > 0) {
+          return current
+        }
 
-      return buildTriggerParameterDefaults(data)
-    })
+        return buildTriggerParameterDefaults(data)
+      })
 
-    setSelectedTriggerId((current) => current ?? data.defaultTriggerId)
-    setSelectedConditionId((current) => current ?? data.defaultConditionId)
-    setSelectedActionId((current) => current ?? data.defaultActionId)
-  }, [data])
+      setSelectedTriggerId((current) => current ?? data.defaultTriggerId)
+      setSelectedConditionId((current) => current ?? data.defaultConditionId)
+      setSelectedActionId((current) => current ?? data.defaultActionId)
+    }
+  }
 
   const model = useMemo(() => {
     if (!data) return null

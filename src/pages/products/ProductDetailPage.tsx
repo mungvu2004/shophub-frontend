@@ -1,7 +1,7 @@
-import { ProductDetailView, buildProductDetailViewModel } from '@/features/products'
+import { ProductDetailView, useProductDetailViewModel } from '@/features/products'
 
 export function ProductDetailPage() {
-  const model = buildProductDetailViewModel()
+  const model = useProductDetailViewModel()
 
   return <ProductDetailView model={model} />
 }

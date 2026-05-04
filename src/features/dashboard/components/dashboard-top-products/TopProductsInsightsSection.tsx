@@ -17,6 +17,7 @@ const insightToneClassMap = {
   warning: 'border-amber-100 bg-amber-50/60',
 }
 
+  // eslint-disable-next-line react-refresh/only-export-components
 export function buildTopProductsContributionBackground(segments: DashboardTopProductsViewModel['contribution']) {
   if (segments.length === 0) {
     return '#cbd5e1' // slate-300

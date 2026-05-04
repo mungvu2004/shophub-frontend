@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useMemo, useState } from 'react'
+import { useDeferredValue, useMemo, useState } from 'react'
 import { ArrowRight } from 'lucide-react'
 
 import { CRMCustomerProfilesHeader } from '@/features/crm/components/customer-profiles/CRMCustomerProfilesHeader'
@@ -26,13 +26,9 @@ export function CRMCustomerProfilesScreen() {
     customerId: selectedCustomerId,
   })
 
-  useEffect(() => {
-    if (!query.data?.selectedCustomerId) return
-
-    if (query.data.selectedCustomerId !== selectedCustomerId) {
-      setSelectedCustomerId(query.data.selectedCustomerId)
-    }
-  }, [query.data?.selectedCustomerId, selectedCustomerId])
+  if (query.data?.selectedCustomerId && query.data.selectedCustomerId !== selectedCustomerId) {
+    setSelectedCustomerId(query.data.selectedCustomerId)
+  }
 
   const model = useMemo(() => {
     if (!query.data) return null

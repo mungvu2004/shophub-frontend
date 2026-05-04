@@ -15,7 +15,7 @@ type InventoryActionButtonsProps = {
   onOpenCostHistory?: (sku: string, name: string) => void;
   onEditRow?: (rowId: string, productId?: string) => void;
   onOpenProductDetail?: (rowId: string, productId?: string) => void;
-  onDeleteRow?: (rowId: string) => void;
+  onConfirmDeleteRow?: (rowId: string, productName: string) => void;
 };
 
 export function InventoryActionButtons({
@@ -29,7 +29,7 @@ export function InventoryActionButtons({
   onOpenCostHistory,
   onEditRow,
   onOpenProductDetail,
-  onDeleteRow,
+  onConfirmDeleteRow,
 }: InventoryActionButtonsProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -82,9 +82,7 @@ export function InventoryActionButtons({
       title: 'Xóa SKU',
       label: `Xóa SKU ${row.sku} khỏi hệ thống`,
       onClick: () => {
-        if (confirm(`Bạn có chắc muốn xóa SKU ${row.sku}?`)) {
-          onDeleteRow?.(row.id);
-        }
+        onConfirmDeleteRow?.(row.id, row.productName || row.sku);
       } 
     },
   ];

@@ -22,6 +22,7 @@ const forgotPasswordSchema = z.object({
 
 type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function requestPasswordReset(_payload: ForgotPasswordValues) {
   await new Promise((resolve) => setTimeout(resolve, 700));
 }

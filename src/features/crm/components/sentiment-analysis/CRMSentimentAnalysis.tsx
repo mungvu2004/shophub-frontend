@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, startTransition } from 'react'
+import { useCallback, useMemo, useState, startTransition } from 'react'
 
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { buildCRMSentimentAnalysisViewModel } from '@/features/crm/logic/crmSentimentAnalysis.logic'
@@ -58,25 +58,25 @@ export function CRMSentimentAnalysis() {
     return model.reviews.items.find((item) => item.id === activeReplyReviewId) ?? null
   }, [activeReplyReviewId, model])
 
-  // Sync selected review when model or filters change
-  useEffect(() => {
+  const [prevModel, setPrevModel] = useState(model)
+  if (model !== prevModel) {
+    setPrevModel(model)
     if (!model?.reviews.items.length) {
       if (selectedReviewId !== null) setSelectedReviewId(null)
       if (activeReplyReviewId !== null) setActiveReplyReviewId(null)
-      return
-    }
+    } else {
+      const firstId = model.reviews.items[0].id
+      const currentStillExists = model.reviews.items.some((item) => item.id === selectedReviewId)
 
-    const firstId = model.reviews.items[0].id
-    const currentStillExists = model.reviews.items.some((item) => item.id === selectedReviewId)
+      if (!selectedReviewId || !currentStillExists) {
+        setSelectedReviewId(firstId)
+      }
 
-    if (!selectedReviewId || !currentStillExists) {
-      setSelectedReviewId(firstId)
+      if (activeReplyReviewId && !model.reviews.items.some((item) => item.id === activeReplyReviewId)) {
+        setActiveReplyReviewId(null)
+      }
     }
-
-    if (activeReplyReviewId && !model.reviews.items.some((item) => item.id === activeReplyReviewId)) {
-      setActiveReplyReviewId(null)
-    }
-  }, [model, selectedReviewId, activeReplyReviewId])
+  }
 
   const handleReplySubmit = useCallback(
     (content: string) => {

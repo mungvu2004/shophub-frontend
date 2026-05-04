@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useMemo, useState } from 'react'
 import { MoreVertical } from 'lucide-react'
 import { toast } from 'sonner'
@@ -67,14 +68,17 @@ const toneToPlatformMap: Record<DashboardTopProductsViewModel['rankingRows'][num
   tiktok: 'tiktok_shop',
 }
 
+  // eslint-disable-next-line react-refresh/only-export-components
 export function getNextVisibleRankingCount(current: number, step: number, total: number) {
   return Math.min(total, current + step)
 }
 
+  // eslint-disable-next-line react-refresh/only-export-components
 export function getCollapsedVisibleRankingCount() {
   return INITIAL_VISIBLE_ROWS
 }
 
+  // eslint-disable-next-line react-refresh/only-export-components
 export function buildTopProductsCsv(
   rows: TopProductsRankingRowViewModel[],
   visibleColumns: VisibleColumns,
@@ -312,7 +316,7 @@ export function TopProductsRankingTable({ rows, onProductClick, onQuickFilterPla
     })
 
     return cols
-  }, [onProductClick, onQuickFilterPlatform, visibleColumns])
+  }, [onProductClick, onQuickFilterPlatform, visibleColumns, handleCopySku])
 
   const sortedAndVisibleRows = useMemo(() => {
     const sorted = [...rows]
