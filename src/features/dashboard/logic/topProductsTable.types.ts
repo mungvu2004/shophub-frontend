@@ -4,6 +4,7 @@ export type TopProductPlatform = 'shopee' | 'tiktok' | 'lazada'
 
 export type TopProductTableInputItem = {
   id: string
+  productId?: string
   name: string
   platform: TopProductPlatform
   soldInMonth: number
@@ -13,6 +14,7 @@ export type TopProductTableInputItem = {
 
 export type TopProductTableRow = {
   id: string
+  productId?: string
   rank: string
   name: string
   platform: TopProductPlatform

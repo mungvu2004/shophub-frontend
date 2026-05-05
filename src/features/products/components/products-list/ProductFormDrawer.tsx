@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { UploadCloud, AlertCircle, Edit, Plus, X, Package, ShieldCheck, Globe, Zap, Percent, Wallet2 } from 'lucide-react'
 import type { Product } from '@/types/product.types'
+import type { ActionType } from '@/features/shared/hooks/useCRUDActions'
 import { cn } from '@/lib/utils'
 import { PLATFORM_CONFIG } from '../../constants/platformConfig'
 
@@ -11,15 +12,19 @@ interface ProductFormDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onSave?: (productData: any) => void
+  onSave?: (productData: any) => Promise<void> | void
   product?: Product | null
+  isProcessing?: boolean
+  actionType?: ActionType
 }
 
-export function ProductFormDrawer({ 
-  open, 
-  onOpenChange, 
-  onSave, 
-  product
+export function ProductFormDrawer({
+  open,
+  onOpenChange,
+  onSave,
+  product,
+  isProcessing = false,
+  actionType = null
 }: ProductFormDrawerProps) {
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   
@@ -322,13 +327,20 @@ export function ProductFormDrawer({
         {/* Modern Action Footer */}
         <DialogFooter className="p-8 pt-6 bg-white/80 backdrop-blur-md border-t border-slate-200/60 flex-shrink-0 grid grid-cols-2 gap-4">
           <DialogClose render={
-            <Button variant="ghost" className="w-full h-14 rounded-3xl font-black uppercase text-xs tracking-widest text-slate-400 hover:bg-slate-50 hover:text-slate-900 transition-all">
+            <Button
+              variant="ghost"
+              className="w-full h-14 rounded-3xl font-black uppercase text-xs tracking-widest text-slate-400 hover:bg-slate-50 hover:text-slate-900 transition-all"
+              disabled={isProcessing}
+            >
               Hủy bỏ
             </Button>
           } />
-          <Button 
-            type="submit" 
-            form="product-form" 
+          <Button
+            type="submit"
+            form="product-form"
+            disabled={isProcessing}
+            isLoading={isProcessing && (actionType === 'creating' || actionType === 'updating')}
+            loadingText={isEditing ? 'Đang cập nhật...' : 'Đang tạo...'}
             className="w-full h-14 rounded-3xl font-black uppercase text-xs tracking-widest bg-slate-900 text-white shadow-2xl shadow-slate-900/20 hover:bg-primary hover:shadow-primary/40 active:scale-95 transition-all"
           >
             {isEditing ? 'Cập nhật ngay' : 'Khởi tạo ngay'}

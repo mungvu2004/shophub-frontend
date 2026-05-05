@@ -84,7 +84,7 @@ export function useProductDetailViewModel(): ProductDetailViewModel {
       return EMPTY_INVENTORY_SUMMARY
     }
 
-    const variantIds = new Set(resolvedProduct.variants.map((variant) => variant.id))
+    const variantIds = new Set((resolvedProduct.variants ?? []).map((variant) => variant.id))
     const inventoryItems = (inventoryData?.items ?? []).filter((item) => variantIds.has(item.variantId))
 
     const warehouseSet = new Set(inventoryItems.map((item) => item.warehouseId))
@@ -147,8 +147,8 @@ export function useProductDetailViewModel(): ProductDetailViewModel {
         return false
       }
 
-      const nextVariants = resolvedProduct.variants.length > 0
-        ? resolvedProduct.variants.map((variant, index) => {
+      const nextVariants = (resolvedProduct.variants ?? []).length > 0
+        ? (resolvedProduct.variants ?? []).map((variant, index) => {
             if (index !== 0) {
               return variant
             }
@@ -160,7 +160,7 @@ export function useProductDetailViewModel(): ProductDetailViewModel {
               updatedAt: new Date().toISOString(),
             }
           })
-        : resolvedProduct.variants
+        : (resolvedProduct.variants ?? [])
 
       await updateProduct({
         id: resolvedProduct.id,

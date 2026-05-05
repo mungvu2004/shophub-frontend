@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
-import { toast } from '@/components/ui/toast'
+import { useCRUDActions } from '@/features/shared/hooks/useCRUDActions'
+import { MESSAGES } from '@/constants/messages'
 import type { OrderDetailResponse } from '@/features/orders/logic/orderDetail.types'
 import { orderDetailService } from '@/features/orders/services/orderDetailService'
 
@@ -14,78 +15,82 @@ type UseOrderDetailQuickActionsArgs = {
 export function useOrderDetailQuickActions(args: UseOrderDetailQuickActionsArgs) {
   const { orderId, order, refetchOrder } = args
   const queryClient = useQueryClient()
-  const [activeActionId, setActiveActionId] = useState<string | null>(null)
+  const crud = useCRUDActions()
 
-  const refreshOrderData = async () => {
+  const refreshOrderData = useCallback(async () => {
     await refetchOrder()
     await queryClient.invalidateQueries({ queryKey: ['orders'] })
-  }
+  }, [refetchOrder, queryClient])
 
-  const handleQuickAction = async (actionId: string) => {
-    if (!orderId || activeActionId) return
+  const handleQuickAction = useCallback(async (actionId: string) => {
+    if (!orderId || crud.isProcessing) return
 
-    setActiveActionId(actionId)
-
-    try {
-      if (actionId === 'confirm-order') {
-        await orderDetailService.confirmOrder(orderId)
-        await refreshOrderData()
-        toast.success('Đã xác nhận đơn hàng.')
-        return
+    // Non-mutation actions
+    if (actionId === 'track-order') {
+      const trackingCode = order?.items?.find((item) => item.trackingCode)?.trackingCode
+      if (trackingCode) {
+        await navigator.clipboard.writeText(trackingCode)
       }
-
-      if (actionId === 'cancel-order') {
-        await orderDetailService.cancelOrder(orderId)
-        await refreshOrderData()
-        toast.success('Đã cập nhật trạng thái hủy đơn.')
-        return
-      }
-
-      if (actionId === 'refund-order') {
-        await orderDetailService.refundOrder(orderId)
-        await refreshOrderData()
-        toast.success('Đã tạo yêu cầu hoàn cho đơn hàng.')
-        return
-      }
-
-      if (actionId === 'track-order') {
-        const trackingCode = order?.items?.find((item) => item.trackingCode)?.trackingCode
-
-        if (trackingCode) {
-          await navigator.clipboard.writeText(trackingCode)
-          toast.success(`Đã sao chép mã vận đơn ${trackingCode}.`)
-        } else {
-          toast.info('Đơn chưa có mã vận đơn để theo dõi.')
-        }
-
-        return
-      }
-
-      if (actionId === 'view-proof') {
-        toast.info('Đã chuyển sang phần lịch sử giao hàng để xem bằng chứng.')
-        return
-      }
-
-      if (actionId === 'view-support') {
-        toast.info('Đã mở phần Review KH để theo dõi phản hồi khách hàng.')
-        return
-      }
-
-      if (actionId === 'suggested-action') {
-        toast.info('Đã ghi nhận hành động gợi ý cho đơn hàng này.')
-        return
-      }
-
-      toast.info('Hành động đang được cập nhật.')
-    } catch {
-      toast.error('Không thể thực hiện thao tác cho đơn hàng lúc này.')
-    } finally {
-      setActiveActionId(null)
+      return
     }
-  }
 
-  return {
-    activeActionId,
+    if (actionId === 'view-proof') {
+      return
+    }
+
+    if (actionId === 'view-support') {
+      return
+    }
+
+    if (actionId === 'suggested-action') {
+      return
+    }
+
+    // Mutation actions with standardized CRUD
+    if (actionId === 'confirm-order') {
+      await crud.handleStatusChange(
+        () => orderDetailService.confirmOrder(orderId),
+        { onSuccess: refreshOrderData },
+        {
+          processing: MESSAGES.PROCESSING.STATUS_CHANGE,
+          success: MESSAGES.ORDERS.GENERAL.SUCCESS.CONFIRM_SUCCESS,
+          error: MESSAGES.ORDERS.GENERAL.ERROR.CONFIRM_ERROR,
+        },
+      )
+      return
+    }
+
+    if (actionId === 'cancel-order') {
+      await crud.handleStatusChange(
+        () => orderDetailService.cancelOrder(orderId),
+        { onSuccess: refreshOrderData },
+        {
+          processing: MESSAGES.PROCESSING.STATUS_CHANGE,
+          success: MESSAGES.ORDERS.GENERAL.SUCCESS.CANCEL_SUCCESS,
+          error: MESSAGES.ORDERS.GENERAL.ERROR.CANCEL_ERROR,
+        },
+      )
+      return
+    }
+
+    if (actionId === 'refund-order') {
+      await crud.handleStatusChange(
+        () => orderDetailService.refundOrder(orderId),
+        { onSuccess: refreshOrderData },
+        {
+          processing: MESSAGES.PROCESSING.STATUS_CHANGE,
+          success: MESSAGES.ORDERS.GENERAL.SUCCESS.REFUND_SUCCESS,
+          error: MESSAGES.ORDERS.GENERAL.ERROR.REFUND_ERROR,
+        },
+      )
+      return
+    }
+  }, [orderId, order, crud, refreshOrderData])
+
+  return useMemo(() => ({
+    isProcessing: crud.isProcessing,
+    actionType: crud.actionType,
+    activeActionId: crud.isProcessing ? 'processing' : null,
     handleQuickAction,
-  }
+  }), [crud.isProcessing, crud.actionType, handleQuickAction])
 }

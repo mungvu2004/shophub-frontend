@@ -9,6 +9,14 @@ import type {
 import type { Order } from '@/types/order.types'
 import type { PlatformCode } from '@/types/platform.types'
 
+interface ApiResponse<T> {
+  success: boolean
+  data: T
+  message?: string
+  timestamp?: string
+  error?: { message: string; code?: string }
+}
+
 type OrdersAllApiResponse = {
   items?: unknown
   totalCount?: unknown
@@ -110,7 +118,7 @@ function toOrders(value: unknown): Order[] {
 
 class OrdersAllService {
   async getOrders(params: GetOrdersAllParams): Promise<OrdersAllResponse> {
-    const response = await apiClient.get<OrdersAllApiResponse>('/orders', {
+    const response = await apiClient.get<ApiResponse<OrdersAllApiResponse>>('/orders', {
       params: {
         search: params.search,
         statusGroup: params.status && params.status !== 'all' ? params.status : undefined,
@@ -126,43 +134,39 @@ class OrdersAllService {
       },
     })
 
+    const data = response.data?.data || {}
     return {
-      items: toOrders(response.data?.items),
-      totalCount: typeof response.data?.totalCount === 'number' ? response.data.totalCount : 0,
-      hasMore: response.data?.hasMore === true,
-      nextCursor: typeof response.data?.nextCursor === 'string' ? response.data.nextCursor : undefined,
-      summary: toSummary(response.data?.summary),
+      items: toOrders(data.items),
+      totalCount: typeof data.totalCount === 'number' ? data.totalCount : 0,
+      hasMore: data.hasMore === true,
+      nextCursor: typeof data.nextCursor === 'string' ? data.nextCursor : undefined,
+      summary: toSummary(data.summary),
     }
   }
 
   async bulkConfirmOrders(orderIds: string[]): Promise<{ updatedCount: number }> {
-    const response = await apiClient.post<{ updatedCount?: unknown }>('/orders/bulk-confirm', {
+    const response = await apiClient.post<ApiResponse<{ updatedCount: number }>>('/orders/bulk-confirm', {
       orderIds,
     })
-
-    return {
-      updatedCount: typeof response.data?.updatedCount === 'number' && Number.isFinite(response.data.updatedCount)
-        ? response.data.updatedCount
-        : 0,
-    }
+    return response.data?.data || { updatedCount: 0 }
   }
 
   async deleteOrder(id: string): Promise<void> {
-    await apiClient.delete(`/orders/${id}`)
+    await apiClient.delete<ApiResponse<void>>(`/orders/${id}`)
   }
 
   async updateOrderStatus(id: string, status: string): Promise<void> {
-    await apiClient.patch(`/orders/${id}/status`, { status })
+    await apiClient.patch<ApiResponse<void>>(`/orders/${id}/status`, { status })
   }
 
   async createOrder(data: Partial<Order>): Promise<Order> {
-    const response = await apiClient.post<Order>('/orders', data)
-    return response.data
+    const response = await apiClient.post<ApiResponse<Order>>('/orders', data)
+    return response.data.data
   }
 
   async updateOrder(id: string, data: Partial<Order>): Promise<Order> {
-    const response = await apiClient.put<Order>(`/orders/${id}`, data)
-    return response.data
+    const response = await apiClient.put<ApiResponse<Order>>(`/orders/${id}`, data)
+    return response.data.data
   }
 }
 

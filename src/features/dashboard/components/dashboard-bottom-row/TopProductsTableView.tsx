@@ -64,10 +64,10 @@ export function TopProductsTableView({ model, onViewAll, onProductClick }: TopPr
             {model.rows.map((row, index) => (
               <tr
                 key={row.id}
-                onClick={() => onProductClick?.(row.id)}
+                onClick={() => row.productId && onProductClick?.(row.productId)}
                 className={`${
                   index === 0 ? '' : 'border-t border-[#f0f3ff]'
-                } cursor-pointer transition-colors hover:bg-slate-50`}
+                } transition-colors hover:bg-slate-50 ${row.productId ? 'cursor-pointer' : 'cursor-default'}`}
               >
                 <td className={`px-6 py-6 text-sm font-bold ${index === 0 ? 'text-indigo-700' : 'text-slate-400'}`}>{row.rank}</td>
                 <td className="px-6 py-4">

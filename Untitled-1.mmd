@@ -1,0 +1,37 @@
+---
+id: shophub-mock-data-relationships
+title: ShopHub Mock Data Relationships
+---
+erDiagram
+  PRODUCTS ||--o{ VARIANTS : has
+  PRODUCTS ||--o{ INVENTORY_STOCK_LEVELS : tracks
+  PRODUCTS ||--o{ REVENUE : generates
+  PRODUCTS ||--o{ CRM_REVIEWS : "receives reviews"
+  PRODUCTS ||--o{ DASHBOARD_TOP_PRODUCTS : features
+  
+  ORDERS ||--o{ ORDER_ITEMS : contains
+  ORDER_ITEMS }o--|| PRODUCTS : "references"
+  ORDERS }o--|| CUSTOMERS : "placed by"
+  ORDERS ||--o{ REVENUE : generates
+  
+  INVENTORY_STOCK_LEVELS }o--|| PRODUCTS : "tracks"
+  INVENTORY_STOCK_LEVELS ||--o{ STOCK_MOVEMENTS : generates
+  INVENTORY_STOCK_LEVELS }o--|| WAREHOUSES : "stored at"
+  
+  STOCK_MOVEMENTS ||--o{ INVENTORY_ADJUSTMENTS : includes
+  
+  CUSTOMERS ||--o{ CRM_REVIEWS : "submits"
+  CUSTOMERS ||--o{ CRM_CUSTOMER_PROFILES : "has"
+  
+  CRM_REVIEWS }o--|| PRODUCTS : "about"
+  CRM_REVIEWS ||--o{ CRM_SENTIMENT_ANALYSIS : "analyzed by"
+  
+  ORDERS }o--|| PLATFORMS : "from"
+  PRODUCTS }o--|| PLATFORMS : "listed on"
+  PLATFORMS ||--o{ PLATFORM_CONNECTIONS : "via"
+  
+  REVENUE ||--o{ REVENUE_ML_SCENARIOS : "forecasts"
+  
+  DASHBOARD_KPI ||--o{ ORDERS : "aggregates"
+  DASHBOARD_KPI ||--o{ REVENUE : "aggregates"
+  DASHBOARD_TOP_PRODUCTS }o--|| PRODUCTS : "references"

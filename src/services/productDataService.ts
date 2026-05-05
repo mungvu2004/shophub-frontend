@@ -170,6 +170,14 @@ class ProductDataService {
   }
 
   /**
+   * Public method to normalize a Product to ProductDataDto
+   * Used by Products module hooks to sync with ProductStore
+   */
+  normalizeFromProduct(product: Product): ProductDataDto {
+    return this.normalizeProduct(product, 'products_api')
+  }
+
+  /**
    * Normalize full product from Products API
    */
   private normalizeProduct(product: Product, source: 'products_api'): ProductDataDto {

@@ -25,6 +25,7 @@ export interface AlertListResponse {
   unreadCount: number;
 }
 
+
 class InventoryService {
   /**
    * Fetch inventory SKUs with optional filters
@@ -41,7 +42,7 @@ class InventoryService {
         offset: params?.offset,
       },
     });
-    return response.data;
+    return response.data.data;
   }
 
   /**
@@ -59,7 +60,7 @@ class InventoryService {
         offset: params?.offset,
       },
     });
-    return response.data;
+    return response.data.data;
   }
 
   /**
@@ -67,7 +68,7 @@ class InventoryService {
    */
   async getWarehouses(): Promise<Warehouse[]> {
     const response = await apiClient.get('/inventory/warehouses');
-    return response.data;
+    return response.data.data;
   }
 
   /**
@@ -78,7 +79,7 @@ class InventoryService {
       isResolved: true,
       resolvedAt: new Date().toISOString(),
     });
-    return response.data;
+    return response.data.data;
   }
 
   /**
@@ -86,14 +87,14 @@ class InventoryService {
    */
   async adjustStock(adjustment: InventoryStockAdjustmentPayload): Promise<StockLevel> {
     const response = await apiClient.post('/inventory/adjust', adjustment);
-    return response.data;
+    return response.data.data;
   }
   /**
    * Fetch unique categories from existing stock
    */
   async getCategories(): Promise<string[]> {
     const response = await apiClient.get('/inventory/categories');
-    return response.data;
+    return response.data.data;
   }
 
   /**
@@ -101,7 +102,7 @@ class InventoryService {
    */
   async createSKU(data: unknown): Promise<StockLevel> {
     const response = await apiClient.post('/inventory', data);
-    return response.data;
+    return response.data.data;
   }
 
   /**
@@ -109,14 +110,15 @@ class InventoryService {
    */
   async updateSKU(id: string, data: unknown): Promise<StockLevel> {
     const response = await apiClient.put(`/inventory/${id}`, data);
-    return response.data;
+    return response.data.data;
   }
 
   /**
    * Delete SKU(s)
    */
-  async deleteSKUs(ids: string[]): Promise<void> {
-    await apiClient.delete('/inventory', { data: { ids } });
+  async deleteSKUs(ids: string[]): Promise<{ deletedCount: number }> {
+    const response = await apiClient.delete('/inventory', { data: { ids } });
+    return response.data.data;
   }
 
   /**
@@ -129,7 +131,7 @@ class InventoryService {
     lowStockCount: number;
   }> {
     const response = await apiClient.get('/inventory/summary');
-    return response.data;
+    return response.data.data;
   }
 }
 

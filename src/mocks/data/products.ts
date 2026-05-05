@@ -52,50 +52,50 @@ const buildPlaceholderImage = (label: string, bgColor: string) => {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 };
 
-// Real Pexels fashion photos per category, 4 images each for variety
-// Using Pexels free stock photos
+// Using Pexels CDN with real fashion photography (no API key required for direct URLs)
+// Format: https://images.pexels.com/photos/{id}/pexels-photo-{id}.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy
 const categoryImageBank: Record<string, string[]> = {
   "cat-001": [ // Áo thun / T-shirts
-    "https://images.pexels.com/photos/2769271/pexels-photo-2769271.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/2693579/pexels-photo-2693579.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/3622608/pexels-photo-3622608.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/3622613/pexels-photo-3622613.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
+    "https://images.pexels.com/photos/1656684/pexels-photo-1656684.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/1620760/pexels-photo-1620760.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/3622608/pexels-photo-3622608.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
   ],
   "cat-002": [ // Váy nữ / Women's dresses
-    "https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/1055691/pexels-photo-1055691.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/1739784/pexels-photo-1739784.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/2148325/pexels-photo-2148325.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
+    "https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/2220316/pexels-photo-2220316.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/1055691/pexels-photo-1055691.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/1689731/pexels-photo-1689731.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
   ],
   "cat-003": [ // Quần nam / Men's pants
-    "https://images.pexels.com/photos/3622608/pexels-photo-3622608.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/2733428/pexels-photo-2733428.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/5710151/pexels-photo-5710151.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/3930677/pexels-photo-3930677.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
+    "https://images.pexels.com/photos/1598507/pexels-photo-1598507.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/1861779/pexels-photo-1861779.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/2220316/pexels-photo-2220316.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/1300550/pexels-photo-1300550.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
   ],
   "cat-004": [ // Áo sơ mi / Shirts
-    "https://images.pexels.com/photos/3622614/pexels-photo-3622614.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/3945683/pexels-photo-3945683.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/3622607/pexels-photo-3622607.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
+    "https://images.pexels.com/photos/2897531/pexels-photo-2897531.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/3649543/pexels-photo-3649543.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/3763188/pexels-photo-3763188.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
   ],
   "cat-005": [ // Áo khoác / Jackets
-    "https://images.pexels.com/photos/2272923/pexels-photo-2272923.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/1055691/pexels-photo-1055691.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/3945680/pexels-photo-3945680.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/4651861/pexels-photo-4651861.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
+    "https://images.pexels.com/photos/1124468/pexels-photo-1124468.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/2294342/pexels-photo-2294342.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/3622609/pexels-photo-3622609.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
   ],
   "cat-006": [ // Quần tây / Formal pants
-    "https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/2733428/pexels-photo-2733428.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/3622608/pexels-photo-3622608.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/3945677/pexels-photo-3945677.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
+    "https://images.pexels.com/photos/1342609/pexels-photo-1342609.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/2220317/pexels-photo-2220317.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/1192609/pexels-photo-1192609.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/1300402/pexels-photo-1300402.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
   ],
   "cat-007": [ // Đồ thể thao / Sportswear
-    "https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/3218547/pexels-photo-3218547.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/4498567/pexels-photo-4498567.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
-    "https://images.pexels.com/photos/4203673/pexels-photo-4203673.jpeg?auto=compress&cs=tinysrgb&w=400&h=300",
+    "https://images.pexels.com/photos/2294361/pexels-photo-2294361.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/3076509/pexels-photo-3076509.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
+    "https://images.pexels.com/photos/3621163/pexels-photo-3621163.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop&crop=entropy",
   ],
 };
 

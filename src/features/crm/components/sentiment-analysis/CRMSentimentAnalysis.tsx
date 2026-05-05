@@ -5,18 +5,17 @@ import { buildCRMSentimentAnalysisViewModel } from '@/features/crm/logic/crmSent
 import { useCRMSentimentAnalysis, useCRMSentimentAnalysisActions } from '@/features/crm/hooks/useCRMSentimentAnalysis'
 import { useProductData } from '@/features/products/hooks/useProductData'
 import type { CRMSentimentPlatformFilter } from '@/types/crm.types'
-import { mockProducts } from '@/mocks/data/products'
 
 import { CRMSentimentAnalysisView } from './CRMSentimentAnalysisView'
 
 export function CRMSentimentAnalysis() {
   // Centralized product data from store
-  useProductData({
-    autoPreload: false,
+  const { products } = useProductData({
+    autoPreload: true,
     pageName: 'CRMSentimentAnalysisPage',
   })
 
-  const [selectedProductId, setSelectedProductId] = useState<string>(mockProducts[0].id)
+  const [selectedProductId, setSelectedProductId] = useState<string>(products[0]?.id || '')
 
   const [selectedWeek, setSelectedWeek] = useState<string>('all')
   const [selectedPlatform, setSelectedPlatform] = useState<CRMSentimentPlatformFilter>('all')

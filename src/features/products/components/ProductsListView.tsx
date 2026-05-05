@@ -6,12 +6,15 @@ import { ProductsCardList } from './products-list/ProductsCardList'
 import { ProductFormDrawer } from './products-list/ProductFormDrawer'
 import { ProductInsights } from './products-insights/ProductInsights'
 import { ProductQuickStats } from './products-insights/ProductQuickStats'
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { Download, Plus, PackageSearch } from 'lucide-react'
 import type { ProductsListViewModel } from '@/features/products/logic/productsListPage.types'
 import { useState, useCallback } from 'react'
 import { cn } from '@/lib/utils'
 import type { Product } from '@/types/product.types'
 import { ThemedPageHeader } from '@/components/shared/ThemedPageHeader'
+import { useProductActions } from '@/features/products/hooks/useProductActions'
+import { MESSAGES } from '@/constants/messages'
 
 interface ProductsListViewProps {
   model: ProductsListViewModel
@@ -36,6 +39,18 @@ export function ProductsListView({ model }: ProductsListViewProps) {
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([])
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null)
+  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false)
+
+  const actions = useProductActions({
+    onSuccess: () => {
+      setIsCreateModalOpen(false)
+      setEditingProduct(null)
+      setProductToDelete(null)
+      setIsBulkDeleteDialogOpen(false)
+      setSelectedProductIds([])
+    }
+  })
 
   const handleOpenCreate = () => {
     setEditingProduct(null)
@@ -58,6 +73,42 @@ export function ProductsListView({ model }: ProductsListViewProps) {
       setTimeout(() => setEditingProduct(null), 300)
     }
   }
+
+  const handleDeleteProduct = useCallback((product: Product) => {
+    setProductToDelete(product)
+  }, [])
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (productToDelete) {
+      await actions.handleDelete(productToDelete.id)
+    }
+  }, [productToDelete, actions])
+
+  const handleBulkDelete = useCallback(() => {
+    if (selectedProductIds.length > 0) {
+      setIsBulkDeleteDialogOpen(true)
+    }
+  }, [selectedProductIds])
+
+  const handleConfirmBulkDelete = useCallback(async () => {
+    if (selectedProductIds.length > 0) {
+      await actions.handleBulkDelete(selectedProductIds)
+    }
+  }, [selectedProductIds, actions])
+
+  const handleSaveProduct = useCallback(async (productData: { id?: string; name: string; sku: string; price: string; brand: string; status: string; syncedPlatforms: string[] }) => {
+    const data: Partial<Product> = {
+      name: productData.name,
+      brand: productData.brand,
+      status: productData.status as Product['status'],
+    }
+
+    if (productData.id) {
+      await actions.handleUpdate(productData.id, data)
+    } else {
+      await actions.handleCreate(data)
+    }
+  }, [actions])
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -112,7 +163,7 @@ export function ProductsListView({ model }: ProductsListViewProps) {
                 onBulkUpdatePrice={model.onBulkUpdatePrice}
                 onBulkSync={model.onBulkSync}
                 onBulkPause={model.onBulkPause}
-                onBulkDelete={model.onBulkDelete}
+                onBulkDelete={handleBulkDelete}
                 onBulkExport={model.onBulkExport}
                 onToggleAdvancedFilters={model.onToggleAdvancedFilters}
                 selectedCount={selectedProductIds.length}
@@ -171,7 +222,7 @@ export function ProductsListView({ model }: ProductsListViewProps) {
                 <ProductsTable
                   products={model.products}
                   onEdit={handleEditProduct}
-                  onDelete={model.onDelete}
+                  onDelete={handleDeleteProduct}
                   onViewVariants={model.onViewVariants}
                   onSelectionChange={handleSelectionChange}
                 />
@@ -213,11 +264,41 @@ export function ProductsListView({ model }: ProductsListViewProps) {
         </main>
       </div>
 
-      <ProductFormDrawer 
-        open={isCreateModalOpen} 
-        onOpenChange={handleDrawerClose} 
-        onSave={model.onSaveProduct}
+      <ProductFormDrawer
+        open={isCreateModalOpen}
+        onOpenChange={handleDrawerClose}
+        onSave={handleSaveProduct}
         product={editingProduct}
+        isProcessing={actions.isProcessing}
+        actionType={actions.actionType}
+      />
+
+      <ConfirmDialog
+        open={!!productToDelete}
+        onOpenChange={(open) => !open && setProductToDelete(null)}
+        title={MESSAGES.CONFIRM.DELETE_TITLE}
+        description={
+          productToDelete
+            ? MESSAGES.ORDERS.GENERAL.CONFIRM.DELETE_DESC.replace('{code}', productToDelete.name)
+            : MESSAGES.CONFIRM.DELETE_DESC
+        }
+        confirmText="Xóa"
+        cancelText="Hủy"
+        onConfirm={handleConfirmDelete}
+        isConfirming={actions.isProcessing && actions.actionType === 'deleting'}
+        variant="danger"
+      />
+
+      <ConfirmDialog
+        open={isBulkDeleteDialogOpen}
+        onOpenChange={setIsBulkDeleteDialogOpen}
+        title="Xác nhận xóa hàng loạt"
+        description={`Bạn có chắc chắn muốn xóa ${selectedProductIds.length} sản phẩm đã chọn? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa hàng loạt"
+        cancelText="Hủy"
+        onConfirm={handleConfirmBulkDelete}
+        isConfirming={actions.isProcessing && actions.actionType === 'deleting'}
+        variant="danger"
       />
     </div>
   )

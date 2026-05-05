@@ -27,17 +27,21 @@ export const MESSAGES = {
     GENERAL: {
       SUCCESS: {
         CONFIRM_BULK: 'Đã xác nhận {count} đơn hàng thành công.',
+        CONFIRM_SUCCESS: 'Đã xác nhận đơn hàng thành công.',
         SHIP_SUCCESS: 'Đã bàn giao đơn hàng cho đơn vị vận chuyển.',
         CANCEL_SUCCESS: 'Đã hủy đơn hàng thành công.',
+        REFUND_SUCCESS: 'Đã hoàn tiền cho đơn hàng thành công.',
         EXPORT_CSV: 'Đã xuất {count} đơn hàng ra CSV.',
         PRINT_WAYBILLS: 'Đã mở bản in vận đơn cho {count} đơn hàng.',
         PUSH_WAREHOUSE: 'Đã gửi {count} đơn hàng sang kho để xử lý.',
       },
       ERROR: {
         CONFIRM_BULK: 'Không thể xác nhận hàng loạt lúc này. Vui lòng thử lại.',
+        CONFIRM_ERROR: 'Không thể xác nhận đơn hàng. Vui lòng thử lại.',
         DELETE: 'Không thể xóa đơn hàng. Vui lòng thử lại.',
         SHIP_ERROR: 'Không thể bàn giao đơn hàng lúc này. Vui lòng thử lại.',
         CANCEL_ERROR: 'Không thể hủy đơn hàng lúc này. Vui lòng thử lại.',
+        REFUND_ERROR: 'Không thể hoàn tiền cho đơn hàng. Vui lòng thử lại.',
       },
       INFO: {
         NO_SELECTION: 'Vui lòng chọn ít nhất một đơn hàng.',

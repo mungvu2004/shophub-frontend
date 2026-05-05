@@ -37,7 +37,9 @@ export function buildTopProductsFromOrders({ orders = [] }: BuildTopProductsFrom
     string,
     {
       id: string
+      productId: string | undefined
       name: string
+      imageUrl: string | undefined
       soldInMonth: number
       revenue: number
       platformCount: Record<TopProductPlatform, number>
@@ -60,25 +62,19 @@ export function buildTopProductsFromOrders({ orders = [] }: BuildTopProductsFrom
               ? order.totalAmount
               : 0
 
-      // Use productId if available, fallback to product name hash for uniqueness
-      let productId = item.productId
-      if (!productId) {
-        // Generate deterministic ID from product name hash
-        const nameHash = Array.from(name).reduce((hash, char) => {
-          const h = ((hash << 5) - hash) + char.charCodeAt(0)
-          return h & h // Convert to 32bit integer
-        }, 0)
-        productId = `prod-${Math.abs(nameHash).toString(36).padStart(5, '0').slice(0, 5)}`
-      }
+      // Use productId if available; no fallback — fake IDs cause 404 on navigation
+      const productId = item.productId || undefined
 
-      // Aggregate by productId-platform to match dashboardTopProducts pattern
-      const key = `${productId}-${platform}`
+      // Use productId for key if available, otherwise use name-based key (no navigation)
+      const key = productId ? `${productId}-${platform}` : `name:${name}-${platform}`
       
       let current = aggregate.get(key)
       if (!current) {
         current = {
-          id: key, // Use full key for unique identification
+          id: key,
+          productId,
           name,
+          imageUrl: item.imageUrl || undefined,
           soldInMonth: 0,
           revenue: 0,
           platformCount: { shopee: 0, tiktok: 0, lazada: 0 },
@@ -99,8 +95,10 @@ export function buildTopProductsFromOrders({ orders = [] }: BuildTopProductsFrom
     'shopee')
 
     return {
-      id: item.id, // Already contains productId-platform for uniqueness
+      id: item.id,
+      productId: item.productId,
       name: item.name,
+      imageUrl: item.imageUrl,
       platform,
       soldInMonth: item.soldInMonth,
       revenue: item.revenue,
@@ -114,6 +112,7 @@ export function buildTopProductsTableViewModel({ products = [] }: TopProductsTab
     .slice(0, 10)
     .map((item, index) => ({
       id: item.id,
+      productId: item.productId ?? item.id,
       rank: `#${String(index + 1).padStart(2, '0')}`,
       name: item.name,
       platform: item.platform,

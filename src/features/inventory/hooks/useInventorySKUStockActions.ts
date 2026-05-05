@@ -4,7 +4,7 @@ import type { StockLevel } from '@/types/inventory.types'
 import { useMemo, useCallback } from 'react'
 
 export function useInventorySKUStockActions(onSuccess?: () => void) {
-  const crud = useCRUDActions<StockLevel | void>()
+  const crud = useCRUDActions<StockLevel | { deletedCount: number }>()
 
   const handleCreate = useCallback(
     async (data: Partial<StockLevel>) => {

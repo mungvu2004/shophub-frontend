@@ -37,4 +37,18 @@ export const assetsHandlers = [
       },
     })
   }),
+
+  // source.unsplash.com is deprecated/down (503) - intercept and return placeholder
+  http.get('https://source.unsplash.com/*', () => {
+    return new HttpResponse(svgPlaceholder('Image'), {
+      status: 200,
+      headers: {
+        'Content-Type': 'image/svg+xml; charset=utf-8',
+        'Cache-Control': 'public, max-age=300',
+      },
+    })
+  }),
+
+  // dummyimage.com fallback - pass through to real service (it works fine)
+  // MSW passthrough: do NOT intercept dummyimage.com so real images load
 ]

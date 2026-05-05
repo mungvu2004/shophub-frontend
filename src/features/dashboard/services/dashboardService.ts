@@ -28,6 +28,7 @@ export type RevenueOrderItem = {
   items?: Array<{
     productId?: string
     productName?: string
+    imageUrl?: string
     qty?: number
     itemPrice?: number
     paidPrice?: number

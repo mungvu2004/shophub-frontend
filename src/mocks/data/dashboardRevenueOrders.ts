@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { RevenueOrderItem } from '@/features/dashboard/services/dashboardService'
 import { mockOrders } from './orders'
+import { mockProducts } from './products'
 
 /**
  * Derive revenue orders from actual mockOrders for consistency
@@ -34,12 +35,18 @@ const generateRevenueOrders = (): RevenueOrderItem[] => {
       totalAmount: order.totalAmount,
       createdAt: order.createdAt,
       createdAt_platform: order.createdAt_platform,
-      items: (order.items || []).map(item => ({
-        productName: item.productName,
-        qty: item.qty,
-        itemPrice: Math.floor(item.itemPrice * item.qty),
-        paidPrice: item.paidPrice * item.qty,
-      })),
+      items: (order.items || []).map(item => {
+        const product = item.productId ? mockProducts.find(p => p.id === item.productId) : undefined
+        const imageUrl = product?.variants?.[0]?.mainImageUrl
+        return {
+          productId: item.productId,
+          productName: item.productName,
+          imageUrl,
+          qty: item.qty,
+          itemPrice: Math.floor(item.itemPrice * item.qty),
+          paidPrice: item.paidPrice * item.qty,
+        }
+      }),
     }
   })
 }
