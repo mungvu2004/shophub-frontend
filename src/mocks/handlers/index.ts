@@ -1,3 +1,4 @@
+import { http, HttpResponse } from 'msw'
 import { authHandlers } from "./auth.handlers";
 import { productsHandlers } from "./products.handlers";
 import { ordersHandlers } from "./orders.handlers";
@@ -26,4 +27,16 @@ export const handlers = [
   ...settingsHandlers,
   ...inventoryStockMovementsHandlers,
   ...footerHandlers,
+
+  // Catch-all cho toàn bộ /api/* để tránh lỗi "Failed to fetch" khi thiếu handler
+  http.all('/api/*', ({ request }) => {
+    console.warn(`[MSW] Unhandled request: \${request.method} \${request.url}`)
+    return HttpResponse.json(
+      { 
+        success: false, 
+        message: `API Mock không tồn tại: \${request.method} \${new URL(request.url).pathname}` 
+      },
+      { status: 404 }
+    )
+  }),
 ];

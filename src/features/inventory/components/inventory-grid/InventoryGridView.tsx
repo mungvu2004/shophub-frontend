@@ -36,11 +36,10 @@ export function InventoryGridView({ filters }: InventoryGridViewProps) {
   // - If loading: show empty array (allows loading skeleton to display)
   // - If data exists: use API data (even if empty array)
   // - Otherwise: use mock data as last resort fallback
-  const displayData = isLoading ? [] : (data?.items ?? mockStockLevels)
-
   const rows: InventoryTableRow[] = useMemo(() => {
+    const displayData = isLoading ? [] : (data?.items ?? mockStockLevels)
     return displayData.map(mapStockLevelToTableRow)
-  }, [displayData])
+  }, [isLoading, data?.items])
 
   const [prevFilters, setPrevFilters] = useState(filters)
   if (

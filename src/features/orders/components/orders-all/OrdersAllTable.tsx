@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import { CheckCircle2, Copy, Download, Eye, MoreHorizontal, Printer, Trash2, XCircle, Truck, User } from 'lucide-react'
 
 import { DataTable, type DataTableColumn, type DataTableSortState } from '@/components/shared/DataTable'
@@ -95,15 +95,15 @@ export function OrdersAllTable({
   const location = useLocation()
   const [printStatusOverrides, setPrintStatusOverrides] = useState<Record<string, boolean>>({})
 
-  const isPrinted = (row: OrdersAllTableRowModel) => {
+  const isPrinted = useCallback((row: OrdersAllTableRowModel) => {
     if (Object.prototype.hasOwnProperty.call(printStatusOverrides, row.id)) {
       return printStatusOverrides[row.id]
     }
 
     return row.printStatus === 'printed'
-  }
+  }, [printStatusOverrides])
 
-  const togglePrintStatus = (row: OrdersAllTableRowModel) => {
+  const togglePrintStatus = useCallback((row: OrdersAllTableRowModel) => {
     setPrintStatusOverrides((current) => {
       const nextValue = !isPrinted(row)
       toast.success(nextValue ? `Đã đánh dấu in ${row.code}.` : `Đã chuyển ${row.code} về chưa in.`)
@@ -113,18 +113,18 @@ export function OrdersAllTable({
         [row.id]: nextValue,
       }
     })
-  }
+  }, [isPrinted])
 
-  const handleCopyOrderCode = async (orderCode: string) => {
+  const handleCopyOrderCode = useCallback(async (orderCode: string) => {
     try {
       await navigator.clipboard.writeText(orderCode)
       toast.success(`Đã sao chép mã đơn ${orderCode}.`)
     } catch {
       toast.error('Không thể sao chép mã đơn trên trình duyệt hiện tại.')
     }
-  }
+  }, [])
 
-  const openOrderDetail = (row: OrdersAllTableRowModel) => {
+  const openOrderDetail = useCallback((row: OrdersAllTableRowModel) => {
     if (onOpenDetail) {
       onOpenDetail(row)
       return
@@ -141,9 +141,9 @@ export function OrdersAllTable({
         statusLabel: row.statusLabel,
       },
     })
-  }
+  }, [onOpenDetail, navigate, location])
 
-  const renderStatus = (row: OrdersAllTableRowModel) => {
+  const renderStatus = useCallback((row: OrdersAllTableRowModel) => {
     const tone = getStatusTone(row.status)
 
     const statusText = row.statusLabel
@@ -152,7 +152,7 @@ export function OrdersAllTable({
         {statusText}
       </span>
     )
-  }
+  }, [])
 
   const stopRowClickPropagation = (event: { stopPropagation: () => void }) => {
     event.stopPropagation()

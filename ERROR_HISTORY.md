@@ -77,10 +77,25 @@
 
 ---
 
-## [2026-05-04] Lỗi lint `react-hooks/set-state-in-effect` khi đồng bộ form/modal
+## [2026-05-05] Lỗi MSW 'Failed to fetch' và TanStack Query 'data cannot be undefined'
 
-### 1. Lỗi: `setState` trong `useEffect` gây vi phạm rule hooks
-- **Triệu chứng**: ESLint báo lỗi `react-hooks/set-state-in-effect` tại các component đồng bộ draft state theo props khi mở dialog.
-- **Nguyên nhân**: Sử dụng `useEffect` chỉ để sao chép state từ props (`setDraft(...)`) làm phát sinh cập nhật state đồng bộ trong effect.
-- **Khắc phục**: Chuyển form modal sang mô hình **controlled component** (state đặt ở parent), truyền `values` + `onValuesChange` xuống form thay vì copy state trong effect.
-- **Bài học**: Với modal/form có dữ liệu khởi tạo từ parent, ưu tiên controlled pattern để tránh effect đồng bộ state và giảm nguy cơ vòng lặp render.
+### 1. Lỗi: TypeError: Failed to fetch và Query data cannot be undefined
+- **Triệu chứng**: Console báo lỗi `Failed to fetch` từ Service Worker và TanStack Query báo lỗi data trả về bị `undefined` cho query key `["dashboard-revenue-events"]`.
+- **Nguyên nhân**: 
+    - Trong `dashboardRevenueChartsCrudService.ts`, các đường dẫn API bị viết dư tiền tố `/api/` (ví dụ: `/api/dashboard/...`). Do `apiClient` đã có `baseURL: '/api'`, yêu cầu thực tế trở thành `/api/api/dashboard/...`, không khớp với bất kỳ MSW handler nào.
+    - Khi không khớp handler và bắt đầu bằng `/api/`, MSW thực hiện `passthrough()`. Vì không có backend thật, trình duyệt ném lỗi `Failed to fetch`.
+    - Khi fetch thất bại, hàm `getEvents` không trả về dữ liệu hợp lệ, dẫn đến `useQuery` nhận giá trị `undefined`.
+- **Khắc phục**: 
+    - Loại bỏ tiền tố `/api/` trong `dashboardRevenueChartsCrudService.ts`.
+    - Thêm một "Global Catch-all Handler" ở cuối file `src/mocks/handlers/index.ts` để bắt mọi request `/api/*` không có handler và trả về lỗi 404 thay vì để MSW passthrough gây crash fetch.
+- **Bài học**: Luôn kiểm tra `baseURL` của HttpClient để tránh trùng lặp tiền tố. Sử dụng catch-all handler cho mock API để tăng tính ổn định của ứng dụng khi thiếu handler.
+
+### 2. Lỗi: Cảnh báo lint `react-hooks/exhaustive-deps` gây nguy cơ vòng lặp render
+- **Triệu chứng**: `npm run lint` báo lỗi tại `InventoryGridView.tsx` và `OrdersAllTable.tsx`.
+- **Nguyên nhân**: Sử dụng các biến/hàm được định nghĩa lại mỗi lần render làm dependency cho `useMemo`.
+- **Khắc phục**: 
+    - Bọc các hàm xử lý trong `useCallback`.
+    - Di chuyển logic tính toán dữ liệu trung gian vào bên trong `useMemo`.
+- **Bài học**: Tuân thủ Rule 8 của dự án để đảm bảo ViewModel và Handlers luôn ổn định, tránh render không cần thiết hoặc vô hạn.
+
+---

@@ -86,13 +86,4 @@ export const revenueHandlers = [
       })
     }
   }),
-
-  // Catch-all for revenue API to prevent passthrough failures
-  http.all('/api/revenue/*', ({ request }) => {
-    console.warn(`Unhandled revenue request: ${request.method} ${request.url}`)
-    return new HttpResponse(JSON.stringify({ message: 'Resource not found' }), {
-      status: 404,
-      headers: { 'Content-Type': 'application/json' }
-    })
-  }),
 ]
