@@ -112,13 +112,13 @@ export type InventoryAIForecastDetailResponse = {
 class InventoryAIForecastService {
   async getForecast(): Promise<InventoryAIForecastResponse> {
     const response = await apiClient.get('/inventory/ai-forecast')
-    return response.data as InventoryAIForecastResponse
+    return (response.data?.data ?? response.data) as InventoryAIForecastResponse
   }
 
   async getForecastDetail(sku: string): Promise<InventoryAIForecastDetailResponse> {
     const safeSku = encodeURIComponent(sku)
     const response = await apiClient.get(`/inventory/ai-forecast/detail/${safeSku}`)
-    return response.data as InventoryAIForecastDetailResponse
+    return (response.data?.data ?? response.data) as InventoryAIForecastDetailResponse
   }
 }
 

@@ -284,7 +284,7 @@ export function buildLastDaysDateRange(days: number, reference = new Date()) {
   }
 }
 
-export function buildOrdersAllCsv(orders: Order[], getProduct?: (productId: string) => any) {
+export function buildOrdersAllCsv(orders: Order[], getProduct?: ProductGetter) {
   const headers = ['Mã đơn', 'Khách hàng', 'Sàn', 'Sản phẩm', 'Trạng thái', 'Tổng tiền', 'Ngày tạo']
 
   const rows = orders.map((order) => {
@@ -314,7 +314,7 @@ export function buildOrdersAllCsv(orders: Order[], getProduct?: (productId: stri
   return [headers, ...rows].map((line) => line.map(toCsvCell).join(',')).join('\n')
 }
 
-export function buildOrdersAllPrintHtml(orders: Order[], getProduct?: (productId: string) => any) {
+export function buildOrdersAllPrintHtml(orders: Order[], getProduct?: ProductGetter) {
   const cards = orders
     .map((order) => {
       let productName = order.items?.[0]?.productName || 'Sản phẩm'
@@ -428,7 +428,9 @@ export function countOrdersAllActiveAdvancedFilters(filters: {
   return [filters.dateFrom, filters.dateTo, filters.minAmount, filters.maxAmount].filter((value) => value.trim().length > 0).length
 }
 
-function toRows(items: Order[], getProduct?: (productId: string) => any): OrdersAllTableRowModel[] {
+type ProductGetter = (productId: string) => { name?: string } | null | undefined
+
+function toRows(items: Order[], getProduct?: ProductGetter): OrdersAllTableRowModel[] {
   return items.map((order) => {
     const orderItems = order.items ?? []
     let firstProductName = orderItems[0]?.productName || 'Sản phẩm chưa đồng bộ'
@@ -488,7 +490,7 @@ export function buildOrdersAllViewModel(args: {
   response: OrdersAllResponse
   query: OrdersAllQueryState
   selectedCount: number
-  getProduct?: (productId: string) => any
+  getProduct?: ProductGetter
 }): OrdersAllViewModel {
   const { response, query, selectedCount, getProduct } = args
 

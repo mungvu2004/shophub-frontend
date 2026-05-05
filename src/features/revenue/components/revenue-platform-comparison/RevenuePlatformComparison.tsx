@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { useRevenuePlatformComparison } from '@/features/revenue/hooks/useRevenuePlatformComparison'
+import { useRevenuePlatformActions } from '@/features/revenue/hooks/useRevenueActions'
 import {
   buildRevenuePlatformComparisonViewModel,
 } from '@/features/revenue/logic/revenuePlatformComparison.logic'
@@ -32,6 +33,15 @@ export function RevenuePlatformComparison() {
 
   const { data, isLoading, isError, refetch } = useRevenuePlatformComparison(selectedMonth)
 
+  const platformActions = useRevenuePlatformActions({
+    onSuccess: () => {
+      void refetch()
+    },
+    onError: (error) => {
+      console.error('Platform action error:', error)
+    },
+  })
+
   const model = useMemo(() => {
     if (!data) {
       return null
@@ -48,5 +58,11 @@ export function RevenuePlatformComparison() {
     return <DataLoadErrorState title="Không tải được dữ liệu so sánh sàn." onRetry={() => refetch()} />
   }
 
-  return <RevenuePlatformComparisonView model={model} />
+  return (
+    <RevenuePlatformComparisonView 
+      model={model}
+      platformActions={platformActions}
+      selectedMonth={selectedMonth}
+    />
+  )
 }

@@ -5,16 +5,20 @@ type CRMReviewListProps = {
   items: CRMReviewItem[]
   selectedReviewId?: string
   isLoading: boolean
+  deletingReviewId?: string
   onSelect: (reviewId: string) => void
   onMarkRead: (reviewId: string) => void
+  onDelete: (reviewId: string) => void
 }
 
 export function CRMReviewList({
   items,
   selectedReviewId,
   isLoading,
+  deletingReviewId,
   onSelect,
   onMarkRead,
+  onDelete,
 }: CRMReviewListProps) {
   if (isLoading) {
     return (
@@ -41,8 +45,10 @@ export function CRMReviewList({
           key={review.id}
           review={review}
           isSelected={selectedReviewId === review.id}
+          isDeleting={deletingReviewId === review.id}
           onSelect={onSelect}
           onMarkRead={onMarkRead}
+          onDelete={onDelete}
         />
       ))}
     </div>

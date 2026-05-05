@@ -1,0 +1,20 @@
+// Inventory Hooks - Standardized CRUD Actions
+export { useInventoryActions } from './useInventoryActions'
+export { useStockMovementActions } from './useStockMovementActions'
+export { useStockAdjustmentActions } from './useStockAdjustmentActions'
+
+// Re-export existing hooks for backward compatibility
+export { useInventorySKUStockActions } from './useInventorySKUStockActions'
+export { useCreateMovement } from './useCreateMovement'
+export { useInventoryStockAdjustment } from './useInventoryStockAdjustment'
+export { useStockAdjustment } from './useStockAdjustment'
+export { useStockMovements } from './useStockMovements'
+export { useInventoryAlerts } from './useInventoryData'
+export { useInventoryTable } from './useInventoryTable'
+export { useInventorySKUStockPage } from './useInventorySKUStockPage'
+export { useInventoryStockAdjustmentPage } from './useInventoryStockAdjustmentPage'
+export { useInventoryStockMovements } from './useInventoryStockMovements'
+export { useInventoryAIForecast } from './useInventoryAIForecast'
+export { useInventoryAIForecastDetail } from './useInventoryAIForecastDetail'
+export { useSKUExtendedDetails } from './useSKUExtendedDetails'
+export { useBulkImport } from './useBulkImport'

@@ -6,10 +6,17 @@ import {
   crmReviewInboxMock,
   crmWeeklyInsightMock,
 } from '@/mocks/data/crm'
-import { buildCRMCustomerProfilesResponse } from '@/mocks/data/crmCustomerProfiles'
+import {
+  buildCRMCustomerProfilesResponse,
+  crmCustomerProfilesData,
+} from '@/mocks/data/crmCustomerProfiles'
 import { crmSentimentAnalysisMock } from '@/mocks/data/crmSentimentAnalysis'
 import { mockProducts } from '@/mocks/data/products'
 import type {
+  CRMCustomerCreatePayload,
+  CRMCustomerProfileDetail,
+  CRMCustomerSegmentKey,
+  CRMCustomerUpdatePayload,
   CRMCustomerProfilesResponse,
   CRMSentimentPlatformFilter,
   CRMReviewFilterStatus,
@@ -166,7 +173,8 @@ export const crmHandlers = [
     })
   }),
 
-  http.get('/api/crm/reviews/summary', () => {
+  http.get('/api/crm/reviews/summary', async () => {
+    await delay(300)
     return HttpResponse.json({
       success: true,
       data: {
@@ -176,7 +184,8 @@ export const crmHandlers = [
     })
   }),
 
-  http.get('/api/crm/customer-profiles', ({ request }) => {
+  http.get('/api/crm/customer-profiles', async ({ request }) => {
+    await delay(400)
     const url = new URL(request.url)
     const search = url.searchParams.get('search') ?? ''
     const customerId = url.searchParams.get('customerId') ?? undefined
@@ -192,7 +201,121 @@ export const crmHandlers = [
     })
   }),
 
-  http.get('/api/crm/reviews/inbox', ({ request }) => {
+  http.post('/api/crm/customer-profiles', async ({ request }) => {
+    await delay(600)
+    const payload = (await request.json()) as CRMCustomerCreatePayload
+
+    if (!payload?.fullName?.trim()) {
+      return HttpResponse.json({ success: false, message: 'Họ tên là bắt buộc' }, { status: 400 })
+    }
+
+    const segmentLabelMap: Record<CRMCustomerSegmentKey, string> = {
+      vip_gold: 'VIP Gold',
+      regular_blue: 'Khách thường',
+      at_risk_red: 'Có nguy cơ rời',
+    }
+
+    const newCustomer: CRMCustomerProfileDetail = {
+      id: `cust-${Date.now()}`,
+      customerCode: `KH-${String(crmCustomerProfilesData.length + 1).padStart(3, '0')}`,
+      fullName: payload.fullName,
+      maskedPhone: payload.maskedPhone || '***',
+      email: payload.email || '',
+      avatarUrl: `https://i.pravatar.cc/150?u=customer-${Date.now()}`,
+      customerSinceLabel: new Date().toLocaleDateString('vi-VN'),
+      segment: {
+        id: payload.segment ?? 'regular_blue',
+        label: segmentLabelMap[payload.segment ?? 'regular_blue'],
+        tone: payload.segment ?? 'regular_blue',
+      },
+      platformLabels: (payload.platformCodes ?? []).map((p) => ({
+        id: p,
+        label: p === 'shopee' ? 'Shopee' : p === 'lazada' ? 'Lazada' : 'TikTok',
+        tone: (p === 'tiktok_shop' ? 'tiktok' : p) as 'lazada' | 'shopee' | 'tiktok',
+      })),
+      primaryCtaLabel: 'Gửi voucher cá nhân hóa',
+      secondaryCtaLabel: 'Chỉnh sửa',
+      stats: { totalOrders: 0, totalSpend: 0, lastOrderLabel: 'Chưa có đơn', averageOrderValue: 0 },
+      lifecycle: [{ dateLabel: new Date().toLocaleDateString('vi-VN'), title: 'Đơn đầu tiên', isCurrent: true }],
+      orders: [],
+      notes: [],
+      reviews: [],
+      rfm: [
+        { label: 'RECENCY', value: '0/10', progressPercent: 0 },
+        { label: 'FREQUENCY', value: '0/10', progressPercent: 0 },
+        { label: 'MONETARY', value: '0/10', progressPercent: 0 },
+      ],
+      insight: {
+        title: 'Khách hàng mới',
+        confidenceLabel: 'Chưa có dữ liệu',
+        description: 'Khách hàng mới thêm vào hệ thống.',
+        favoriteProductLabel: 'Chưa xác định',
+        favoriteChannelLabel: 'Chưa xác định',
+        churnRiskLabel: 'Thấp',
+        churnRiskPercent: 5,
+      },
+    }
+
+    crmCustomerProfilesData.push(newCustomer)
+
+    return HttpResponse.json({ success: true, data: newCustomer })
+  }),
+
+  http.patch('/api/crm/customer-profiles/:id', async ({ params, request }) => {
+    await delay(500)
+    const customer = crmCustomerProfilesData.find((c) => c.id === params.id)
+
+    if (!customer) {
+      return HttpResponse.json({ success: false, message: 'Không tìm thấy khách hàng' }, { status: 404 })
+    }
+
+    const payload = (await request.json()) as CRMCustomerUpdatePayload
+    if (payload.fullName !== undefined) customer.fullName = payload.fullName
+    if (payload.maskedPhone !== undefined) customer.maskedPhone = payload.maskedPhone
+    if (payload.email !== undefined) customer.email = payload.email
+
+    return HttpResponse.json({ success: true, data: customer })
+  }),
+
+  http.delete('/api/crm/customer-profiles/:id', async ({ params }) => {
+    await delay(600)
+    const index = crmCustomerProfilesData.findIndex((c) => c.id === params.id)
+
+    if (index === -1) {
+      return HttpResponse.json({ success: false, message: 'Không tìm thấy khách hàng' }, { status: 404 })
+    }
+
+    crmCustomerProfilesData.splice(index, 1)
+
+    return HttpResponse.json({ success: true, data: { deletedId: params.id } })
+  }),
+
+  http.patch('/api/crm/customer-profiles/:id/segment', async ({ params, request }) => {
+    await delay(400)
+    const customer = crmCustomerProfilesData.find((c) => c.id === params.id)
+
+    if (!customer) {
+      return HttpResponse.json({ success: false, message: 'Không tìm thấy khách hàng' }, { status: 404 })
+    }
+
+    const payload = (await request.json()) as { segment: CRMCustomerSegmentKey }
+    const segmentLabelMap: Record<CRMCustomerSegmentKey, string> = {
+      vip_gold: 'VIP Gold',
+      regular_blue: 'Khách thường',
+      at_risk_red: 'Có nguy cơ rời',
+    }
+
+    customer.segment = {
+      id: payload.segment,
+      label: segmentLabelMap[payload.segment],
+      tone: payload.segment,
+    }
+
+    return HttpResponse.json({ success: true, data: customer })
+  }),
+
+  http.get('/api/crm/reviews/inbox', async ({ request }) => {
+    await delay(350)
     const url = new URL(request.url)
 
     const statusParam = (url.searchParams.get('status') ?? 'all') as CRMReviewFilterStatus
@@ -214,7 +337,35 @@ export const crmHandlers = [
     })
   }),
 
-  http.get('/api/crm/reviews/:id/reply-templates', ({ params }) => {
+  http.delete('/api/crm/reviews/:id', async ({ params }) => {
+    await delay(500)
+    const index = crmReviewInboxMock.findIndex((item) => item.id === params.id)
+
+    if (index === -1) {
+      return HttpResponse.json({ success: false, message: 'Review not found' }, { status: 404 })
+    }
+
+    crmReviewInboxMock.splice(index, 1)
+
+    return HttpResponse.json({ success: true, data: { deletedId: params.id } })
+  }),
+
+  http.patch('/api/crm/reviews/:id/priority', async ({ params, request }) => {
+    await delay(300)
+    const review = crmReviewInboxMock.find((item) => item.id === params.id)
+
+    if (!review) {
+      return HttpResponse.json({ success: false, message: 'Review not found' }, { status: 404 })
+    }
+
+    const payload = (await request.json()) as { isPriority: boolean }
+    review.isPriority = payload.isPriority
+
+    return HttpResponse.json({ success: true, data: review })
+  }),
+
+  http.get('/api/crm/reviews/:id/reply-templates', async ({ params }) => {
+    await delay(200)
     const review = crmReviewInboxMock.find((item) => item.id === params.id)
 
     if (!review) {
@@ -235,7 +386,8 @@ export const crmHandlers = [
     })
   }),
 
-  http.post('/api/crm/reviews/:id/mark-read', ({ params }) => {
+  http.post('/api/crm/reviews/:id/mark-read', async ({ params }) => {
+    await delay(200)
     const review = crmReviewInboxMock.find((item) => item.id === params.id)
 
     if (!review) {
@@ -257,6 +409,7 @@ export const crmHandlers = [
   }),
 
   http.post('/api/crm/reviews/:id/reply', async ({ params, request }) => {
+    await delay(500)
     const review = crmReviewInboxMock.find((item) => item.id === params.id)
 
     if (!review) {

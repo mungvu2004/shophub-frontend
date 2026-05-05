@@ -770,3 +770,5 @@ export function buildCRMCustomerProfilesResponse(params: {
 }
 
 export const crmCustomerProfilesMock = customerProfiles
+
+export { customerProfiles as crmCustomerProfilesData }

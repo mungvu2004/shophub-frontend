@@ -1,4 +1,4 @@
-import { http, HttpResponse } from 'msw'
+import { http, HttpResponse, delay } from 'msw'
 
 import {
   revenueMlForecastMock,
@@ -16,7 +16,8 @@ const rangeFactorMap = {
   90: 2.35,
 } as const
 
-const handleRevenueMlForecast = ({ request }: { request: Request }) => {
+const handleRevenueMlForecast = async ({ request }: { request: Request }) => {
+  await delay(800)
   const url = new URL(request.url)
   const parsedDays = Number(url.searchParams.get('days'))
   const days = [7, 30, 90].includes(parsedDays) ? (parsedDays as 7 | 30 | 90) : 30
@@ -38,17 +39,25 @@ const handleRevenueMlForecast = ({ request }: { request: Request }) => {
 }
 
 export const revenueHandlers = [
-  http.get('/api/revenue/summary-report', () => HttpResponse.json(revenueSummaryReportMock)),
+  http.get('/api/revenue/summary-report', async () => {
+    await delay(600)
+    return HttpResponse.json(revenueSummaryReportMock)
+  }),
   
-  http.get('/api/revenue/platform-comparison', () => HttpResponse.json(revenuePlatformComparisonMock)),
+  http.get('/api/revenue/platform-comparison', async () => {
+    await delay(700)
+    return HttpResponse.json(revenuePlatformComparisonMock)
+  }),
 
   http.get('/api/revenue/ml-forecast', handleRevenueMlForecast),
 
-  http.get('/api/revenue/ml-forecast/comparison', () => {
+  http.get('/api/revenue/ml-forecast/comparison', async () => {
+    await delay(500)
     return HttpResponse.json(mlForecastComparisonScenariosMock || [], { status: 200 })
   }),
 
   http.post('/api/revenue/ml-forecast/simulate', async ({ request }) => {
+    await delay(1200)
     try {
       const body = (await request.json()) as RevenueMlForecastScenarioInput
       const baseline = mlForecastComparisonScenariosMock?.[0]

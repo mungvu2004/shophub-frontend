@@ -1,7 +1,8 @@
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Loader2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { MESSAGES } from '@/constants/messages'
 import type { CRMReplyTemplate, CRMReviewItem } from '@/types/crm.types'
 
 type CRMReplyComposerPanelProps = {
@@ -10,6 +11,7 @@ type CRMReplyComposerPanelProps = {
   content: string
   selectedTone: 'important' | 'friendly'
   isPending: boolean
+  isSavingDraft?: boolean
   onTemplateClick: (template: CRMReplyTemplate) => void
   onContentChange: (value: string) => void
   onToneChange: (tone: 'important' | 'friendly') => void
@@ -23,6 +25,7 @@ export function CRMReplyComposerPanel({
   content,
   selectedTone,
   isPending,
+  isSavingDraft = false,
   onTemplateClick,
   onContentChange,
   onToneChange,
@@ -92,20 +95,22 @@ export function CRMReplyComposerPanel({
         <Button
           type="button"
           className="h-11 flex-1 rounded-xl bg-indigo-600 text-sm font-bold text-white hover:bg-indigo-700"
-          disabled={!content.trim() || isPending}
+          disabled={!content.trim() || isPending || isSavingDraft}
           onClick={onSend}
         >
-          Gửi phản hồi
+          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isPending ? MESSAGES.CRM.REVIEW.BUTTON.REPLY_LOADING : MESSAGES.CRM.REVIEW.BUTTON.REPLY}
         </Button>
 
         <Button
           type="button"
           variant="ghost"
           className="h-11 rounded-xl px-5 text-sm font-bold text-slate-600"
-          disabled={!content.trim() || isPending}
+          disabled={!content.trim() || isPending || isSavingDraft}
           onClick={onSaveDraft}
         >
-          Lưu nháp
+          {isSavingDraft && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isSavingDraft ? MESSAGES.CRM.REVIEW.BUTTON.DRAFT_LOADING : MESSAGES.CRM.REVIEW.BUTTON.SAVE_DRAFT}
         </Button>
       </div>
     </section>

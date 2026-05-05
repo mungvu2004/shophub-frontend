@@ -10,6 +10,7 @@ import { RevenueMlForecastView } from '@/features/revenue/components/revenue-ml-
 import { ScenarioSimulator } from '@/features/revenue/components/revenue-ml-forecast/ScenarioSimulator'
 import { RevenueMlForecastKpiStrip } from '@/features/revenue/components/revenue-ml-forecast/RevenueMlForecastKpiStrip'
 import { useRevenueMlForecast } from '@/features/revenue/hooks/useRevenueMlForecast'
+import { useRevenueForecastActions } from '@/features/revenue/hooks/useRevenueActions'
 import { buildRevenueMlForecastViewModel } from '@/features/revenue/logic/revenueMlForecast.logic'
 import { useProductData } from '@/features/products/hooks/useProductData'
 import type { RevenueMlForecastRangeDays } from '@/types/revenue.types'
@@ -38,6 +39,15 @@ export function RevenueMlForecast() {
     refetch
   } = useRevenueMlForecast(selectedDays)
 
+  const forecastActions = useRevenueForecastActions({
+    onSuccess: () => {
+      void refetch()
+    },
+    onError: (error) => {
+      console.error('Forecast action error:', error)
+    },
+  })
+
   const model = useMemo(() => {
     if (!forecast) return null
     return buildRevenueMlForecastViewModel(forecast, selectedDays)
@@ -51,7 +61,7 @@ export function RevenueMlForecast() {
   }, [allScenarios])
 
   // Logic for global buttons
-  const handleExportReport = () => {
+  const handleExportReport = async () => {
     const promise = new Promise((resolve) => setTimeout(resolve, 2000))
     toast.promise(promise, {
       loading: 'Đang khởi tạo tệp báo cáo dự báo...',
@@ -60,7 +70,8 @@ export function RevenueMlForecast() {
     })
   }
 
-  const handleApplyAll = () => {
+  const handleApplyAll = async () => {
+    await forecastActions.handleApplyCampaign()
     toast.success('Đã áp dụng toàn bộ chiến lược tăng trưởng vào hệ thống vận hành.', {
       description: 'Dữ liệu dự báo sẽ được cập nhật lại sau 24h.',
       icon: <Zap className="size-4 text-amber-500" />
@@ -129,6 +140,7 @@ export function RevenueMlForecast() {
               type="button"
               variant="outline"
               onClick={handleRefresh}
+              disabled={isLoading}
               className="h-10 rounded-xl border border-slate-200 bg-white/80 px-4 text-sm font-bold text-slate-700 shadow-sm backdrop-blur transition-all hover:bg-slate-50 hover:text-indigo-600"
             >
               <RefreshCcw className={cn("mr-2 size-4", isLoading && "animate-spin")} />
@@ -138,6 +150,9 @@ export function RevenueMlForecast() {
               type="button"
               variant="default"
               onClick={handleExportReport}
+              disabled={forecastActions.isProcessing}
+              isLoading={forecastActions.isProcessing}
+              loadingText="Đang xuất..."
               className="h-10 rounded-xl bg-slate-900 px-4 text-sm font-bold text-white shadow-sm transition-all hover:bg-slate-800"
             >
               <FileDown className="mr-2 size-4" />
@@ -280,6 +295,9 @@ export function RevenueMlForecast() {
                      </p>
                      <Button 
                       onClick={handleApplyAll}
+                      disabled={forecastActions.isApplying}
+                      isLoading={forecastActions.isApplying}
+                      loadingText={forecastActions.messages.applyLoading}
                       className="w-full h-10 bg-white text-indigo-600 hover:bg-indigo-50 font-bold text-xs uppercase tracking-wider rounded-xl border-none shadow-md active:scale-95 transition-all"
                      >
                         Áp dụng tất cả

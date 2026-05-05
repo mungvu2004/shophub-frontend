@@ -1,14 +1,17 @@
-import { Download, Search, Users } from 'lucide-react'
+import { Download, Plus, Search, Users } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ThemedPageHeader } from '@/components/shared/ThemedPageHeader'
+import { MESSAGES } from '@/constants/messages'
 
 type CRMCustomerProfilesHeaderProps = {
   searchValue: string
   onSearchChange: (value: string) => void
   exportLabel: string
   onExport: () => void
+  onAddCustomer: () => void
+  isProcessing?: boolean
 }
 
 export function CRMCustomerProfilesHeader({
@@ -16,6 +19,8 @@ export function CRMCustomerProfilesHeader({
   onSearchChange,
   exportLabel,
   onExport,
+  onAddCustomer,
+  isProcessing = false,
 }: CRMCustomerProfilesHeaderProps) {
   return (
     <ThemedPageHeader
@@ -35,9 +40,25 @@ export function CRMCustomerProfilesHeader({
           />
         </label>
 
-        <Button type="button" variant="outline" className="h-10 rounded-xl px-5 bg-white/80 backdrop-blur border-purple-200/50 text-purple-900 font-bold shadow-sm hover:bg-white hover:text-purple-700" onClick={onExport}>
+        <Button
+          type="button"
+          variant="outline"
+          className="h-10 rounded-xl px-5 bg-white/80 backdrop-blur border-purple-200/50 text-purple-900 font-bold shadow-sm hover:bg-white hover:text-purple-700"
+          onClick={onExport}
+          disabled={isProcessing}
+        >
           <Download className="size-4 mr-2" />
           {exportLabel}
+        </Button>
+
+        <Button
+          type="button"
+          className="h-10 rounded-xl bg-indigo-600 px-5 font-bold text-white shadow-sm hover:bg-indigo-700"
+          onClick={onAddCustomer}
+          disabled={isProcessing}
+        >
+          <Plus className="size-4 mr-2" />
+          {MESSAGES.CRM.CUSTOMER.BUTTON.ADD}
         </Button>
       </div>
     </ThemedPageHeader>

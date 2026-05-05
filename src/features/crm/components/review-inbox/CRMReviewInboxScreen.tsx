@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { CRMReviewFilterBar } from '@/features/crm/components/review-inbox/CRMReviewFilterBar'
 import { CRMReviewInboxHeader } from '@/features/crm/components/review-inbox/CRMReviewInboxHeader'
 import { CRMReplyComposerPanel } from '@/features/crm/components/review-inbox/CRMReplyComposerPanel'
@@ -11,27 +12,26 @@ import {
   useCRMReviewInboxList,
   useCRMReviewInboxSummary,
 } from '@/features/crm/hooks/useCRMReviewInbox'
+import { useCRMReviewCRUDActions } from '@/features/crm/hooks/useCRMReviewCRUDActions'
 import { useProductData } from '@/features/products/hooks/useProductData'
+import { MESSAGES } from '@/constants/messages'
 import type { CRMReplyTemplate, CRMReviewFilterStatus, CRMReviewSort } from '@/types/crm.types'
 
 export function CRMReviewInboxScreen() {
-  // Centralized product data from store
-  useProductData({
-    autoPreload: false,
-    pageName: 'CRMReviewInboxPage',
-  })
+  useProductData({ autoPreload: false, pageName: 'CRMReviewInboxPage' })
 
   const [status, setStatus] = useState<CRMReviewFilterStatus>('unreplied')
   const [sort, setSort] = useState<CRMReviewSort>('newest')
   const [selectedReviewIdState, setSelectedReviewIdState] = useState<string>()
   const [replyDraftByReviewId, setReplyDraftByReviewId] = useState<Record<string, string>>({})
   const [selectedTone, setSelectedTone] = useState<'important' | 'friendly'>('important')
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
   const summaryQuery = useCRMReviewInboxSummary()
   const listQuery = useCRMReviewInboxList({ status, sort })
+
   const selectedReviewId = useMemo(() => {
     if (!listQuery.data?.length) return undefined
-
     const hasSelected = listQuery.data.some((item) => item.id === selectedReviewIdState)
     return hasSelected ? selectedReviewIdState : listQuery.data[0].id
   }, [listQuery.data, selectedReviewIdState])
@@ -40,50 +40,55 @@ export function CRMReviewInboxScreen() {
     () => listQuery.data?.find((item) => item.id === selectedReviewId) ?? null,
     [listQuery.data, selectedReviewId],
   )
+
   const replyContent = useMemo(() => {
     if (!selectedReviewId) return ''
-
     const localDraft = replyDraftByReviewId[selectedReviewId]
     if (typeof localDraft === 'string') return localDraft
-
     if (selectedReview?.reply?.isDraft) return selectedReview.reply.content
     return ''
   }, [replyDraftByReviewId, selectedReview, selectedReviewId])
 
   const templatesQuery = useCRMReplyTemplates(selectedReviewId)
-  const { markReadMutation, sendReplyMutation } = useCRMReviewActions({ status, sort })
+  const { markReadMutation } = useCRMReviewActions({ status, sort })
 
-  const handleTemplateClick = (template: CRMReplyTemplate) => {
-    if (!selectedReviewId) return
+  const reviewCRUD = useCRMReviewCRUDActions(
+    { status, sort },
+    { onSuccess: () => setDeleteTargetId(null) },
+  )
 
-    setReplyDraftByReviewId((prev) => ({
-      ...prev,
-      [selectedReviewId]: template.content,
-    }))
-  }
+  const handleTemplateClick = useCallback(
+    (template: CRMReplyTemplate) => {
+      if (!selectedReviewId) return
+      setReplyDraftByReviewId((prev) => ({ ...prev, [selectedReviewId]: template.content }))
+    },
+    [selectedReviewId],
+  )
 
-  const handleSaveReply = (isDraft: boolean) => {
-    if (!selectedReviewId || !replyContent.trim()) return
-
-    sendReplyMutation.mutate(
-      {
+  const handleSaveReply = useCallback(
+    async (isDraft: boolean) => {
+      if (!selectedReviewId || !replyContent.trim()) return
+      await reviewCRUD.handleReply({
         reviewId: selectedReviewId,
         content: replyContent,
         tone: selectedTone,
         isDraft,
-      },
-      {
-        onSuccess: () => {
-          if (!isDraft) {
-            setReplyDraftByReviewId((prev) => ({
-              ...prev,
-              [selectedReviewId]: '',
-            }))
-          }
-        },
-      },
-    )
-  }
+      })
+      if (!isDraft) {
+        setReplyDraftByReviewId((prev) => ({ ...prev, [selectedReviewId]: '' }))
+      }
+    },
+    [selectedReviewId, replyContent, selectedTone, reviewCRUD],
+  )
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!deleteTargetId) return
+    await reviewCRUD.handleDelete(deleteTargetId)
+    if (selectedReviewIdState === deleteTargetId) setSelectedReviewIdState(undefined)
+  }, [deleteTargetId, reviewCRUD, selectedReviewIdState])
+
+  const isSending = reviewCRUD.isProcessing && reviewCRUD.actionType === 'updating'
+  const isDraftSaving = isSending
 
   return (
     <div className="space-y-6 pb-6">
@@ -103,8 +108,10 @@ export function CRMReviewInboxScreen() {
             items={listQuery.data ?? []}
             isLoading={listQuery.isLoading}
             selectedReviewId={selectedReviewId}
+            deletingReviewId={reviewCRUD.isProcessing && reviewCRUD.actionType === 'deleting' ? (deleteTargetId ?? undefined) : undefined}
             onSelect={setSelectedReviewIdState}
             onMarkRead={(reviewId) => markReadMutation.mutate(reviewId)}
+            onDelete={(reviewId) => setDeleteTargetId(reviewId)}
           />
         </div>
 
@@ -114,24 +121,32 @@ export function CRMReviewInboxScreen() {
             templates={templatesQuery.data ?? []}
             content={replyContent}
             selectedTone={selectedTone}
-            isPending={sendReplyMutation.isPending}
+            isPending={isSending}
+            isSavingDraft={isDraftSaving}
             onTemplateClick={handleTemplateClick}
             onContentChange={(value) => {
               if (!selectedReviewId) return
-
-              setReplyDraftByReviewId((prev) => ({
-                ...prev,
-                [selectedReviewId]: value,
-              }))
+              setReplyDraftByReviewId((prev) => ({ ...prev, [selectedReviewId]: value }))
             }}
             onToneChange={setSelectedTone}
-            onSaveDraft={() => handleSaveReply(true)}
-            onSend={() => handleSaveReply(false)}
+            onSaveDraft={() => void handleSaveReply(true)}
+            onSend={() => void handleSaveReply(false)}
           />
 
           <CRMWeeklyInsightCard insight={summaryQuery.data?.weeklyInsight ?? null} />
         </div>
       </section>
+
+      <ConfirmDialog
+        open={deleteTargetId !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTargetId(null) }}
+        title={MESSAGES.CRM.REVIEW.CONFIRM.DELETE_TITLE}
+        description={MESSAGES.CRM.REVIEW.CONFIRM.DELETE_DESC}
+        confirmText={MESSAGES.CRM.REVIEW.BUTTON.DELETE}
+        onConfirm={handleDeleteConfirm}
+        isConfirming={reviewCRUD.isProcessing && reviewCRUD.actionType === 'deleting'}
+        variant="danger"
+      />
     </div>
   )
 }

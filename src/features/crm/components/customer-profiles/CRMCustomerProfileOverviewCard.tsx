@@ -1,10 +1,12 @@
-import { PencilLine, Sparkles } from 'lucide-react'
+import { Loader2, PencilLine, Sparkles, Trash2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { MESSAGES } from '@/constants/messages'
 
 type CRMCustomerProfileOverviewCardProps = {
   selectedCustomer: {
+    id?: string
     avatarUrl: string
     fullName: string
     maskedPhone: string
@@ -15,12 +17,25 @@ type CRMCustomerProfileOverviewCardProps = {
     primaryCtaLabel: string
     secondaryCtaLabel: string
   } | null
+  isProcessing?: boolean
+  actionType?: 'creating' | 'updating' | 'deleting' | 'status-changing' | null
+  onEdit?: () => void
+  onDelete?: () => void
 }
 
-export function CRMCustomerProfileOverviewCard({ selectedCustomer }: CRMCustomerProfileOverviewCardProps) {
+export function CRMCustomerProfileOverviewCard({
+  selectedCustomer,
+  isProcessing = false,
+  actionType,
+  onEdit,
+  onDelete,
+}: CRMCustomerProfileOverviewCardProps) {
   if (!selectedCustomer) {
     return <div className="rounded-[12px] border border-slate-200 bg-white p-8 text-sm text-slate-500">Chưa có khách hàng nào được chọn.</div>
   }
+
+  const isDeleting = isProcessing && actionType === 'deleting'
+  const isEditing = isProcessing && actionType === 'updating'
 
   return (
     <section className="overflow-hidden rounded-[12px] bg-white shadow-[0px_12px_32px_0px_rgba(15,23,42,0.06)]">
@@ -65,14 +80,32 @@ export function CRMCustomerProfileOverviewCard({ selectedCustomer }: CRMCustomer
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="outline" className="h-9 rounded-lg border-[#3525cd] px-4 text-[#3525cd]">
+            <Button type="button" variant="outline" className="h-9 rounded-lg border-[#3525cd] px-4 text-[#3525cd]" disabled={isProcessing}>
               <Sparkles className="size-4" />
               {selectedCustomer.primaryCtaLabel}
             </Button>
-            <Button type="button" variant="outline" className="h-9 rounded-lg px-4 text-slate-900">
-              <PencilLine className="size-4" />
-              {selectedCustomer.secondaryCtaLabel}
+            <Button
+              type="button"
+              variant="outline"
+              className="h-9 rounded-lg px-4 text-slate-900"
+              disabled={isProcessing}
+              onClick={onEdit}
+            >
+              {isEditing ? <Loader2 className="size-4 animate-spin" /> : <PencilLine className="size-4" />}
+              {isEditing ? MESSAGES.CRM.CUSTOMER.BUTTON.EDIT_LOADING : MESSAGES.CRM.CUSTOMER.BUTTON.EDIT}
             </Button>
+            {onDelete && (
+              <Button
+                type="button"
+                variant="outline"
+                className="h-9 rounded-lg border-red-200 px-4 text-red-600 hover:bg-red-50"
+                disabled={isProcessing}
+                onClick={onDelete}
+              >
+                {isDeleting ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
+                {isDeleting ? MESSAGES.CRM.CUSTOMER.BUTTON.DELETE_LOADING : MESSAGES.CRM.CUSTOMER.BUTTON.DELETE}
+              </Button>
+            )}
           </div>
         </div>
       </div>

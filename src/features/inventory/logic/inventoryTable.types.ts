@@ -67,4 +67,9 @@ export interface InventoryTableViewModel {
   onOpenCostHistory?: (sku: string, productName: string) => void
   activeActionMenuId?: string | null
   setActiveActionMenuId?: (id: string | null) => void
+  // CRUD State for loading indicators
+  crudState?: {
+    isProcessing: boolean
+    actionType: 'creating' | 'updating' | 'deleting' | 'status-changing' | null
+  }
 }

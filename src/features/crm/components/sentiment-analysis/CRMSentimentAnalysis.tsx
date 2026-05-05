@@ -2,7 +2,8 @@ import { useCallback, useMemo, useState, startTransition } from 'react'
 
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { buildCRMSentimentAnalysisViewModel } from '@/features/crm/logic/crmSentimentAnalysis.logic'
-import { useCRMSentimentAnalysis, useCRMSentimentAnalysisActions } from '@/features/crm/hooks/useCRMSentimentAnalysis'
+import { useCRMSentimentAnalysis } from '@/features/crm/hooks/useCRMSentimentAnalysis'
+import { useCRMSentimentActions } from '@/features/crm/hooks/useCRMSentimentActions'
 import { useProductData } from '@/features/products/hooks/useProductData'
 import type { CRMSentimentPlatformFilter } from '@/types/crm.types'
 
@@ -27,7 +28,9 @@ export function CRMSentimentAnalysis() {
     platform: selectedPlatform,
     weekLabel: selectedWeek,
   })
-  const { sendReplyMutation } = useCRMSentimentAnalysisActions()
+  const sentimentActions = useCRMSentimentActions({
+    onSuccess: () => setActiveReplyReviewId(null),
+  })
 
   const handleSelectProduct = useCallback((id: string) => {
     // Đổi sản phẩm là tác vụ ưu tiên cao nhất
@@ -85,24 +88,16 @@ export function CRMSentimentAnalysis() {
   }
 
   const handleReplySubmit = useCallback(
-    (content: string) => {
+    async (content: string) => {
       if (!activeReplyReview || !content.trim()) return
-
-      sendReplyMutation.mutate(
-        {
-          reviewId: activeReplyReview.id,
-          content: content.trim(),
-          tone: 'important',
-          isDraft: false,
-        },
-        {
-          onSuccess: () => {
-            setActiveReplyReviewId(null)
-          },
-        },
-      )
+      await sentimentActions.handleReply({
+        reviewId: activeReplyReview.id,
+        content: content.trim(),
+        tone: 'important',
+        isDraft: false,
+      })
     },
-    [activeReplyReview, sendReplyMutation],
+    [activeReplyReview, sentimentActions],
   )
 
   if (isLoading && !model) {
@@ -143,7 +138,7 @@ export function CRMSentimentAnalysis() {
       }}
       onSubmitReply={handleReplySubmit}
       onCancelReply={() => setActiveReplyReviewId(null)}
-      isReplyPending={sendReplyMutation.isPending}
+      isReplyPending={sentimentActions.isProcessing}
       activeReplyReviewId={activeReplyReviewId}
     />
   )

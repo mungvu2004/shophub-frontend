@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { ApprovalBanner } from './ApprovalBanner'
 import { StockAdjustmentTable } from './StockAdjustmentTable'
 import { BulkImportDialog } from './BulkImportDialog'
+import { useStockAdjustmentActions } from '@/features/inventory/hooks/useStockAdjustmentActions'
 import { useStockAdjustment } from '@/features/inventory/hooks/useStockAdjustment'
 import { mockAdjustments } from '@/mocks/data/inventoryAdjustments'
 import { useProductData } from '@/features/products/hooks/useProductData'
@@ -16,14 +17,20 @@ export function StockAdjustmentView() {
   })
 
   const [isImportOpen, setIsImportOpen] = useState(false)
-  const { 
-    viewModel, 
-    updateItemQty, 
-    submitAdjustment, 
-    approveAdjustment, 
-    rejectAdjustment,
-    isSubmitting 
+  const {
+    viewModel,
+    updateItemQty,
+    submitAdjustment,
+    isSubmitting
   } = useStockAdjustment(mockAdjustments[0])
+
+  // Use standardized CRUD actions for approval/rejection
+  const adjustmentActions = useStockAdjustmentActions({
+    onSuccess: () => {
+      // Refresh data after successful action
+      console.log('Action completed successfully')
+    },
+  })
 
   const { adjustment, canApprove, canEdit, summary } = viewModel
 
@@ -55,11 +62,13 @@ export function StockAdjustmentView() {
         </div>
       </header>
 
-      <ApprovalBanner 
+      <ApprovalBanner
         adjustment={adjustment}
         canApprove={canApprove}
-        onApprove={approveAdjustment}
-        onReject={rejectAdjustment}
+        onApprove={() => adjustmentActions.handleApprove(adjustment.id)}
+        onReject={(reason) => adjustmentActions.handleReject(adjustment.id, reason)}
+        isProcessing={adjustmentActions.isProcessing}
+        actionType={adjustmentActions.isApproving ? 'approving' : adjustmentActions.isRejecting ? 'rejecting' : null}
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
@@ -79,17 +88,15 @@ export function StockAdjustmentView() {
              >
                <Save className="mr-2 size-4" /> Lưu bản nháp
              </Button>
-             <Button 
+             <Button
                className="rounded-xl bg-slate-900 px-8 font-bold text-white hover:bg-slate-800"
                onClick={submitAdjustment}
                disabled={isSubmitting || !canEdit}
+               isLoading={isSubmitting}
+               loadingText="Đang xử lý..."
              >
-               {isSubmitting ? "Đang xử lý..." : (
-                 <>
-                   <Send className="mr-2 size-4" /> 
-                   {adjustment.requiresApproval ? "Gửi duyệt" : "Xác nhận điều chỉnh"}
-                 </>
-               )}
+               <Send className="mr-2 size-4" />
+               {adjustment.requiresApproval ? "Gửi duyệt" : "Xác nhận điều chỉnh"}
              </Button>
           </div>
         </div>

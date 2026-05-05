@@ -70,9 +70,11 @@ export function CreateMovementDialog({ controller }: CreateMovementDialogProps) 
             <Button
               onClick={submit}
               disabled={isSubmitting || isLoadingData}
+              isLoading={isSubmitting}
+              loadingText={type === 'IMPORT' ? 'Đang nhập kho...' : 'Đang xuất kho...'}
               className={type === 'IMPORT' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'}
             >
-              {isSubmitting ? 'Đang xử lý...' : type === 'IMPORT' ? 'Xác nhận Nhập' : 'Xác nhận Xuất'}
+              {type === 'IMPORT' ? 'Xác nhận Nhập' : 'Xác nhận Xuất'}
             </Button>
           </div>
         </footer>

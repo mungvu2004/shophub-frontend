@@ -189,7 +189,9 @@ function buildHistory(order: Order | null, fallbackStatus: string | undefined): 
   ]
 }
 
-function buildReviews(order: Order | null, fallbackState: OrderDetailLocationState | null | undefined, getProduct?: (productId: string) => any): OrderDetailReviewItem[] {
+type ProductGetter = (productId: string) => { name?: string } | null | undefined
+
+function buildReviews(order: Order | null, fallbackState: OrderDetailLocationState | null | undefined, getProduct?: ProductGetter): OrderDetailReviewItem[] {
   let productName = fallbackState?.productName ?? 'Sản phẩm'
   
   // Use centralized product data if available
@@ -243,7 +245,7 @@ export function buildOrderDetailResponse(input: {
   id: string
   order: Order | null
   fallbackState?: OrderDetailLocationState | null
-  getProduct?: (productId: string) => any
+  getProduct?: ProductGetter
 }): OrderDetailResponse {
   const { id, order, fallbackState, getProduct } = input
 

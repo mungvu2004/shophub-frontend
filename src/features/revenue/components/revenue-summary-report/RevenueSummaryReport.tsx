@@ -6,6 +6,7 @@ import { RevenueDailyChartSection } from '@/features/revenue/components/revenue-
 import { RevenueKpiSection } from '@/features/revenue/components/revenue-summary-report/RevenueKpiSection'
 import { RevenueProfitTableSection } from '@/features/revenue/components/revenue-summary-report/RevenueProfitTableSection'
 import { RevenueSummaryHeader } from '@/features/revenue/components/revenue-summary-report/RevenueSummaryHeader'
+import { useRevenueSummaryActions } from '@/features/revenue/hooks/useRevenueActions'
 import {
   RevenueCostBreakdownSection,
   RevenueProfitFlowSection,
@@ -49,9 +50,21 @@ export function RevenueSummaryReport() {
 
   const { data, isLoading, isError, refetch } = useRevenueSummaryReport(reportMonth)
 
-  const handleExportPdf = () => {
-    toast.success('Đang mở hộp thoại in/PDF...')
-    window.print()
+  const revenueActions = useRevenueSummaryActions({
+    onSuccess: () => {
+      void refetch()
+    },
+    onError: (error) => {
+      console.error('Revenue action error:', error)
+    },
+  })
+
+  const handleExportPdf = async () => {
+    await revenueActions.handleExport()
+  }
+
+  const handleRefreshData = async () => {
+    await revenueActions.handleRefresh(reportMonth)
   }
 
   const handleViewTopProductsDetail = () => {
@@ -127,6 +140,9 @@ export function RevenueSummaryReport() {
         onRangeChange={(nextRange) => setSelectedRange(nextRange)}
         onPlatformChange={(nextPlatform) => setSelectedPlatform(nextPlatform)}
         onExportPdf={handleExportPdf}
+        onRefresh={handleRefreshData}
+        isExporting={revenueActions.isExporting}
+        isRefreshing={revenueActions.isRefreshing}
       />
 
       <RevenueKpiSection kpis={model.kpis} />

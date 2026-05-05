@@ -3,6 +3,7 @@ import type { Order } from '@/types/order.types'
 import { mockOrders } from '@/mocks/data/orders'
 import { mockOrdersReturns } from '@/mocks/data/ordersReturns'
 import { mockRevenueOrders } from '@/mocks/data/dashboardRevenueOrders'
+import { ordersPendingActionsHandlers } from './ordersPendingActions.handlers'
 
 const pendingStatuses = new Set(['Pending', 'PendingPayment', 'Confirmed', 'Packed', 'ReadyToShip', 'Shipped'])
 
@@ -36,6 +37,7 @@ function parseDateTime(value: string | null) {
 }
 
 export const ordersHandlers = [
+  ...ordersPendingActionsHandlers,
   // GET /api/orders - List orders
   http.get('/api/orders', async ({ request }) => {
     await delay(600)
@@ -149,6 +151,76 @@ export const ordersHandlers = [
         totalCount: sorted.length,
         summary,
       }),
+      { status: 200 }
+    )
+  }),
+
+  // GET /api/orders/returns - Get returns
+  http.get('/api/orders/returns', async ({ request }) => {
+    await delay(600)
+    const url = new URL(request.url)
+    const search = (url.searchParams.get('search') ?? '').trim().toLowerCase()
+    const platform = (url.searchParams.get('platform') ?? '').trim()
+    const page = Number(url.searchParams.get('page') ?? 1)
+    const pageSize = Number(url.searchParams.get('pageSize') ?? url.searchParams.get('limit') ?? 10)
+
+    const normalizedPage = Number.isNaN(page) || page < 1 ? 1 : page
+    const normalizedPageSize = Number.isNaN(pageSize) || pageSize < 1 ? 10 : pageSize
+
+    const baseFiltered = mockOrdersReturns.filter((item) => {
+      const target = `${item.orderCode} ${item.productName} ${item.customerName}`.toLowerCase()
+      const matchSearch = !search || target.includes(search)
+      const matchPlatform = !platform || item.platform === platform
+      return matchSearch && matchPlatform
+    })
+
+    const sorted = baseFiltered.sort((a, b) => new Date(b.happenedAt).getTime() - new Date(a.happenedAt).getTime())
+
+    const offset = (normalizedPage - 1) * normalizedPageSize
+    const paginatedItems = sorted.slice(offset, offset + normalizedPageSize)
+    const hasMore = offset + normalizedPageSize < sorted.length
+
+    const summary = {
+      totalReturns: baseFiltered.filter((item) => item.orderKind === 'return').length,
+      totalCancellations: baseFiltered.filter((item) => item.orderKind === 'cancel').length,
+      impactedRevenue: baseFiltered.reduce((sum, item) => sum + item.amount, 0),
+      returnsDeltaPercent: 12,
+      cancellationsDeltaPercent: -5,
+      platformBreakdown: {
+        shopee: baseFiltered.filter((item) => item.platform === 'shopee').length,
+        lazada: baseFiltered.filter((item) => item.platform === 'lazada').length,
+        tiktok_shop: baseFiltered.filter((item) => item.platform === 'tiktok_shop').length,
+      },
+      reasonAnalysis: [
+        { reason: 'defective', count: 124, percentage: 42, label: 'Sản phẩm lỗi' },
+        { reason: 'wrong_item', count: 68, percentage: 23, label: 'Sai hàng' },
+        { reason: 'change_of_mind', count: 45, percentage: 15, label: 'Đổi ý' },
+        { reason: 'late_delivery', count: 32, percentage: 11, label: 'Giao trễ' },
+        { reason: 'other', count: 26, percentage: 9, label: 'Khác' },
+      ],
+      trendData: [
+        { date: '01/03', returns: 5, cancellations: 2 },
+        { date: '03/03', returns: 8, cancellations: 4 },
+        { date: '05/03', returns: 12, cancellations: 3 },
+        { date: '07/03', returns: 7, cancellations: 6 },
+        { date: '09/03', returns: 15, cancellations: 4 },
+        { date: '11/03', returns: 10, cancellations: 8 },
+        { date: '13/03', returns: 18, cancellations: 5 },
+        { date: '15/03', returns: 14, cancellations: 7 },
+        { date: '17/03', returns: 22, cancellations: 4 },
+        { date: '19/03', returns: 16, cancellations: 9 },
+      ],
+      aiInsightText: 'Tỷ lệ Sản phẩm lỗi (42%) tăng cao đột biến tại sàn Shopee. Kiểm tra quy trình đóng gói và chất lượng lô hàng áo thun nhập ngày 10/03.',
+    }
+
+    return HttpResponse.json(
+      {
+        items: paginatedItems,
+        hasMore,
+        nextCursor: hasMore ? String(normalizedPage + 1) : undefined,
+        totalCount: sorted.length,
+        summary,
+      },
       { status: 200 }
     )
   }),
@@ -426,39 +498,71 @@ export const ordersHandlers = [
     )
   }),
 
-  // GET /api/orders/returns - Get returns
-  http.get('/api/orders/returns', async ({ request }) => {
+  // POST /api/orders/returns/:id/approve - Approve return
+  http.post('/api/orders/returns/:id/approve', async ({ params }) => {
+    await delay(700)
+    const id = params.id as string
+    const item = mockOrdersReturns.find((i) => i.id === id)
+    
+    if (!item) {
+      return HttpResponse.json(createErrorResponse('Không tìm thấy yêu cầu hoàn trả', 'NOT_FOUND'), { status: 404 })
+    }
+    
+    item.status = 'awaiting_pickup'
+    return HttpResponse.json(createSuccessResponse({ success: true }, 'Đã phê duyệt yêu cầu hoàn trả'), { status: 200 })
+  }),
+
+  // POST /api/orders/returns/:id/reject - Reject return
+  http.post('/api/orders/returns/:id/reject', async ({ params }) => {
+    await delay(700)
+    const id = params.id as string
+    const item = mockOrdersReturns.find((i) => i.id === id)
+    
+    if (!item) {
+      return HttpResponse.json(createErrorResponse('Không tìm thấy yêu cầu hoàn trả', 'NOT_FOUND'), { status: 404 })
+    }
+    
+    item.status = 'cancelled'
+    return HttpResponse.json(createSuccessResponse({ success: true }, 'Đã từ chối yêu cầu hoàn trả'), { status: 200 })
+  }),
+
+  // POST /api/orders/returns/:id/auto-refund - Auto refund
+  http.post('/api/orders/returns/:id/auto-refund', async ({ params }) => {
+    await delay(800)
+    const id = params.id as string
+    const item = mockOrdersReturns.find((i) => i.id === id)
+    
+    if (!item) {
+      return HttpResponse.json(createErrorResponse('Không tìm thấy yêu cầu hoàn trả', 'NOT_FOUND'), { status: 404 })
+    }
+    
+    item.status = 'refunded'
+    return HttpResponse.json(createSuccessResponse({ success: true }, 'Đã hoàn tiền tự động'), { status: 200 })
+  }),
+
+  // POST /api/orders/returns/:id/response - Send response
+  http.post('/api/orders/returns/:id/response', async ({ params }) => {
     await delay(600)
-    const url = new URL(request.url)
-    const search = (url.searchParams.get('search') ?? '').trim().toLowerCase()
-    const platform = (url.searchParams.get('platform') ?? '').trim()
-    const page = Number(url.searchParams.get('page') ?? 1)
-    const pageSize = Number(url.searchParams.get('pageSize') ?? url.searchParams.get('limit') ?? 10)
+    const id = params.id as string
+    const item = mockOrdersReturns.find((i) => i.id === id)
+    
+    if (!item) {
+      return HttpResponse.json(createErrorResponse('Không tìm thấy yêu cầu hoàn trả', 'NOT_FOUND'), { status: 404 })
+    }
+    
+    return HttpResponse.json(createSuccessResponse({ success: true }, 'Đã gửi phản hồi'), { status: 200 })
+  }),
 
-    const normalizedPage = Number.isNaN(page) || page < 1 ? 1 : page
-    const normalizedPageSize = Number.isNaN(pageSize) || pageSize < 1 ? 10 : pageSize
-
-    const baseFiltered = mockOrdersReturns.filter((item) => {
-      const target = `${item.orderCode} ${item.productName} ${item.customerName}`.toLowerCase()
-      const matchSearch = !search || target.includes(search)
-      const matchPlatform = !platform || item.platform === platform
-      return matchSearch && matchPlatform
-    })
-
-    const sorted = baseFiltered.sort((a, b) => new Date(b.happenedAt).getTime() - new Date(a.happenedAt).getTime())
-
-    const offset = (normalizedPage - 1) * normalizedPageSize
-    const paginatedItems = sorted.slice(offset, offset + normalizedPageSize)
-    const hasMore = offset + normalizedPageSize < sorted.length
-
-    return HttpResponse.json(
-      createSuccessResponse({
-        items: paginatedItems,
-        hasMore,
-        nextCursor: hasMore ? String(normalizedPage + 1) : undefined,
-        totalCount: sorted.length,
-      }),
-      { status: 200 }
-    )
+  // POST /api/orders/returns/:id/evidence - Upload evidence
+  http.post('/api/orders/returns/:id/evidence', async ({ params }) => {
+    await delay(800)
+    const id = params.id as string
+    const item = mockOrdersReturns.find((i) => i.id === id)
+    
+    if (!item) {
+      return HttpResponse.json(createErrorResponse('Không tìm thấy yêu cầu hoàn trả', 'NOT_FOUND'), { status: 404 })
+    }
+    
+    return HttpResponse.json(createSuccessResponse({ success: true }, 'Đã tải lên bằng chứng'), { status: 200 })
   }),
 ]

@@ -1,6 +1,7 @@
 import { apiClient } from '@/services/apiClient'
 import type {
   CRMReplyTemplate,
+  CRMReviewDeleteResponse,
   CRMReviewFilterStatus,
   CRMReviewInboxSummary,
   CRMReviewItem,
@@ -85,5 +86,23 @@ export const crmReviewInboxService = {
       tone: payload.tone,
       isDraft: payload.isDraft,
     })
+  },
+
+  async deleteReview(reviewId: string): Promise<CRMReviewDeleteResponse> {
+    const response = await apiClient.delete(`/crm/reviews/${reviewId}`)
+    const candidate = response.data as { data?: CRMReviewDeleteResponse } & CRMReviewDeleteResponse
+    if (candidate.data && 'deletedId' in candidate.data) return candidate.data
+    if (candidate.deletedId) return { deletedId: candidate.deletedId }
+    return { deletedId: reviewId }
+  },
+
+  async togglePriority(reviewId: string, isPriority: boolean): Promise<CRMReviewItem> {
+    const response = await apiClient.patch(`/crm/reviews/${reviewId}/priority`, { isPriority })
+    const items = toItems<CRMReviewItem>(response.data)
+    if (items.length > 0) return items[0]
+    const candidate = response.data as { data?: CRMReviewItem } & CRMReviewItem
+    if (candidate.data && 'id' in candidate.data) return candidate.data
+    if ('id' in candidate) return candidate as CRMReviewItem
+    throw new Error('Invalid toggle priority response')
   },
 }

@@ -1,11 +1,14 @@
+import { useState } from 'react'
 import { DataTable, type DataTableSortState } from '@/components/shared/DataTable'
 import { Pagination } from '@/components/ui/pagination'
 import { Button } from '@/components/ui/button'
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton'
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import type { InventoryTableViewModel } from '@/features/inventory/logic/inventoryTable.types'
 import { Trash2 } from 'lucide-react'
 import { useMemo } from 'react'
 import { getInventoryColumns } from './inventoryTableColumns'
+import { MESSAGES } from '@/constants/messages'
 
 type InventoryTableProps = {
   model: InventoryTableViewModel
@@ -13,6 +16,8 @@ type InventoryTableProps = {
 
 export function InventoryTable({ model }: InventoryTableProps) {
   const columns = useMemo(() => getInventoryColumns(model), [model]);
+
+  const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false)
 
   return (
     <div className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden flex flex-col">
@@ -33,11 +38,11 @@ export function InventoryTable({ model }: InventoryTableProps) {
             >
               Điều chỉnh hàng loạt
             </Button>
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="bg-white border-red-100 hover:bg-red-50 text-red-600 h-8 text-xs font-bold" 
-              onClick={() => { if (confirm(`Bạn có chắc muốn xóa ${model.selectedRows.length} mục này?`)) model.onDeleteRows?.(model.selectedRows); }}
+            <Button
+              size="sm"
+              variant="outline"
+              className="bg-white border-red-100 hover:bg-red-50 text-red-600 h-8 text-xs font-bold"
+              onClick={() => setIsBulkDeleteConfirmOpen(true)}
             >
               <Trash2 className="h-3.5 w-3.5" />
               <span className="ml-1.5">Xóa</span>
@@ -74,6 +79,22 @@ export function InventoryTable({ model }: InventoryTableProps) {
           pageSizeOptions={model.pageSizeOptions}
         />
       </div>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={isBulkDeleteConfirmOpen}
+        onOpenChange={setIsBulkDeleteConfirmOpen}
+        title={MESSAGES.INVENTORY.SKU.CONFIRM.DELETE_MULTIPLE_TITLE}
+        description={MESSAGES.INVENTORY.SKU.CONFIRM.DELETE_MULTIPLE_DESC.replace('{count}', String(model.selectedRows.length))}
+        confirmText="Xóa"
+        cancelText="Hủy bỏ"
+        onConfirm={async () => {
+          await model.onDeleteRows?.(model.selectedRows)
+          setIsBulkDeleteConfirmOpen(false)
+        }}
+        isConfirming={model.crudState?.isProcessing && model.crudState?.actionType === 'deleting'}
+        variant="danger"
+      />
     </div>
   )
 }

@@ -54,7 +54,7 @@ export const inventoryHandlers = [
         return false
       })
 
-      const isDiscontinued = (stock as any).isDiscontinued || false
+      const isDiscontinued = (stock as StockLevel & { isDiscontinued?: boolean }).isDiscontinued || false
       const isOut = stock.availableQty === 0 && !isDiscontinued
       const isLow = stock.availableQty > 0 && stock.availableQty <= (stock.minThreshold || 15) && !isDiscontinued
       const derivedStatus = isDiscontinued ? 'out-of-stock' : isOut ? 'out-of-stock' : isLow ? 'low-stock' : 'in-stock'
@@ -72,19 +72,6 @@ export const inventoryHandlers = [
       }),
       { status: 200 }
     )
-  }),
-
-  // GET /api/inventory/:id - Get SKU by ID
-  http.get('/api/inventory/:id', async ({ params }) => {
-    await delay(400)
-    const id = params.id as string
-    const sku = mockStockLevels.find((s) => s.id === id)
-
-    if (sku) {
-      return HttpResponse.json(createSuccessResponse(sku), { status: 200 })
-    }
-
-    return HttpResponse.json(createErrorResponse('Không tìm thấy SKU', 'NOT_FOUND'), { status: 404 })
   }),
 
   // POST /api/inventory - Create SKU
@@ -259,8 +246,8 @@ export const inventoryHandlers = [
 
     const payload = buildInventoryStockMovementsResponse({
       search: url.searchParams.get('search') ?? undefined,
-      platform: (platform === 'all' ? undefined : platform as any) ?? undefined,
-      movementGroup: (movementGroup === 'all' ? undefined : movementGroup as any) ?? undefined,
+    const platform = (platform === 'all' ? undefined : platform as string) ?? undefined,
+      movementGroup: (movementGroup === 'all' ? undefined : movementGroup as string) ?? undefined,
       warehouseId: (warehouseId === 'all' ? undefined : warehouseId) ?? undefined,
       page: Number(url.searchParams.get('page') ?? 1),
       pageSize: Number(url.searchParams.get('pageSize') ?? 10),
@@ -286,7 +273,7 @@ export const inventoryHandlers = [
       mockAdjustments[index].approvedAt = new Date().toISOString()
 
       // Apply adjustment to stock from items
-      const adjustment = mockAdjustments[index] as any
+      const adjustment = mockAdjustments[index] as (typeof mockAdjustments[number]) & { items?: Array<{ stockLevelId: string; difference: number }> }
       if (adjustment.items && Array.isArray(adjustment.items)) {
         for (const item of adjustment.items) {
           const skuIndex = mockStockLevels.findIndex((s) => s.id === item.stockLevelId)
@@ -315,7 +302,7 @@ export const inventoryHandlers = [
     const index = mockAdjustments.findIndex((a) => a.id === id)
 
     if (index !== -1) {
-      const adj = mockAdjustments[index] as any
+      const adj = mockAdjustments[index] as (typeof mockAdjustments[number]) & { rejectionReason?: string }
       adj.status = 'REJECTED'
       adj.approvedAt = new Date().toISOString()
       adj.rejectionReason = body.reason
@@ -343,5 +330,18 @@ export const inventoryHandlers = [
       || mockInventoryAIForecastDetails['AT-WHT-XL']
 
     return HttpResponse.json(createSuccessResponse(details), { status: 200 })
+  }),
+
+  // GET /api/inventory/:id - Get SKU by ID (must be last to avoid shadowing specific routes)
+  http.get('/api/inventory/:id', async ({ params }) => {
+    await delay(400)
+    const id = params.id as string
+    const sku = mockStockLevels.find((s) => s.id === id)
+
+    if (sku) {
+      return HttpResponse.json(createSuccessResponse(sku), { status: 200 })
+    }
+
+    return HttpResponse.json(createErrorResponse('Không tìm thấy SKU', 'NOT_FOUND'), { status: 404 })
   }),
 ]

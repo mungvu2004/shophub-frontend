@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Loader2, SendHorizontal, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { MESSAGES } from '@/constants/messages'
 
 type SentimentAnalysisReplyComposerProps = {
   reviewId: string
@@ -67,7 +68,7 @@ export function SentimentAnalysisReplyComposer({
           className="h-9 rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white hover:bg-indigo-700"
         >
           {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <SendHorizontal className="mr-2 h-4 w-4" />}
-          Gửi phản hồi
+          {isPending ? MESSAGES.CRM.SENTIMENT.BUTTON.REPLY_LOADING : MESSAGES.CRM.SENTIMENT.BUTTON.REPLY}
         </Button>
       </div>
     </section>

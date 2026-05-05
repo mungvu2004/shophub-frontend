@@ -1,4 +1,4 @@
-import { CalendarDays, TrendingUp } from 'lucide-react'
+import { CalendarDays, TrendingUp, RefreshCcw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 import { Button } from '@/components/ui/button'
@@ -12,6 +12,9 @@ type RevenueSummaryHeaderProps = {
   onRangeChange: (range: RevenueRange) => void
   onPlatformChange: (platform: RevenueSummaryPlatformFilter) => void
   onExportPdf: () => void
+  onRefresh?: () => void
+  isExporting?: boolean
+  isRefreshing?: boolean
 }
 
 const ranges: Array<{ value: RevenueRange; label: string }> = [
@@ -35,6 +38,9 @@ export function RevenueSummaryHeader({
   onRangeChange,
   onPlatformChange,
   onExportPdf,
+  onRefresh,
+  isExporting = false,
+  isRefreshing = false,
 }: RevenueSummaryHeaderProps) {
   return (
     <ThemedPageHeader
@@ -90,11 +96,29 @@ export function RevenueSummaryHeader({
           </div>
         </div>
 
+        {onRefresh && (
+          <Button
+            type="button"
+            onClick={onRefresh}
+            variant="outline"
+            size="lg"
+            disabled={isRefreshing}
+            isLoading={isRefreshing}
+            loadingText="Đang tải..."
+            className="gap-2 rounded-2xl bg-white/80 px-5 shadow-sm backdrop-blur"
+          >
+            <RefreshCcw className="size-4" />
+            <span>Làm mới</span>
+          </Button>
+        )}
         <Button
           type="button"
           onClick={onExportPdf}
           variant="outline"
           size="lg"
+          disabled={isExporting}
+          isLoading={isExporting}
+          loadingText="Đang xuất..."
           className="gap-2 rounded-2xl bg-white/80 px-5 shadow-sm backdrop-blur"
         >
           <CalendarDays className="size-4" />

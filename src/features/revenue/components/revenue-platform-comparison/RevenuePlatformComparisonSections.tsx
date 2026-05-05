@@ -17,6 +17,7 @@ import {
 import {
   Download,
   Music2,
+  RefreshCcw,
   Settings2,
   ShoppingBag,
   Sparkles,
@@ -171,14 +172,32 @@ function SectionHeader({
 
 import { ThemedPageHeader } from '@/components/shared/ThemedPageHeader'
 
+type PlatformActions = {
+  isProcessing: boolean
+  isSyncing: boolean
+  isExporting: boolean
+  handleSync: (month: string) => Promise<void>
+  handleExport: () => Promise<void>
+  messages: {
+    sync: string
+    syncLoading: string
+    export: string
+    exportLoading: string
+  }
+}
+
 export function RevenueComparisonHeader({
   title,
   subtitle,
   monthLabel,
+  platformActions,
+  selectedMonth,
 }: {
   title: string
   subtitle: string
   monthLabel: string
+  platformActions?: PlatformActions
+  selectedMonth?: string
 }) {
   const navigate = useNavigate()
   const selectedDate = useUIStore((state) => state.selectedDate)
@@ -196,9 +215,19 @@ export function RevenueComparisonHeader({
     toast.success('Đã chuyển về dữ liệu tháng hiện tại.')
   }
 
-  const handleExportReport = () => {
-    toast.success('Đang mở hộp thoại in/PDF...')
-    window.print()
+  const handleExportReport = async () => {
+    if (platformActions) {
+      await platformActions.handleExport()
+    } else {
+      toast.success('Đang mở hộp thoại in/PDF...')
+      window.print()
+    }
+  }
+
+  const handleSyncData = async () => {
+    if (platformActions && selectedMonth) {
+      await platformActions.handleSync(selectedMonth)
+    }
   }
 
   return (
@@ -230,14 +259,33 @@ export function RevenueComparisonHeader({
           </Button>
         </div>
 
-        <Button
-          className="h-10 w-full rounded-xl bg-slate-900 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"
-          onClick={handleExportReport}
-          type="button"
-        >
-          <Download className="mr-2 size-4" />
-          Xuất báo cáo
-        </Button>
+        <div className="flex gap-2">
+          {platformActions && (
+            <Button
+              variant="outline"
+              className="h-10 flex-1 rounded-xl bg-white/80 text-sm font-semibold shadow-sm backdrop-blur"
+              onClick={handleSyncData}
+              disabled={platformActions.isSyncing}
+              isLoading={platformActions.isSyncing}
+              loadingText={platformActions.messages.syncLoading}
+              type="button"
+            >
+              <RefreshCcw className="mr-2 size-4" />
+              {platformActions.messages.sync}
+            </Button>
+          )}
+          <Button
+            className="h-10 flex-1 rounded-xl bg-slate-900 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"
+            onClick={handleExportReport}
+            disabled={platformActions?.isExporting}
+            isLoading={platformActions?.isExporting}
+            loadingText={platformActions?.messages.exportLoading}
+            type="button"
+          >
+            <Download className="mr-2 size-4" />
+            Xuất báo cáo
+          </Button>
+        </div>
       </div>
     </ThemedPageHeader>
   )

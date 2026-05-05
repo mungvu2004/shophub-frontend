@@ -214,6 +214,27 @@ export type CRMSentimentKeyword = {
   percent: number
 }
 
+export type CRMCustomerSegmentKey = 'vip_gold' | 'regular_blue' | 'at_risk_red'
+
+export type CRMCustomerCreatePayload = {
+  fullName: string
+  maskedPhone: string
+  email: string
+  segment: CRMCustomerSegmentKey
+  platformCodes: CRMReviewPlatform[]
+}
+
+export type CRMCustomerUpdatePayload = Partial<CRMCustomerCreatePayload>
+
+export type CRMReviewDeleteResponse = {
+  deletedId: string
+}
+
+export type CRMReviewStatusChangePayload = {
+  reviewId: string
+  isPriority: boolean
+}
+
 export type CRMSentimentAnalysisResponse = {
   productName: string
   sku: string

@@ -1,7 +1,8 @@
-import { MoreVertical, Sparkles } from 'lucide-react'
+import { Loader2, Sparkles, Trash2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { CRMStatusBadge } from '@/features/crm/components/shared/CRMStatusBadge'
 import {
   buildStars,
   formatTimeAgo,
@@ -11,16 +12,19 @@ import {
   getSentimentClass,
   getSentimentLabel,
 } from '@/features/crm/logic/crmReviewInbox.logic'
+import { MESSAGES } from '@/constants/messages'
 import type { CRMReviewItem } from '@/types/crm.types'
 
 type CRMReviewCardProps = {
   review: CRMReviewItem
   isSelected: boolean
+  isDeleting?: boolean
   onSelect: (reviewId: string) => void
   onMarkRead: (reviewId: string) => void
+  onDelete: (reviewId: string) => void
 }
 
-export function CRMReviewCard({ review, isSelected, onSelect, onMarkRead }: CRMReviewCardProps) {
+export function CRMReviewCard({ review, isSelected, isDeleting = false, onSelect, onMarkRead, onDelete }: CRMReviewCardProps) {
   return (
     <article
       className={cn(
@@ -45,13 +49,26 @@ export function CRMReviewCard({ review, isSelected, onSelect, onMarkRead }: CRMR
 
           <span className="font-mono text-[11px] text-slate-400">{formatTimeAgo(review.createdAt)}</span>
 
-          {review.isPriority ? (
-            <span className="rounded-md bg-red-100 px-2 py-1 text-[10px] font-bold uppercase text-red-700">Ưu tiên</span>
-          ) : null}
+          {review.isPriority && (
+            <CRMStatusBadge variant="priority" label={MESSAGES.CRM.REVIEW.STATUS.PRIORITY} />
+          )}
+
+          <CRMStatusBadge
+            variant={review.isReplied ? 'replied' : 'unreplied'}
+            label={review.isReplied ? MESSAGES.CRM.REVIEW.STATUS.REPLIED : MESSAGES.CRM.REVIEW.STATUS.UNREPLIED}
+          />
         </div>
 
-        <Button type="button" variant="ghost" size="icon-sm" className="text-slate-400">
-          <MoreVertical className="h-4 w-4" />
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          className="shrink-0 text-red-400 hover:bg-red-50 hover:text-red-600"
+          disabled={isDeleting}
+          onClick={() => onDelete(review.id)}
+          title={MESSAGES.CRM.REVIEW.BUTTON.DELETE}
+        >
+          {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
         </Button>
       </div>
 
@@ -76,6 +93,7 @@ export function CRMReviewCard({ review, isSelected, onSelect, onMarkRead }: CRMR
           size="sm"
           className="h-9 rounded-xl bg-orange-500 px-4 text-xs font-bold text-white hover:bg-orange-600"
           onClick={() => onSelect(review.id)}
+          disabled={isDeleting}
         >
           Trả lời ngay
         </Button>
@@ -86,11 +104,10 @@ export function CRMReviewCard({ review, isSelected, onSelect, onMarkRead }: CRMR
           variant="ghost"
           className="h-9 rounded-xl px-4 text-xs font-bold text-slate-500"
           onClick={() => onMarkRead(review.id)}
+          disabled={isDeleting}
         >
-          Đánh dấu đọc
+          {MESSAGES.CRM.REVIEW.BUTTON.MARK_READ}
         </Button>
-
-        {review.isReplied ? <span className="text-xs font-semibold text-emerald-600">Đã trả lời</span> : null}
       </div>
     </article>
   )
