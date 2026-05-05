@@ -5,92 +5,204 @@ import type {
   CRMReviewSentiment,
   CRMWeeklyInsight,
 } from '@/types/crm.types'
+import { mockProducts } from './products'
 
-export const crmReviewInboxMock: CRMReviewItem[] = [
-  {
-    id: 'crv-1001',
-    platform: 'shopee',
-    rating: 1,
-    productName: 'Áo thun basic L',
-    customerName: 'Nguyễn Văn A',
+const vietnameseNames = [
+  'Nguyễn Văn A',
+  'Trần Thị B',
+  'Phạm Minh C',
+  'Hoàng Gia D',
+  'Võ Hữu E',
+  'Tô Bích F',
+  'Dương Nam G',
+  'Nông Hoa H',
+  'Lý Sơn I',
+  'Vương Linh J',
+  'Bùi Tuấn K',
+  'Trương Lan L',
+  'Lê Hùng M',
+  'Đinh Hạo N',
+  'Phan Yến O',
+];
+
+const positiveComments = [
+  'Sản phẩm đúng mô tả, chất lượng tốt!',
+  'Giao hàng nhanh, đóng gói kỹ lưỡng.',
+  'Rất hài lòng với sản phẩm này. Sẽ mua tiếp!',
+  'Chất liệu đẹp, mặc rất thoải mái.',
+  'Giá cả hợp lý so với chất lượng.',
+  'Shop phục vụ tốt, giao hàng nhanh chóng.',
+  'Sẽ giới thiệu cho bạn bè!',
+  'Sản phẩm bền, rất đáng mua.',
+  'Mặc lên trông gọn gàng, rất hài lòng!',
+  'Vải mềm mại, không làm ngứa da.',
+  'Màu sắc giống ảnh quảng cáo, tuyệt!',
+  'Giao nhanh, đóng gói cẩn thận.',
+  'Giá rẻ mà chất lượng tốt, rất đáng.',
+  'Shop nhanh nhẹn, trả lời tin nhắn ngay.',
+  'Đã mua lần 3, rất ưng ý sản phẩm này.',
+  'Chất cotton tự nhiên, mặc rất mát.',
+  'May đo tỉ mỉ, không có điểm lỗi nào.',
+  'Khâu chắc chắn, không lo sẽ tụt chỉ.',
+  'Mua cho cả gia đình, ai cũng thích!',
+  'Trị giá tiền, sẽ quay lại mua tiếp.',
+];
+
+const negativeComments = [
+  'Vải mỏng hơn kỳ vọng, thất vọng.',
+  'Size không đúng như mô tả.',
+  'Giao hàng chậm, chưa có phản hồi từ shop.',
+  'Màu sắc khác với ảnh quảng cáo.',
+  'Chất lượng không tốt, dễ bị xỉn màu.',
+  'Khâu không chắc chắn, dễ tụt chỉ.',
+  'Shop phục vụ chậm, không phản hồi tin nhắn.',
+  'Sản phẩm có lỗi từ khi gửi đến.',
+  'Form quá rộng, mặc như váy.',
+  'Bó sát quá mức, khó chịu.',
+  'Hàng không như ảnh, hơi hụi.',
+  'Giao lâu hơn thời gian hứa hẹn.',
+  'Nhân viên shop tỏ thái độ không vui.',
+  'Sản phẩm bị lỏng chỉ, cần may lại.',
+  'Xịn giặt lần đầu là phai màu.',
+  'Bo cổ bị cứng, khó chịu.',
+  'Mua không đúng dịp, giao chậm cả tuần.',
+  'Chất lượng kém, không đáng giá.',
+  'Nút bị tuột sau vài lần mặc.',
+  'Hình ảnh quảng cáo khác hàng thực tế.',
+];
+
+const neutralComments = [
+  'Sản phẩm bình thường, có thể tốt hơn.',
+  'Cần cập nhật bảng size chi tiết hơn.',
+  'Giao hàng ổn, nhưng chất lượng có thể tốt hơn.',
+  'Có thể dùng được nhưng không thật tuyệt vời.',
+  'Giá hơi cao so với chất lượng.',
+  'Hình ảnh sản phẩm không rõ lắm.',
+  'Muốn có nhiều màu sắc hơn.',
+  'Ok, nhưng chưa quá xuất sắc.',
+  'Bình thường, không có gì đặc biệt.',
+  'May ổn, nhưng vải chưa thật cao cấp.',
+  'Mặc ổn nhưng nên có hướng dẫn bảo quản.',
+  'Giao hàng bình thường, không nhanh lắm.',
+  'Giá tạm ổn, nhưng shop khác rẻ hơn.',
+  'Sản phẩm dùng được, kỳ vọng cao hơn.',
+  'Không có lỗi nhưng cũng không xuất sắc.',
+  'May tạm được, nhưng vải chưa mềm lắm.',
+  'Ok trong tầm giá, chấp nhận được.',
+];
+
+
+const negativeTopics = [
+  ['Kích thước', 'Chất liệu'],
+  ['Màu sắc', 'Vận chuyển'],
+  ['Chất lượng', 'Khâu'],
+  ['Tốc độ phản hồi', 'Vận chuyển'],
+  ['Chất liệu', 'Độ bền'],
+];
+
+const positiveTopics = [
+  ['Giao hàng', 'Chất lượng'],
+  ['Chất lượng', 'Giá cả'],
+  ['Đóng gói', 'Chất lượng'],
+  ['Giao hàng', 'Phục vụ'],
+  ['Chất liệu', 'Kích thước'],
+];
+
+const neutralTopics = [
+  ['Thông tin size', 'Mô tả sản phẩm'],
+  ['Giá cả', 'Chất lượng'],
+  ['Lựa chọn màu', 'Kích thước'],
+  ['Mô tả sản phẩm', 'Hình ảnh'],
+];
+
+/**
+ * Generate 150 reviews with realistic distribution:
+ * - 70% positive (105 reviews)
+ * - 15% neutral (23 reviews)
+ * - 15% negative (22 reviews)
+ */
+export const crmReviewInboxMock: CRMReviewItem[] = Array.from({ length: 150 }, (_, idx) => {
+  const n = idx + 1;
+  const product = mockProducts[n % mockProducts.length];
+  const DAY_IN_MS = 24 * 60 * 60 * 1000;
+  const baseDate = new Date('2026-05-05T00:00:00Z');
+  
+  // Spread reviews over 60 days (2 months)
+  const createdAt = new Date(baseDate.getTime() - ((n % 60) * DAY_IN_MS));
+  
+  // Deterministic sentiment distribution
+  let sentimentType: CRMReviewSentiment;
+  let rating: number;
+  
+  if (n % 100 < 70) {
+    // 70% positive
+    sentimentType = 'positive';
+    rating = n % 5 === 0 ? 5 : 4;
+  } else if (n % 100 < 85) {
+    // 15% neutral
+    sentimentType = 'neutral';
+    rating = 3;
+  } else {
+    // 15% negative
+    sentimentType = 'negative';
+    rating = n % 3 === 0 ? 2 : 1;
+  }
+  
+  let comment = '';
+  let topics: string[] = [];
+  let confidence = 0;
+  
+  if (sentimentType === 'negative') {
+    comment = negativeComments[n % negativeComments.length];
+    topics = negativeTopics[n % negativeTopics.length];
+    confidence = 70 + (n % 25);
+  } else if (sentimentType === 'positive') {
+    comment = positiveComments[n % positiveComments.length];
+    topics = positiveTopics[n % positiveTopics.length];
+    confidence = 90 + (n % 10);
+  } else {
+    comment = neutralComments[n % neutralComments.length];
+    topics = neutralTopics[n % neutralTopics.length];
+    confidence = 65 + (n % 25);
+  }
+  
+  // Reply rate: 60% of positive/neutral, 80% of negative
+  const isReplied = sentimentType === 'negative' ? (n % 5 !== 0) : (n % 5 < 3);
+  const isPriority = sentimentType === 'negative' || (sentimentType === 'neutral' && n % 7 === 0);
+  
+  return {
+    id: `crv-${String(1000 + n).padStart(4, "0")}`,
+    platform: (['shopee', 'tiktok_shop', 'lazada'] as const)[n % 3],
+    rating,
+    productId: product.id,
+    productName: product.name,
+    customerName: vietnameseNames[n % vietnameseNames.length],
     customerMaskedPhone: '***',
-    comment:
-      'Vải quá mỏng, size L mặc như M. Thất vọng. Shop phục vụ không tốt, nhắn tin không ai rep.',
-    createdAt: '2026-03-31T08:10:00.000Z',
-    isPriority: true,
-    isReplied: false,
-    isRead: false,
+    comment,
+    createdAt: createdAt.toISOString(),
+    isPriority,
+    isReplied,
+    isRead: n % 3 === 0,
     ai: {
-      sentiment: 'negative',
-      confidence: 94,
-      topics: ['Kích thước', 'Chất liệu'],
+      sentiment: sentimentType,
+      confidence,
+      topics,
     },
-  },
-  {
-    id: 'crv-1002',
-    platform: 'tiktok',
-    rating: 5,
-    productName: 'Váy hoa nhí M',
-    customerName: 'Lê Thị B',
-    customerMaskedPhone: '***',
-    comment:
-      'Váy đẹp, giao nhanh, đóng gói kỹ. 5 sao! Sẽ ủng hộ shop thêm nhiều lần nữa nhen.',
-    createdAt: '2026-03-30T07:20:00.000Z',
-    isPriority: false,
-    isReplied: true,
-    isRead: true,
-    ai: {
-      sentiment: 'positive',
-      confidence: 97,
-      topics: ['Giao hàng', 'Chất lượng'],
-    },
-    reply: {
-      id: 'reply-2001',
-      tone: 'friendly',
-      content: 'Cảm ơn bạn đã ủng hộ. Shop rất vui và mong tiếp tục phục vụ bạn!',
-      isDraft: false,
-      createdAt: '2026-03-30T08:00:00.000Z',
-    },
-  },
-  {
-    id: 'crv-1003',
-    platform: 'lazada',
-    rating: 2,
-    productName: 'Áo khoác gió M',
-    customerName: 'Trần Minh C',
-    customerMaskedPhone: '***',
-    comment:
-      'Áo đẹp nhưng giao hàng hơi lâu, shop tư vấn hơi chậm nên mình hơi mệt.',
-    createdAt: '2026-03-29T11:40:00.000Z',
-    isPriority: false,
-    isReplied: false,
-    isRead: true,
-    ai: {
-      sentiment: 'negative',
-      confidence: 71,
-      topics: ['Tốc độ phản hồi', 'Vận chuyển'],
-    },
-  },
-  {
-    id: 'crv-1004',
-    platform: 'shopee',
-    rating: 4,
-    productName: 'Quần jean suông S',
-    customerName: 'Phạm Gia D',
-    customerMaskedPhone: '***',
-    comment:
-      'Quần đẹp và đúng mô tả, nhưng mình vẫn muốn shop gửi bảng size chi tiết hơn.',
-    createdAt: '2026-03-28T10:00:00.000Z',
-    isPriority: false,
-    isReplied: false,
-    isRead: true,
-    ai: {
-      sentiment: 'neutral',
-      confidence: 68,
-      topics: ['Thông tin size'],
-    },
-  },
-]
+    ...(isReplied && {
+      reply: {
+        id: `reply-${String(2000 + n).padStart(4, "0")}`,
+        tone: sentimentType === 'negative' ? 'important' : 'friendly',
+        content: sentimentType === 'negative' 
+          ? 'Chào bạn, shop xin lỗi vì trải nghiệm chưa như ý. Shop sẽ cải thiện hơn. Vui lòng liên hệ shop để hỗ trợ đổi trả!'
+          : (sentimentType === 'positive' 
+            ? `Cảm ơn bạn đã ủng hộ! Shop rất vui và mong tiếp tục phục vụ bạn!`
+            : 'Cảm ơn bạn đã góp ý. Shop sẽ xem xét cập nhật sớm nhất!'),
+        isDraft: false,
+        createdAt: new Date(createdAt.getTime() + 2 * 60 * 60 * 1000).toISOString(),
+      },
+    }),
+  };
+});
 
 export const crmReplyTemplatesBySentiment: Record<CRMReviewSentiment, CRMReplyTemplate[]> = {
   negative: [

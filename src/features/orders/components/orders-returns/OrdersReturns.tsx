@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { PageSkeleton } from '@/components/ui/PageSkeleton'
+import { useProductData } from '@/features/products/hooks/useProductData'
 import { OrdersReturnsView } from '@/features/orders/components/orders-returns/OrdersReturnsView'
 import { OrdersReturnsDetailDialog } from '@/features/orders/components/orders-returns/OrdersReturnsDetailDialog'
 import { useOrdersReturnsData } from '@/features/orders/hooks/useOrdersReturnsData'
@@ -10,6 +11,12 @@ import { buildOrdersReturnsViewModel } from '@/features/orders/logic/ordersRetur
 import type { OrdersReturnsPlatformFilter, OrdersReturnsTableRowModel, OrdersReturnsTimelineItemModel } from '@/features/orders/logic/ordersReturns.types'
 
 export function OrdersReturns() {
+  // Centralized product data from store
+  useProductData({
+    autoPreload: false,
+    pageName: 'OrdersReturnsPage',
+  })
+
   const [search, setSearch] = useState('')
   const [platform, setPlatform] = useState<OrdersReturnsPlatformFilter>('all')
   const [page, setPage] = useState(1)

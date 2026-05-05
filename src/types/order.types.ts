@@ -48,6 +48,7 @@ export interface Order {
 export interface OrderItem {
   id: string; // Source: OrderItems.Id | nullable: no
   orderId: string; // Source: OrderItems.OrderId | nullable: no
+  productId?: string; // Product ID from sync/match - helps with product lookup
   variantId?: string; // Source: OrderItems.VariantId | nullable: yes
   externalOrderItemId: string; // Source: OrderItems.ExternalOrderItemId | nullable: no
   externalSkuRef?: string; // Source: OrderItems.ExternalSkuRef | nullable: yes

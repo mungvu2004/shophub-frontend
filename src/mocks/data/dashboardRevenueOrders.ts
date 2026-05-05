@@ -1,89 +1,47 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { RevenueOrderItem } from '@/features/dashboard/services/dashboardService'
-import { mockProducts } from './products'
+import { mockOrders } from './orders'
 
 /**
- * Generate mock revenue orders for the past 30 days with platform distribution
+ * Derive revenue orders from actual mockOrders for consistency
+ * Maps all 50 orders to RevenueOrderItem format
  */
 const generateRevenueOrders = (): RevenueOrderItem[] => {
-  const orders: RevenueOrderItem[] = []
-  const today = new Date()
-  today.setHours(23, 59, 59, 999)
-  const platforms: Array<'shopee' | 'lazada' | 'tiktok'> = ['shopee', 'lazada', 'tiktok']
-
-  let orderId = 1
-
-  // Generate orders for past 30 days
-  for (let dayOffset = 29; dayOffset >= 0; dayOffset--) {
-    const currentDate = new Date(today)
-    currentDate.setDate(today.getDate() - dayOffset)
-    
-    // Use local date parts to ensure consistency with toLocalDateKey in logic
-    const year = currentDate.getFullYear()
-    const month = String(currentDate.getMonth() + 1).padStart(2, '0')
-    const day = String(currentDate.getDate()).padStart(2, '0')
-    const dateStr = `${year}-${month}-${day}`
-
-    // Number of orders per day varies (10-30 orders for more realistic charts)
-    // Make today and yesterday have slightly different patterns to test change percentage
-    let ordersPerDay = 15 + Math.floor(Math.random() * 20)
-    
-    // Artificial spike/dip for testing delta
-    if (dayOffset === 0) ordersPerDay = 25 // Today
-    if (dayOffset === 1) ordersPerDay = 20 // Yesterday
-
-    for (let i = 0; i < ordersPerDay; i++) {
-      const platform = platforms[Math.floor(Math.random() * platforms.length)]
-      const hour = Math.floor(Math.random() * 24)
-      const minute = Math.floor(Math.random() * 60)
-      const second = Math.floor(Math.random() * 60)
-
-      // Revenue varies by platform and day
-      const trendMultiplier = 1 + (29 - dayOffset) * 0.01 
-      let baseAmount = 400000 * trendMultiplier
-      
-      if (platform === 'shopee') baseAmount *= (1.2 + Math.random() * 0.5)
-      if (platform === 'lazada') baseAmount *= (1.0 + Math.random() * 0.4)
-      if (platform === 'tiktok') baseAmount *= (0.8 + Math.random() * 0.6)
-
-      const totalAmount = Math.round(baseAmount)
-      // Create local ISO-like string (no 'Z' so new Date() parses it as local)
-      const createdAt = `${dateStr}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`
-      
-      // Randomly pick a status
-      const statusSeed = Math.random()
-      let status = 'delivered'
-      if (statusSeed < 0.1) status = 'cancelled'
-      else if (statusSeed < 0.15) status = 'refunded'
-      else if (statusSeed < 0.3) status = 'shipped'
-      else if (statusSeed < 0.4) status = 'pending'
-      else if (statusSeed < 0.7) status = 'completed'
-
-      const randomProduct = mockProducts[Math.floor(Math.random() * mockProducts.length)]
-
-      orders.push({
-        id: `order-rev-${String(orderId).padStart(6, '0')}`,
-        platform: platform === 'tiktok' ? 'tiktok_shop' : platform,
-        status: status as any,
-        totalAmount,
-        createdAt: createdAt,
-        createdAt_platform: createdAt,
-        items: [
-          {
-            productId: randomProduct.id,
-            productName: randomProduct.name,
-            qty: Math.floor(Math.random() * 2) + 1,
-            itemPrice: Math.round(totalAmount * (0.8 + Math.random() * 0.1)),
-            paidPrice: totalAmount,
-          },
-        ],
-      })
-
-      orderId++
+  return mockOrders.map((order) => {
+    const platformMap = {
+      shopee: 'shopee',
+      lazada: 'lazada',
+      tiktok_shop: 'tiktok_shop',
     }
-  }
-
-  return orders.sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime())
+    
+    // Map order status to revenue order status
+    const statusMap: Record<string, 'pending' | 'completed' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'> = {
+      Pending: 'pending',
+      PendingPayment: 'pending',
+      Confirmed: 'completed',
+      Packed: 'completed',
+      ReadyToShip: 'shipped',
+      Shipped: 'shipped',
+      Delivered: 'delivered',
+      Cancelled: 'cancelled',
+      Returned: 'refunded',
+    }
+    
+    return {
+      id: order.id,
+      platform: platformMap[order.platform as keyof typeof platformMap] as any,
+      status: statusMap[order.status] || 'completed',
+      totalAmount: order.totalAmount,
+      createdAt: order.createdAt,
+      createdAt_platform: order.createdAt_platform,
+      items: (order.items || []).map(item => ({
+        productName: item.productName,
+        qty: item.qty,
+        itemPrice: Math.floor(item.itemPrice * item.qty),
+        paidPrice: item.paidPrice * item.qty,
+      })),
+    }
+  })
 }
 
 export const mockRevenueOrders = generateRevenueOrders()
@@ -113,7 +71,7 @@ export const revenueSummary = (() => {
  * Daily revenue breakdown for past 30 days
  */
 export const dailyRevenueBreakdown = (() => {
-  const today = new Date()
+  const today = new Date("2026-05-05T00:00:00Z")
   const breakdown: Record<
     string,
     {

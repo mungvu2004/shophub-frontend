@@ -284,28 +284,49 @@ export function buildLastDaysDateRange(days: number, reference = new Date()) {
   }
 }
 
-export function buildOrdersAllCsv(orders: Order[]) {
+export function buildOrdersAllCsv(orders: Order[], getProduct?: (productId: string) => any) {
   const headers = ['Mã đơn', 'Khách hàng', 'Sàn', 'Sản phẩm', 'Trạng thái', 'Tổng tiền', 'Ngày tạo']
 
-  const rows = orders.map((order) => [
-    order.externalOrderNumber || order.externalOrderId || order.id,
-    toBuyerName(order),
-    platformLabel(order.platform),
-    order.items?.[0]?.productName || 'Sản phẩm',
-    statusLabel(order.status),
-    formatCurrency(order.totalAmount),
-    formatDateOnly(order.createdAt ?? order.createdAt_platform),
-  ])
+  const rows = orders.map((order) => {
+    let productName = order.items?.[0]?.productName || 'Sản phẩm'
+    
+    // Use centralized product data if available
+    if (getProduct && order.items?.[0]?.productId) {
+      const product = getProduct(order.items[0].productId)
+      if (product?.name) {
+        productName = product.name
+      }
+    }
+    
+    return [
+      order.externalOrderNumber || order.externalOrderId || order.id,
+      toBuyerName(order),
+      platformLabel(order.platform),
+      productName,
+      statusLabel(order.status),
+      formatCurrency(order.totalAmount),
+      formatDateOnly(order.createdAt ?? order.createdAt_platform),
+    ]
+  })
 
   const toCsvCell = (value: string) => `"${value.replaceAll('"', '""')}"`
 
   return [headers, ...rows].map((line) => line.map(toCsvCell).join(',')).join('\n')
 }
 
-export function buildOrdersAllPrintHtml(orders: Order[]) {
+export function buildOrdersAllPrintHtml(orders: Order[], getProduct?: (productId: string) => any) {
   const cards = orders
     .map((order) => {
-      const productName = order.items?.[0]?.productName || 'Sản phẩm'
+      let productName = order.items?.[0]?.productName || 'Sản phẩm'
+      
+      // Use centralized product data if available
+      if (getProduct && order.items?.[0]?.productId) {
+        const product = getProduct(order.items[0].productId)
+        if (product?.name) {
+          productName = product.name
+        }
+      }
+      
       const quantity = order.items?.[0]?.qty ?? 1
       const orderCode = order.externalOrderNumber || order.externalOrderId || order.id
       const phone = order.buyerPhone || '--'
@@ -407,10 +428,19 @@ export function countOrdersAllActiveAdvancedFilters(filters: {
   return [filters.dateFrom, filters.dateTo, filters.minAmount, filters.maxAmount].filter((value) => value.trim().length > 0).length
 }
 
-function toRows(items: Order[]): OrdersAllTableRowModel[] {
+function toRows(items: Order[], getProduct?: (productId: string) => any): OrdersAllTableRowModel[] {
   return items.map((order) => {
     const orderItems = order.items ?? []
-    const firstProductName = orderItems[0]?.productName || 'Sản phẩm chưa đồng bộ'
+    let firstProductName = orderItems[0]?.productName || 'Sản phẩm chưa đồng bộ'
+    
+    // Use centralized product data if available
+    if (getProduct && orderItems[0]?.productId) {
+      const product = getProduct(orderItems[0].productId)
+      if (product?.name) {
+        firstProductName = product.name
+      }
+    }
+    
     const productCount = orderItems.length
     const totalQuantity = orderItems.reduce((sum, item) => sum + Math.max(0, item.qty || 0), 0)
 
@@ -458,8 +488,9 @@ export function buildOrdersAllViewModel(args: {
   response: OrdersAllResponse
   query: OrdersAllQueryState
   selectedCount: number
+  getProduct?: (productId: string) => any
 }): OrdersAllViewModel {
-  const { response, query, selectedCount } = args
+  const { response, query, selectedCount, getProduct } = args
 
   return {
     title: 'Quản lý Đơn hàng',
@@ -478,7 +509,7 @@ export function buildOrdersAllViewModel(args: {
       totalRevenue: formatCurrency(response.summary.totalRevenue),
       pending: numberFormatter.format(response.summary.pendingOrders),
     },
-    rows: toRows(response.items),
+    rows: toRows(response.items, getProduct),
     totalCount: response.totalCount,
     page: query.page,
     pageSize: query.pageSize,

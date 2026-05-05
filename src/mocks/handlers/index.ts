@@ -30,11 +30,11 @@ export const handlers = [
 
   // Catch-all cho toàn bộ /api/* để tránh lỗi "Failed to fetch" khi thiếu handler
   http.all('/api/*', ({ request }) => {
-    console.warn(`[MSW] Unhandled request: \${request.method} \${request.url}`)
+    console.warn(`[MSW] Unhandled request: ${request.method} ${request.url}`)
     return HttpResponse.json(
       { 
         success: false, 
-        message: `API Mock không tồn tại: \${request.method} \${new URL(request.url).pathname}` 
+        message: `API Mock không tồn tại: ${request.method} ${new URL(request.url).pathname}` 
       },
       { status: 404 }
     )

@@ -189,8 +189,18 @@ function buildHistory(order: Order | null, fallbackStatus: string | undefined): 
   ]
 }
 
-function buildReviews(order: Order | null, fallbackState: OrderDetailLocationState | null | undefined): OrderDetailReviewItem[] {
-  const productName = fallbackState?.productName ?? order?.items?.[0]?.productName ?? 'Sản phẩm'
+function buildReviews(order: Order | null, fallbackState: OrderDetailLocationState | null | undefined, getProduct?: (productId: string) => any): OrderDetailReviewItem[] {
+  let productName = fallbackState?.productName ?? 'Sản phẩm'
+  
+  // Use centralized product data if available
+  if (getProduct && order?.items?.[0]?.productId) {
+    const product = getProduct(order.items[0].productId)
+    if (product?.name) {
+      productName = product.name
+    }
+  } else {
+    productName = fallbackState?.productName ?? order?.items?.[0]?.productName ?? 'Sản phẩm'
+  }
 
   if (order?.status === 'Delivered') {
     return [
@@ -233,8 +243,9 @@ export function buildOrderDetailResponse(input: {
   id: string
   order: Order | null
   fallbackState?: OrderDetailLocationState | null
+  getProduct?: (productId: string) => any
 }): OrderDetailResponse {
-  const { id, order, fallbackState } = input
+  const { id, order, fallbackState, getProduct } = input
 
   const fallbackPlatform = toPlatformCode(fallbackState?.platformLabel)
   const platform = order?.platform ?? fallbackPlatform
@@ -266,7 +277,7 @@ export function buildOrderDetailResponse(input: {
     voucherLabel: `-${formatCurrency(voucher)}`,
     totalLabel: formatCurrency(amount),
     history: buildHistory(order, resolvedStatus),
-    reviews: buildReviews(order, fallbackState),
+    reviews: buildReviews(order, fallbackState, getProduct),
   }
 
   return {

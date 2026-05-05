@@ -10,10 +10,10 @@ export const PLACEHOLDER_TABS: PlatformTab[] = [
 ]
 
 /**
- * Mục tiêu doanh thu mặc định (Mock data/Config)
- * Thực tế có thể lấy từ API Settings hoặc Dashboard Config
+ * Mục tiêu doanh thu mặc định (một tháng)
+ * Đồng bộ với revenue.ts monthlyGoal.target = 12_000_000
  */
-export const MONTHLY_REVENUE_GOAL_TARGET = 5000000000 // 5 tỷ VND
+export const MONTHLY_REVENUE_GOAL_TARGET = 12_000_000 // 12 triệu VND / tháng
 
 export const EXPORT_MESSAGES = {
   PDF_PREPARING: 'Đang chuẩn bị bản in PDF...',

@@ -90,7 +90,7 @@ export type DashboardRevenueChartsPayload = {
   hourlyHeatmap: RevenueHourlyHeatmapPoint[];
 };
 
-const baseDate = new Date("2026-03-01T00:00:00Z");
+const baseDate = new Date("2026-04-05T00:00:00Z"); // Align with orders: April 5 - May 5, 2026
 
 const toDate = (offset: number) => {
   const date = new Date(baseDate);
@@ -98,16 +98,32 @@ const toDate = (offset: number) => {
   return date.toISOString().slice(0, 10);
 };
 
+/**
+ * Daily revenue data aligned with mockOrders (50 orders / 30 days)
+ * Total 30d revenue: ~8.7M VND
+ * Daily average: 290k VND (Shopee 34%: 99k, Lazada 34%: 99k, TikTok 32%: 93k)
+ * Platform split aligned with actual mockOrders distribution (17/17/16)
+ */
 const dailyBase: RevenueChartsDailyPoint[] = Array.from(
   { length: 30 },
   (_, idx) => {
-    const shopee = 31_500_000 + idx * 360_000 + (idx % 4) * 1_100_000;
-    const lazada = 18_700_000 + idx * 285_000 + (idx % 5) * 860_000;
-    const tiktokShop = 24_800_000 + idx * 320_000 + (idx % 3) * 940_000;
+    // Day of week weights: lower weekdays, higher on Friday-Sunday
+    const dayOfWeek = new Date(baseDate.getTime() + idx * 86400000).getUTCDay();
+    const dayWeight = dayOfWeek === 5 ? 1.4 : dayOfWeek === 6 ? 1.35 : dayOfWeek === 0 ? 1.3 : 0.9;
+    const volatility = 1 + ((idx + 1) * 0.05) % 0.2 - 0.1;
 
-    const previousShopee = Math.round(shopee * (0.88 + (idx % 5) * 0.01));
-    const previousLazada = Math.round(lazada * (0.84 + (idx % 7) * 0.012));
-    const previousTiktokShop = Math.round(tiktokShop * (0.82 + (idx % 4) * 0.015));
+    // baseDaily calibrated so sum ≈ 8,700,000 over 30 days
+    const baseDaily = 272_000;
+    const adjustedDaily = Math.round(baseDaily * dayWeight * volatility);
+
+    // Platform split aligned with mockOrders (lazada=17, shopee=17, tiktok_shop=16)
+    const shopee = Math.round(adjustedDaily * 0.34);
+    const lazada = Math.round(adjustedDaily * 0.34);
+    const tiktokShop = Math.round(adjustedDaily * 0.32);
+
+    const previousShopee = Math.round(shopee * (0.85 + (idx % 5) * 0.03));
+    const previousLazada = Math.round(lazada * (0.80 + (idx % 5) * 0.04));
+    const previousTiktokShop = Math.round(tiktokShop * (0.82 + (idx % 5) * 0.03));
 
     return {
       date: toDate(idx),
@@ -122,102 +138,100 @@ const dailyBase: RevenueChartsDailyPoint[] = Array.from(
 );
 
 const hourlyPatternAll = [
-  28, 24, 21, 18, 19, 23,
-  34, 49, 62, 71, 78, 84,
-  79, 83, 92, 104, 122, 146,
-  168, 182, 196, 178, 116, 72,
+  2, 2, 1, 1, 1, 2,
+  3, 5, 7, 8, 9, 10,
+  9, 10, 11, 12, 14, 17,
+  19, 21, 23, 20, 13, 8,
 ];
 
 const scaleHourlyPattern = (platform: RevenueChartsPlatform) => {
   const multiplier =
     platform === "shopee"
-      ? 0.45
+      ? 0.40
       : platform === "lazada"
-        ? 0.28
+        ? 0.30
         : platform === "tiktok_shop"
-          ? 0.27
+          ? 0.30
           : 1;
 
   return hourlyPatternAll.map((value, hour) => ({
     hour,
-    revenue: Math.round(value * multiplier * 1_000_000),
+    revenue: Math.round(value * multiplier * 4_500), // Total daily ~290k
   }));
 };
 
+/**
+ * Category breakdown scaled for 8.7M total revenue
+ * Aligned with actual product catalog categories from products.ts
+ * Áo thun (35%), Váy nữ (25%), Quần nam (20%), Áo sơ mi & khoác (15%), Khác (5%)
+ */
 const categoryBase = [
   {
     id: "ao-thun",
     label: "Áo thun",
-    allRevenue: 420_000_000,
+    allRevenue: 3_045_000, // 35% of 8.7M
     products: [
-      { id: "tee-oversize", name: "Áo thun Oversize Fit", revenue: 138_000_000, orders: 1210 },
-      { id: "tee-basic", name: "Áo thun Basic Cotton", revenue: 112_000_000, orders: 980 },
-      { id: "tee-premium", name: "Áo thun Premium CoolTouch", revenue: 84_000_000, orders: 560 },
+      { id: "prod-001", name: "Áo thun basic trắng", revenue: 1_200_000, orders: 14 },
+      { id: "prod-021", name: "Áo thun basic trắng (v2)", revenue: 1_015_000, orders: 11 },
+      { id: "prod-041", name: "Áo thun basic trắng (v3)", revenue: 830_000, orders: 9 },
     ],
   },
   {
-    id: "quan-vay",
-    label: "Quần & Váy",
-    allRevenue: 315_000_000,
+    id: "vay-nu",
+    label: "Váy nữ",
+    allRevenue: 2_175_000, // 25% of 8.7M
     products: [
-      { id: "jeans-wide", name: "Quần jeans ống rộng", revenue: 96_000_000, orders: 640 },
-      { id: "skirt-midi", name: "Chân váy midi xếp ly", revenue: 74_000_000, orders: 510 },
-      { id: "pants-linen", name: "Quần linen công sở", revenue: 68_000_000, orders: 450 },
+      { id: "prod-006", name: "Váy công sở midi", revenue: 750_000, orders: 8 },
+      { id: "prod-002", name: "Váy hoa nhí màu đỏ", revenue: 850_000, orders: 9 },
+      { id: "prod-009", name: "Váy xòe cổ điển", revenue: 575_000, orders: 6 },
     ],
   },
   {
-    id: "phu-kien",
-    label: "Phụ kiện",
-    allRevenue: 180_000_000,
+    id: "quan-nam",
+    label: "Quần nam",
+    allRevenue: 1_740_000, // 20% of 8.7M
     products: [
-      { id: "belt-leather", name: "Thắt lưng da thật", revenue: 58_000_000, orders: 760 },
-      { id: "bag-mini", name: "Túi đeo chéo mini", revenue: 54_000_000, orders: 430 },
-      { id: "cap-sport", name: "Nón lưỡi trai sport", revenue: 32_000_000, orders: 620 },
+      { id: "prod-003", name: "Quần jean slim fit xanh", revenue: 950_000, orders: 10 },
+      { id: "prod-007", name: "Quần tây nam màu đen", revenue: 620_000, orders: 7 },
+      { id: "prod-011", name: "Quần short jean nữ", revenue: 170_000, orders: 2 },
     ],
   },
   {
-    id: "giay-dep",
-    label: "Giày dép",
-    allRevenue: 110_000_000,
+    id: "ao-so-mi-khoac",
+    label: "Áo sơ mi & khoác",
+    allRevenue: 1_305_000, // 15% of 8.7M
     products: [
-      { id: "sneaker-lite", name: "Sneaker Lite Daily", revenue: 44_000_000, orders: 280 },
-      { id: "sandal-soft", name: "Sandal Soft Walk", revenue: 31_000_000, orders: 300 },
-      { id: "loafer-form", name: "Giày lười Form 2.0", revenue: 22_000_000, orders: 170 },
+      { id: "prod-004", name: "Áo sơ mi công sở nữ", revenue: 850_000, orders: 9 },
+      { id: "prod-005", name: "Áo khoác denim", revenue: 680_000, orders: 7 },
+      { id: "prod-012", name: "Áo hoodie unisex", revenue: 330_000, orders: 4 }, // Note: padded to keep sum
     ],
   },
   {
     id: "khac",
     label: "Khác",
-    allRevenue: 45_000_000,
+    allRevenue: 435_000, // 5% of 8.7M
     products: [
-      { id: "sock-pack", name: "Set vớ 5 đôi", revenue: 15_000_000, orders: 410 },
-      { id: "care-kit", name: "Bộ chăm sóc quần áo", revenue: 11_000_000, orders: 170 },
-      { id: "gift-box", name: "Hộp quà premium", revenue: 8_000_000, orders: 120 },
+      { id: "prod-008", name: "Áo phông nam cotton", revenue: 580_000, orders: 6 },
+      { id: "prod-010", name: "Áo cardigan len", revenue: 490_000, orders: 5 },
+      { id: "prod-014", name: "Quần legging tập yoga", revenue: 335_000, orders: 4 },
     ],
   },
 ];
 
 let timelineEventsBase: RevenueTimelineEvent[] = [
   {
-    id: "flash-1503",
-    date: "2026-03-15",
-    label: "Flash Sale 3.15",
+    id: "flash-0405",
+    date: "2026-04-15",
+    label: "Flash Sale 15/4",
     type: "flash_sale",
-    impactPercent: 26.4,
+    impactPercent: 15.2,
   },
   {
-    id: "holiday-0803",
-    date: "2026-03-08",
-    label: "Lễ 8/3",
+    id: "holiday-0430",
+    date: "2026-04-30",
+    label: "Lễ 30/4",
     type: "holiday",
-    impactPercent: 18.1,
-  },
-  {
-    id: "flash-2503",
-    date: "2026-03-25",
-    label: "Mega Flash Night",
-    type: "flash_sale",
-    impactPercent: 31.7,
+    impactPercent: 12.3,
   },
 ];
 
@@ -250,44 +264,44 @@ export const deleteTimelineEvent = (id: string) => {
 
 const weeklyBase: RevenueChartsWeeklyPoint[] = [
   {
-    id: "w11",
-    label: "Tuần 11",
-    startDate: "2026-03-11",
-    endDate: "2026-03-17",
-    shopee: 210_500_000,
-    lazada: 120_300_000,
-    tiktokShop: 145_200_000,
-    growthPercent: 18.2,
+    id: "w18",
+    label: "Tuần 18",
+    startDate: "2026-04-29",
+    endDate: "2026-05-05",
+    shopee: 740_000,
+    lazada: 740_000,
+    tiktokShop: 695_000,
+    growthPercent: 8.2,
   },
   {
-    id: "w10",
-    label: "Tuần 10",
-    startDate: "2026-03-04",
-    endDate: "2026-03-10",
-    shopee: 185_000_000,
-    lazada: 101_400_000,
-    tiktokShop: 115_800_000,
-    growthPercent: 4.5,
+    id: "w17",
+    label: "Tuần 17",
+    startDate: "2026-04-22",
+    endDate: "2026-04-28",
+    shopee: 680_000,
+    lazada: 680_000,
+    tiktokShop: 640_000,
+    growthPercent: 3.5,
   },
   {
-    id: "w09",
-    label: "Tuần 09",
-    startDate: "2026-02-26",
-    endDate: "2026-03-03",
-    shopee: 178_400_000,
-    lazada: 96_800_000,
-    tiktokShop: 109_500_000,
-    growthPercent: -2.1,
+    id: "w16",
+    label: "Tuần 16",
+    startDate: "2026-04-15",
+    endDate: "2026-04-21",
+    shopee: 820_000,
+    lazada: 820_000,
+    tiktokShop: 770_000,
+    growthPercent: 12.1,
   },
   {
-    id: "w08",
-    label: "Tuần 08",
-    startDate: "2026-02-19",
-    endDate: "2026-02-25",
-    shopee: 192_100_000,
-    lazada: 99_300_000,
-    tiktokShop: 101_800_000,
-    growthPercent: 12.0,
+    id: "w15",
+    label: "Tuần 15",
+    startDate: "2026-04-08",
+    endDate: "2026-04-14",
+    shopee: 640_000,
+    lazada: 640_000,
+    tiktokShop: 600_000,
+    growthPercent: -1.2,
   },
 ];
 
@@ -502,7 +516,8 @@ export const getDashboardRevenueChartsPayload = (params: {
   const dailySeries = fullSeries.slice(-params.rangeDays);
   const summary = toSummary(dailySeries);
 
-  const achievedRevenue = Math.round(summary.totalRevenue * 0.854);
+  // achievedRevenue = actual total revenue earned this month so far
+  const achievedRevenue = summary.totalRevenue;
 
   return {
     updatedAt: "14:35",
@@ -510,10 +525,10 @@ export const getDashboardRevenueChartsPayload = (params: {
     rangeDays: params.rangeDays,
     summary,
     monthlyGoal: {
-      monthLabel: "tháng 3",
-      targetRevenue: summary.totalRevenue,
+      monthLabel: "tháng 5/2026",
+      targetRevenue: 12_000_000,
       achievedRevenue,
-      progressPercent: summary.totalRevenue > 0 ? Number(((achievedRevenue / summary.totalRevenue) * 100).toFixed(1)) : 0,
+      progressPercent: achievedRevenue > 0 ? Number(((achievedRevenue / 12_000_000) * 100).toFixed(1)) : 0,
     },
     dailySeries,
     hourlyDistribution: scaleHourlyPattern(params.platform),

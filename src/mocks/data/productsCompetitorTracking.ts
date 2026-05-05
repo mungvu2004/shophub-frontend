@@ -2,60 +2,56 @@ import type { CompetitorTrackingPayload } from '@/features/products/logic/produc
 
 export const productsCompetitorTrackingMock: CompetitorTrackingPayload = {
   alertBanner: {
-    matchedCount: 3,
+    matchedCount: 5,
     message: 'đối thủ vừa giảm giá dưới mức của bạn',
   },
   totalProductsTracked: 47,
-  comparisonRows: [
-    {
-      id: 'cmp-001',
-      productId: 'prod-001',
-      productName: 'Áo thun basic L',
-      yourPrice: 189000,
-      marketAveragePrice: 177000,
-      lowestMarketPrice: 155000,
-      rank: 4,
-      totalCompetitors: 12,
-      trend: 'up',
-      platform: 'shopee',
-    },
-    {
-      id: 'cmp-002',
-      productId: 'prod-002',
-      productName: 'Váy hoa nhí M',
-      yourPrice: 459000,
-      marketAveragePrice: 481000,
-      lowestMarketPrice: 420000,
-      rank: 2,
-      totalCompetitors: 8,
-      trend: 'stable',
-      platform: 'tiktok_shop',
-    },
-    {
-      id: 'cmp-003',
-      productId: 'prod-003',
-      productName: 'Giày sneaker 39',
-      yourPrice: 1250000,
-      marketAveragePrice: 1198000,
-      lowestMarketPrice: 1090000,
-      rank: 6,
-      totalCompetitors: 9,
-      trend: 'down',
-      platform: 'lazada',
-    },
-    {
-      id: 'cmp-004',
-      productId: 'prod-004',
-      productName: 'Quần jean slimfit',
-      yourPrice: 320000,
-      marketAveragePrice: 315000,
-      lowestMarketPrice: 299000,
-      rank: 5,
-      totalCompetitors: 15,
-      trend: 'stable',
-      platform: 'lazada',
-    },
-  ],
+  comparisonRows: Array.from({ length: 47 }, (_, idx) => {
+    const n = idx + 1;
+    const platforms = ['shopee', 'lazada', 'tiktok_shop'] as const;
+    const platform = platforms[n % 3];
+    const productIds = [
+      'prod-001', 'prod-003', 'prod-005', 'prod-008', 'prod-010', 'prod-012', 'prod-015',
+      'prod-018', 'prod-020', 'prod-022', 'prod-025', 'prod-028', 'prod-030', 'prod-032',
+      'prod-035', 'prod-038', 'prod-040', 'prod-042', 'prod-045', 'prod-048', 'prod-050',
+      'prod-052', 'prod-055', 'prod-058', 'prod-060', 'prod-002', 'prod-004', 'prod-006',
+      'prod-007', 'prod-009', 'prod-011', 'prod-013', 'prod-014', 'prod-016', 'prod-017',
+      'prod-019', 'prod-021', 'prod-023', 'prod-024', 'prod-026', 'prod-027', 'prod-029',
+      'prod-031', 'prod-033', 'prod-034', 'prod-036', 'prod-037',
+    ];
+    const productNames = [
+      'Áo thun basic XS', 'Áo thun basic S', 'Áo thun basic M', 'Áo thun basic L', 'Áo thun basic XL',
+      'Áo thun basic XXL', 'Áo polo nam', 'Áo sơ mi trắng', 'Áo sơ mi xanh', 'Áo khoác gió',
+      'Áo khoác denim', 'Áo khoác len', 'Quần jean nam slim', 'Quần jean nam regular', 'Quần jean nữ slim',
+      'Quần jean nữ regular', 'Quần short nam', 'Quần short nữ', 'Quần tây nam', 'Quần tây nữ',
+      'Váy xòe đuôi cá', 'Váy đính hạt', 'Váy hoa nhí', 'Váy bút chì', 'Váy maxi',
+      'Giày sneaker trắng', 'Giày sneaker đen', 'Giày canvas', 'Giày lười nam', 'Giày lười nữ',
+      'Giày boot', 'Giày sandal', 'Dép quai', 'Vòng tay', 'Dây chuyền vàng',
+      'Dây chuyền bạc', 'Khuyên tai', 'Nhẫn', 'Túi xách', 'Ví cầm tay',
+      'Thắt lưng da', 'Khăn quàng', 'Mũ lưỡi trai', 'Nón len', 'Kính mát',
+    ];
+    
+    const basePrice = 150000 + (n % 5) * 50000;
+    const marketAvg = basePrice * (0.85 + (n % 10) * 0.02);
+    const lowestPrice = basePrice * (0.70 + (n % 8) * 0.02);
+    const rank = 1 + (n % 12);
+    const totalCompetitors = 6 + (n % 15);
+    const trends = ['up', 'down', 'stable'] as const;
+    const trend = trends[n % 3];
+    
+    return {
+      id: `cmp-${String(n).padStart(3, '0')}`,
+      productId: productIds[n % productIds.length],
+      productName: productNames[n % productNames.length],
+      yourPrice: Math.round(basePrice),
+      marketAveragePrice: Math.round(marketAvg),
+      lowestMarketPrice: Math.round(lowestPrice),
+      rank,
+      totalCompetitors,
+      trend,
+      platform,
+    };
+  }),
   topCompetitors: [
     {
       id: 'top-001',
@@ -84,7 +80,7 @@ export const productsCompetitorTrackingMock: CompetitorTrackingPayload = {
   ],
   alertSettings: {
     thresholdPercent: 8,
-    updatedAt: '2026-03-30T10:00:00.000Z',
+    updatedAt: '2026-05-05T10:00:00.000Z',
   },
   heatmap: [
     {

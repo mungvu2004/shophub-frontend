@@ -1,4 +1,4 @@
-import { lazy } from 'react'
+import { lazy, useEffect } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 
 import { AppShellRoutes } from '@/app/routes/appShell.routes'
@@ -16,6 +16,11 @@ const OrderDetailPage = lazy(() =>
 export function AppRouter() {
   const location = useLocation()
   const backgroundLocation = (location.state as { backgroundLocation?: typeof location } | null)?.backgroundLocation
+
+  // Scroll to top when route changes
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location.pathname])
 
   return (
     <>

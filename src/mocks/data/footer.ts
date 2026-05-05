@@ -41,7 +41,7 @@ export const footerSnapshotMock: FooterSnapshotMock = {
     'Tập trung quản trị đơn hàng, tồn kho và doanh thu giữa Shopee, TikTok Shop và Lazada trên cùng một workspace.',
   supportEmail: 'support@shophub.vn',
   supportPhone: '+84 28 7303 8899',
-  updatedAt: '2026-04-04T09:15:00.000Z',
+  updatedAt: '2026-05-05T10:00:00.000Z',
   legalNotice: 'Bảo lưu mọi quyền. Điều khoản và chính sách áp dụng cho tài khoản doanh nghiệp.',
   groups: [
     {
@@ -74,14 +74,6 @@ export const footerSnapshotMock: FooterSnapshotMock = {
   ],
   marketplaces: [
     {
-      id: 'market-lazada',
-      code: 'lazada',
-      label: 'Lazada',
-      status: 'healthy',
-      uptimeRate: 99.94,
-      lastSyncLabel: 'Đồng bộ 2 phút trước',
-    },
-    {
       id: 'market-shopee',
       code: 'shopee',
       label: 'Shopee',
@@ -90,12 +82,20 @@ export const footerSnapshotMock: FooterSnapshotMock = {
       lastSyncLabel: 'Đồng bộ 3 phút trước',
     },
     {
+      id: 'market-lazada',
+      code: 'lazada',
+      label: 'Lazada',
+      status: 'healthy',
+      uptimeRate: 99.94,
+      lastSyncLabel: 'Đồng bộ 2 phút trước',
+    },
+    {
       id: 'market-tiktok',
       code: 'tiktok_shop',
       label: 'TikTok Shop',
-      status: 'degraded',
-      uptimeRate: 98.72,
-      lastSyncLabel: 'Đồng bộ 8 phút trước',
+      status: 'healthy',
+      uptimeRate: 99.75,
+      lastSyncLabel: 'Đồng bộ 5 phút trước',
     },
   ],
 }

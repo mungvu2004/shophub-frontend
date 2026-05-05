@@ -4,6 +4,7 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { toast } from '@/components/ui/toast'
 import { MESSAGES } from '@/constants/messages'
+import { useProductData } from '@/features/products/hooks/useProductData'
 import { OrderDetail } from '@/features/orders/components/order-detail/OrderDetail'
 import {
   OrdersPendingActionsFormDialog,
@@ -100,6 +101,12 @@ function buildPendingActionPayload(values: PendingActionFormValues): Partial<Ord
 }
 
 export function OrdersPendingActions() {
+  // Centralized product data from store
+  useProductData({
+    autoPreload: false,
+    pageName: 'OrdersPendingActionsPage',
+  })
+
   const [search, setSearch] = useState('')
   const [platform, setPlatform] = useState<OrdersPendingActionsPlatformFilter>('all')
   const [sla, setSla] = useState<OrdersPendingActionsSlaFilter>('all')

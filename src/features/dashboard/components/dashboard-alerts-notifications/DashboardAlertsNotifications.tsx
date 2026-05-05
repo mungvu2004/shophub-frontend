@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { DashboardAlertsNotificationsSkeleton } from '@/features/dashboard/components/dashboard-alerts-notifications/DashboardAlertsNotificationsSkeleton'
 import { DashboardAlertsNotificationsView } from '@/features/dashboard/components/dashboard-alerts-notifications/DashboardAlertsNotificationsView'
 import { useDashboardAlertsNotifications } from '@/features/dashboard/hooks/useDashboardAlertsNotifications'
+import { useProductData } from '@/features/products/hooks/useProductData'
 import { buildDashboardAlertsNotificationsViewModel } from '@/features/dashboard/logic/dashboardAlertsNotifications.logic'
 import { useAlertKeyboardNavigation } from '@/features/dashboard/hooks/useAlertKeyboardNavigation'
 import type {
@@ -14,6 +15,12 @@ import type {
 } from '@/features/dashboard/logic/dashboardAlertsNotifications.types'
 
 export function DashboardAlertsNotifications() {
+  // Centralized product data from store
+  useProductData({
+    autoPreload: false,
+    pageName: 'DashboardAlertsNotificationsPage',
+  })
+
   const navigate = useNavigate()
   const [selectedTab, setSelectedTab] = useState<AlertsTabId>('all')
   const [selectedSeverities, setSelectedSeverities] = useState<AlertsSeverity[]>([])

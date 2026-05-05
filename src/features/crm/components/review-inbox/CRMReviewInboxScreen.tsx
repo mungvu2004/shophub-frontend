@@ -11,9 +11,16 @@ import {
   useCRMReviewInboxList,
   useCRMReviewInboxSummary,
 } from '@/features/crm/hooks/useCRMReviewInbox'
+import { useProductData } from '@/features/products/hooks/useProductData'
 import type { CRMReplyTemplate, CRMReviewFilterStatus, CRMReviewSort } from '@/types/crm.types'
 
 export function CRMReviewInboxScreen() {
+  // Centralized product data from store
+  useProductData({
+    autoPreload: false,
+    pageName: 'CRMReviewInboxPage',
+  })
+
   const [status, setStatus] = useState<CRMReviewFilterStatus>('unreplied')
   const [sort, setSort] = useState<CRMReviewSort>('newest')
   const [selectedReviewIdState, setSelectedReviewIdState] = useState<string>()

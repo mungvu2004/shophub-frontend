@@ -2,6 +2,7 @@ import { DashboardRevenueChartsView } from './DashboardRevenueChartsView'
 import { useRevenueChartsController } from './useRevenueChartsController'
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { PageSkeleton } from '@/components/PageSkeleton'
+import { useProductData } from '@/features/products/hooks/useProductData'
 
   // eslint-disable-next-line react-refresh/only-export-components
 export function shouldShowBlockingRevenueChartsError(input: { isError: boolean; hasModel: boolean }) {
@@ -9,6 +10,12 @@ export function shouldShowBlockingRevenueChartsError(input: { isError: boolean; 
 }
 
 export function DashboardRevenueCharts() {
+  // Centralized product data from store
+  useProductData({
+    autoPreload: false,
+    pageName: 'DashboardRevenueChartsPage',
+  })
+
   const { 
     model, 
     isLoading, 

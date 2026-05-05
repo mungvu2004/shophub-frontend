@@ -3,6 +3,7 @@ import {
   type DashboardKPIOverviewPageProps,
 } from '@/features/dashboard/logic/dashboardKpiOverview.logic'
 import { useDashboardKPIOverview } from '@/features/dashboard/hooks/useDashboardKPIOverview'
+import { useDashboardRevenueCharts } from '@/features/dashboard/hooks/useDashboardRevenueCharts'
 import { AIInsightsColumn } from '@/features/dashboard/components/dashboard-bottom-row/AIInsightsColumn'
 import { TopProductsTable } from '@/features/dashboard/components/dashboard-bottom-row/TopProductsTable'
 import { DashboardNoDataStateSection } from '@/features/dashboard/components/dashboard-empty-state/DashboardNoDataStateSection'
@@ -12,27 +13,43 @@ import { RevenueLineChart } from '@/features/dashboard/components/dashboard-reve
 import { useInventoryAlerts, useRevenueData } from '@/features/dashboard/hooks/useDashboardStats'
 import { TrendRangeSelector } from '@/features/dashboard/components/dashboard-kpi-overview/TrendRangeSelector'
 import { useGoalNotifications } from '@/features/dashboard/hooks/useGoalNotifications'
+import { useProductData } from '@/features/products/hooks/useProductData'
 
 import { MONTHLY_REVENUE_GOAL_TARGET } from '@/features/dashboard/logic/dashboardKpiOverview.constants'
 
 export function DashboardKPIOverviewPage(props: DashboardKPIOverviewPageProps) {
+  // Centralized product data from store
+  useProductData({
+    autoPreload: false,
+    pageName: 'DashboardKPIOverviewPage',
+  })
+
   const [trendDays, setTrendDays] = useState(7)
   const { data: orders, isLoading, isError, refetch, isFetching } = useRevenueData(30)
+  const { data: revenueChartsData, isLoading: isRevenueLoading } = useDashboardRevenueCharts({
+    platform: 'all',
+    range: 30,
+  })
   const { data: inventoryAlerts } = useInventoryAlerts()
 
   const hasOrders = Array.isArray(orders) && orders.length > 0
   const isNoDataState = isError || (!isLoading && !hasOrders)
 
-  // Orchestrate Monthly Goal (Logic đã được đưa vào Hook/Constants)
-  const currentMonthlyRevenue = hasOrders 
-    ? orders.reduce((sum, o) => sum + (o.totalAmount ?? 0), 0)
-    : 0
+  // Use correct data source from /dashboard/revenue-charts API for accurate revenue
+  const revenueData = revenueChartsData?.summary
+  const currentMonthlyRevenue = revenueData?.totalRevenue ?? 0
   
-  const progressPercent = Math.round((currentMonthlyRevenue / MONTHLY_REVENUE_GOAL_TARGET) * 100)
+  const progressPercent = revenueChartsData?.monthlyGoal?.progressPercent ?? 
+    Math.round((currentMonthlyRevenue / MONTHLY_REVENUE_GOAL_TARGET) * 100)
   
   const monthlyGoal = {
     label: 'Mục tiêu doanh thu tháng này',
-    currentValue: (currentMonthlyRevenue / 1000000).toFixed(1) + 'M',
+    currentValue: currentMonthlyRevenue > 0 
+      ? (currentMonthlyRevenue >= 1000000 
+          ? `${(currentMonthlyRevenue / 1000000).toFixed(1)}M`
+          : `${new Intl.NumberFormat('vi-VN').format(Math.round(currentMonthlyRevenue))}₫`
+        )
+      : '0₫',
     targetValue: (MONTHLY_REVENUE_GOAL_TARGET / 1000000).toFixed(0) + 'M',
     progressPercent,
   }
@@ -45,7 +62,7 @@ export function DashboardKPIOverviewPage(props: DashboardKPIOverviewPageProps) {
     ...props,
     monthlyGoal,
     onRefresh: () => refetch(),
-    isRefreshing: isFetching,
+    isRefreshing: isFetching || isRevenueLoading,
   })
 
   // Filter for trend view in charts based on trendDays

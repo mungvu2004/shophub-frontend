@@ -1,4 +1,4 @@
-export type CRMReviewPlatform = 'shopee' | 'tiktok' | 'lazada'
+export type CRMReviewPlatform = 'shopee' | 'tiktok_shop' | 'lazada'
 
 export type CRMReviewSentiment = 'positive' | 'neutral' | 'negative'
 

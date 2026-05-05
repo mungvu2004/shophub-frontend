@@ -6,6 +6,7 @@ import { OrderDetailView } from '@/features/orders/components/order-detail/Order
 import { useOrderDetailData } from '@/features/orders/hooks/useOrderDetailData'
 import { useOrderDetailQuickActions } from '@/features/orders/hooks/useOrderDetailQuickActions'
 import { buildOrderDetailViewModel } from '@/features/orders/logic/orderDetail.logic'
+import { useProductData } from '@/features/products/hooks/useProductData'
 import type { OrderDetailLocationState } from '@/features/orders/logic/orderDetail.types'
 
 type OrderDetailProps = {
@@ -21,6 +22,12 @@ export function OrderDetail({ orderId, fallbackState: fallbackStateProp, isModal
   const navigate = useNavigate()
   const id = orderId ?? params.id ?? ''
   const resolvedOrderId = id.startsWith('pending-') ? id.replace('pending-', '') : id
+
+  // Centralized product data from store
+  useProductData({
+    autoPreload: false,
+    pageName: 'OrderDetailPage',
+  })
 
   const fallbackState = fallbackStateProp ?? (location.state as OrderDetailLocationState | null) ?? null
   const isModalPresentation = isModalPresentationProp ?? Boolean((location.state as { backgroundLocation?: unknown } | null)?.backgroundLocation)

@@ -6,7 +6,7 @@ import type {
   CRMReviewPlatform,
 } from '@/types/crm.types'
 
-export type CRMCustomerProfileOrderFilter = 'all' | 'shopee' | 'tiktok' | 'returns'
+export type CRMCustomerProfileOrderFilter = 'all' | 'shopee' | 'tiktok_shop' | 'returns'
 
 export const crmCustomerProfileOrderFilters: Array<{
   id: CRMCustomerProfileOrderFilter
@@ -14,7 +14,7 @@ export const crmCustomerProfileOrderFilters: Array<{
 }> = [
   { id: 'all', label: 'Tất cả' },
   { id: 'shopee', label: 'Shopee' },
-  { id: 'tiktok', label: 'TikTok' },
+  { id: 'tiktok_shop', label: 'TikTok' },
   { id: 'returns', label: 'Hoàn/Huỷ' },
 ]
 
@@ -28,7 +28,7 @@ const segmentClasses = {
 
 const platformClasses: Record<CRMReviewPlatform, string> = {
   shopee: 'bg-[#fff7ed] text-[#c2410c]',
-  tiktok: 'bg-[#0f172a] text-white',
+  tiktok_shop: 'bg-[#0f172a] text-white',
   lazada: 'bg-[#dbeafe] text-[#2563eb]',
 }
 
@@ -42,7 +42,7 @@ function formatCompactCurrency(value: number) {
 
 function getPlatformLabel(platform: CRMReviewPlatform) {
   if (platform === 'lazada') return 'Lazada'
-  if (platform === 'tiktok') return 'TikTok'
+  if (platform === 'tiktok_shop') return 'TikTok'
   return 'Shopee'
 }
 

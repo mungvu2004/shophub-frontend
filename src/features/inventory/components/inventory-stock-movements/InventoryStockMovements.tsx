@@ -11,8 +11,15 @@ import type {
 import { useInventoryStockMovements } from '@/features/inventory/hooks/useInventoryStockMovements'
 import { stockMovementsService } from '@/features/inventory/services/stockMovements.service'
 import { useCreateMovement } from '@/features/inventory/hooks/useCreateMovement'
+import { useProductData } from '@/features/products/hooks/useProductData'
 
 export function InventoryStockMovements() {
+  // Centralized product data from store
+  useProductData({
+    autoPreload: false,
+    pageName: 'InventoryStockMovementsPage',
+  })
+
   const [search, setSearch] = useState('')
   const [platform, setPlatform] = useState<InventoryStockMovementPlatformFilter>('all')
   const [movementGroup, setMovementGroup] = useState<InventoryStockMovementGroupFilter>('all')

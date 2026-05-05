@@ -6,8 +6,15 @@ import { StockAdjustmentTable } from './StockAdjustmentTable'
 import { BulkImportDialog } from './BulkImportDialog'
 import { useStockAdjustment } from '@/features/inventory/hooks/useStockAdjustment'
 import { mockAdjustments } from '@/mocks/data/inventoryAdjustments'
+import { useProductData } from '@/features/products/hooks/useProductData'
 
 export function StockAdjustmentView() {
+  // Centralized product data from store
+  useProductData({
+    autoPreload: false,
+    pageName: 'InventoryStockAdjustmentPage',
+  })
+
   const [isImportOpen, setIsImportOpen] = useState(false)
   const { 
     viewModel, 

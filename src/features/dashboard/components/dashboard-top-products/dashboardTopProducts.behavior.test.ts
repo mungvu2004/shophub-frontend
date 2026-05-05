@@ -9,7 +9,7 @@ import {
 
 describe('buildTopProductsContributionBackground', () => {
   it('returns neutral fallback color when no contribution segments', () => {
-    expect(buildTopProductsContributionBackground([])).toBe('#e2e8f0')
+    expect(buildTopProductsContributionBackground([])).toBe('#cbd5e1')
   })
 
   it('returns conic-gradient string when contribution exists', () => {

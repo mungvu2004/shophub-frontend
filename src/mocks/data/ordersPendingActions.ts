@@ -5,6 +5,7 @@ import type {
   OrdersPendingActionsResponse,
   OrdersPendingActionsSlaFilter,
 } from '@/features/orders/logic/ordersPendingActions.types'
+import type { OrderItem } from '@/types/order.types'
 
 type BuildOrdersPendingActionsParams = {
   search?: string
@@ -15,6 +16,8 @@ type BuildOrdersPendingActionsParams = {
   page?: number
   pageSize?: number
 }
+
+type OrderItemWithProductId = OrderItem & { productId?: string }
 
 const pendingStatuses = new Set(['Pending', 'PendingPayment', 'Confirmed', 'Packed', 'ReadyToShip', 'Shipped'])
 
@@ -55,6 +58,7 @@ function toPendingItems(): OrdersPendingActionItem[] {
         orderCode: order.externalOrderNumber ?? order.externalOrderId,
         platform: order.platform,
         customerName,
+        productId: (firstItem as OrderItemWithProductId)?.productId ?? 'unknown',
         productName: firstItem?.productName ?? 'Sản phẩm chưa đồng bộ',
         sku: firstItem?.externalSkuRef ?? 'SKU-NA',
         variantLabel: firstItem?.variantAttributes ?? 'Mặc định',

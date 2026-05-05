@@ -71,7 +71,7 @@ export const crmHandlers = [
     const product = mockProducts.find(p => p.id === productId) || mockProducts[0]
     const random = seededRandom(productId)
 
-    const platformFilter: CRMSentimentPlatformFilter = ['all', 'shopee', 'lazada', 'tiktok'].includes(platformFilterParam)
+    const platformFilter: CRMSentimentPlatformFilter = ['all', 'shopee', 'lazada', 'tiktok_shop'].includes(platformFilterParam)
       ? platformFilterParam
       : 'all'
 
@@ -79,7 +79,7 @@ export const crmHandlers = [
     const dynamicReviews = Array.from({ length: 8 }).map((_, idx) => {
       const r = random()
       const sentiment: 'positive' | 'neutral' | 'negative' = r > 0.6 ? 'positive' : r > 0.3 ? 'neutral' : 'negative'
-      const platform: 'shopee' | 'lazada' | 'tiktok' = r > 0.66 ? 'shopee' : r > 0.33 ? 'lazada' : 'tiktok'
+      const platform: 'shopee' | 'lazada' | 'tiktok_shop' = r > 0.66 ? 'shopee' : r > 0.33 ? 'lazada' : 'tiktok_shop'
       const weekLabel = `W${Math.floor(random() * 8) + 1}`
       
       return {
@@ -104,10 +104,10 @@ export const crmHandlers = [
       return isWeekMatched && isPlatformMatched
     })
 
-    const platformBreakdown = ['all', 'shopee', 'lazada', 'tiktok'].map((id) => {
+    const platformBreakdown = ['all', 'shopee', 'lazada', 'tiktok_shop'].map((id) => {
       if (id === 'all') return { id, label: 'Tất cả', value: filteredReviews.length }
       const value = filteredReviews.filter((review) => review.platform === id).length
-      const label = id.charAt(0).toUpperCase() + id.slice(1)
+      const label = id === 'tiktok_shop' ? 'TikTok' : id.charAt(0).toUpperCase() + id.slice(1)
       return { id, label, value }
     })
 

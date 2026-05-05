@@ -32,6 +32,7 @@ const formatRevenue = (value: number) => {
 }
 
 export function buildTopProductsFromOrders({ orders = [] }: BuildTopProductsFromOrdersParams): TopProductTableInputItem[] {
+  // Aggregate by productId-platform to ensure uniqueness
   const aggregate = new Map<
     string,
     {
@@ -59,15 +60,29 @@ export function buildTopProductsFromOrders({ orders = [] }: BuildTopProductsFrom
               ? order.totalAmount
               : 0
 
-      const key = name.toLowerCase()
-      const existingId = Array.from(aggregate.values()).find((v) => v.name === name)?.id
+      // Use productId if available, fallback to product name hash for uniqueness
+      let productId = item.productId
+      if (!productId) {
+        // Generate deterministic ID from product name hash
+        const nameHash = Array.from(name).reduce((hash, char) => {
+          const h = ((hash << 5) - hash) + char.charCodeAt(0)
+          return h & h // Convert to 32bit integer
+        }, 0)
+        productId = `prod-${Math.abs(nameHash).toString(36).padStart(5, '0').slice(0, 5)}`
+      }
+
+      // Aggregate by productId-platform to match dashboardTopProducts pattern
+      const key = `${productId}-${platform}`
       
-      const current = aggregate.get(key) ?? {
-        id: item.productId || existingId || `top-${aggregate.size + 1}`,
-        name,
-        soldInMonth: 0,
-        revenue: 0,
-        platformCount: { shopee: 0, tiktok: 0, lazada: 0 },
+      let current = aggregate.get(key)
+      if (!current) {
+        current = {
+          id: key, // Use full key for unique identification
+          name,
+          soldInMonth: 0,
+          revenue: 0,
+          platformCount: { shopee: 0, tiktok: 0, lazada: 0 },
+        }
       }
 
       current.soldInMonth += qty
@@ -84,7 +99,7 @@ export function buildTopProductsFromOrders({ orders = [] }: BuildTopProductsFrom
     'shopee')
 
     return {
-      id: item.id,
+      id: item.id, // Already contains productId-platform for uniqueness
       name: item.name,
       platform,
       soldInMonth: item.soldInMonth,

@@ -21,9 +21,16 @@ import {
   pickDailyRevenueByRange,
 } from '@/features/revenue/logic/revenueSummaryReport.logic'
 import { useRevenueSummaryReport } from '@/features/revenue/hooks/useRevenueSummaryReport'
+import { useProductData } from '@/features/products/hooks/useProductData'
 import type { RevenueRange, RevenueSummaryPlatformFilter } from '@/types/revenue.types'
 
 export function RevenueSummaryReport() {
+  // Centralized product data from store
+  useProductData({
+    autoPreload: false,
+    pageName: 'RevenueSummaryReportPage',
+  })
+
   const [selectedRange, setSelectedRange] = useState<RevenueRange>('month')
   const [selectedPlatform, setSelectedPlatform] = useState<RevenueSummaryPlatformFilter>('all')
   const [keyword, setKeyword] = useState('')

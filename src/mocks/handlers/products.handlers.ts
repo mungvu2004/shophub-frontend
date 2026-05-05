@@ -2,8 +2,9 @@ import { http, HttpResponse } from "msw";
 import { mockProducts } from "@/mocks/data/products";
 import { productsCompetitorTrackingMock } from "@/mocks/data/productsCompetitorTracking";
 import { productsDynamicPricingMock } from "@/mocks/data/productsDynamicPricing";
+import type { Product } from "@/types/product.types";
 
-const buildProductAutomationTriggers = (productId: string, productName: string) => {
+const buildProductAutomationTriggersImpl = (productId: string, productName: string) => {
   const suffix = productId.slice(-3);
 
   return [
@@ -23,6 +24,28 @@ const buildProductAutomationTriggers = (productId: string, productName: string) 
     },
   ];
 };
+
+const generateProductFromId = (id: string): Product | null => {
+  // For generated IDs like "prod-xxxxx", create a mock product
+  if (!id.startsWith("prod-")) return null;
+
+  // Try to find a matching product in mockProducts by a loose match
+  const baseProduct = mockProducts[Math.abs(id.charCodeAt(0) - id.charCodeAt(id.length - 1)) % mockProducts.length];
+  
+  if (!baseProduct) return null;
+
+  return {
+    ...baseProduct,
+    id,
+    name: `${baseProduct.name} (Variant)`,
+    createdAt: new Date("2026-05-05").toISOString(),
+    updatedAt: new Date("2026-05-05").toISOString(),
+  };
+};
+
+const buildProductAutomationTriggers_old = buildProductAutomationTriggersImpl;
+
+const buildProductAutomationTriggers = buildProductAutomationTriggers_old;
 
 export const productsHandlers = [
   http.get("/api/products/competitor-tracking", () => {
@@ -113,6 +136,15 @@ export const productsHandlers = [
 
   http.get("/api/products/:id", ({ params }) => {
     const found = mockProducts.find((product) => product.id === params.id);
+    
+    // If not found and it's a generated ID, create a mock product
+    if (!found && typeof params.id === 'string' && params.id.startsWith('prod-')) {
+      const generatedProduct = generateProductFromId(params.id as string);
+      if (generatedProduct) {
+        return HttpResponse.json(generatedProduct, { status: 200 });
+      }
+    }
+    
     if (!found) {
       return HttpResponse.json(
         { status: 404, title: "Not Found", detail: "Product not found" },
@@ -124,6 +156,22 @@ export const productsHandlers = [
 
   http.get("/api/products/:id/automation-triggers", ({ params }) => {
     const found = mockProducts.find((product) => product.id === params.id);
+    
+    // If not found and it's a generated ID, create mock automation triggers
+    if (!found && typeof params.id === 'string' && params.id.startsWith('prod-')) {
+      const generatedProduct = generateProductFromId(params.id as string);
+      if (generatedProduct) {
+        return HttpResponse.json(
+          {
+            productId: generatedProduct.id,
+            lastUpdatedAt: new Date().toISOString(),
+            items: buildProductAutomationTriggers(generatedProduct.id, generatedProduct.name),
+          },
+          { status: 200 }
+        );
+      }
+    }
+    
     if (!found) {
       return HttpResponse.json(
         { status: 404, title: "Not Found", detail: "Product not found" },
@@ -158,31 +206,54 @@ export const productsHandlers = [
 
   http.put("/api/products/:id", async ({ params, request }) => {
     const product = mockProducts.find((p) => p.id === params.id);
-    if (!product) {
-      return HttpResponse.json(
-        { status: 404, title: "Not Found", detail: "Product not found" },
-        { status: 404 }
-      );
+    
+    const body = (await request.json()) as Record<string, unknown>;
+
+    if (product) {
+      Object.assign(product, body, {
+        updatedAt: new Date().toISOString(),
+      });
+      return HttpResponse.json(product, { status: 200 });
+    }
+    
+    // Support generated IDs
+    if (typeof params.id === 'string' && params.id.startsWith('prod-')) {
+      const generatedProduct = generateProductFromId(params.id as string);
+      if (generatedProduct) {
+        const updated = {
+          ...generatedProduct,
+          ...body,
+          updatedAt: new Date().toISOString(),
+        };
+        return HttpResponse.json(updated, { status: 200 });
+      }
     }
 
-    const body = (await request.json()) as Record<string, unknown>;
-    Object.assign(product, body, {
-      updatedAt: new Date().toISOString(),
-    });
-
-    return HttpResponse.json(product, { status: 200 });
+    return HttpResponse.json(
+      { status: 404, title: "Not Found", detail: "Product not found" },
+      { status: 404 }
+    );
   }),
 
   http.delete("/api/products/:id", ({ params }) => {
     const product = mockProducts.find((p) => p.id === params.id);
-    if (!product) {
-      return HttpResponse.json(
-        { status: 404, title: "Not Found", detail: "Product not found" },
-        { status: 404 }
-      );
+    
+    if (product) {
+      // In real scenario, delete would be persisted
+      return HttpResponse.json({ success: true }, { status: 200 });
+    }
+    
+    // Support generated IDs
+    if (typeof params.id === 'string' && params.id.startsWith('prod-')) {
+      const generatedProduct = generateProductFromId(params.id as string);
+      if (generatedProduct) {
+        return HttpResponse.json({ success: true }, { status: 200 });
+      }
     }
 
-    // In real scenario, delete would be persisted
-    return HttpResponse.json({ success: true }, { status: 200 });
+    return HttpResponse.json(
+      { status: 404, title: "Not Found", detail: "Product not found" },
+      { status: 404 }
+    );
   }),
 ];

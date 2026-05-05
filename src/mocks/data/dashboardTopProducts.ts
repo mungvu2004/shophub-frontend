@@ -1,6 +1,8 @@
 import { mockOrders } from "@/mocks/data/orders";
-import type { Order } from "@/types/order.types";
+import type { Order, OrderItem } from "@/types/order.types";
 import type { PlatformCode } from "@/types/platform.types";
+
+type OrderItemWithProductId = OrderItem & { productId?: string }
 
 export type DashboardTopProductsMetric = "revenue" | "quantity" | "returnRate";
 export type DashboardTopProductsRange = 7 | 30 | 90;
@@ -91,7 +93,18 @@ const buildAggregatedProducts = () => {
 
     items.forEach((item, itemIndex) => {
       const name = item.productName?.trim() || `Sản phẩm ${order.id}`;
-      const key = `${name.toLowerCase()}-${platform}`;
+      
+      // Use productId if available, fallback to hash-based ID
+      let productId = (item as OrderItemWithProductId).productId
+      if (!productId) {
+        const nameHash = Array.from(name).reduce((hash, char) => {
+          const h = ((hash << 5) - hash) + char.charCodeAt(0)
+          return h & h
+        }, 0)
+        productId = `prod-${Math.abs(nameHash).toString(36).padStart(5, '0').slice(0, 5)}`
+      }
+      
+      const key = `${productId}-${platform}`;
       const qty = Number.isFinite(item.qty) && item.qty > 0 ? item.qty : 1;
       const unitPrice = Number.isFinite(item.paidPrice) && item.paidPrice > 0 ? item.paidPrice : item.itemPrice;
       const revenue = Math.max(0, unitPrice * qty);
@@ -100,7 +113,7 @@ const buildAggregatedProducts = () => {
       const current =
         aggregate.get(key)
         || {
-          id: key,
+          id: productId,
           name,
           sku: (item.externalSkuRef || `SKU-${String(seed).padStart(4, "0")}`).toUpperCase(),
           platform,
@@ -271,8 +284,11 @@ export const getDashboardTopProductsPayload = (params: {
       trendPercent: Number((-Math.abs(item.trendPercent || 1.5)).toFixed(1)),
     }));
 
+  const now = new Date();
+  const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
   return {
-    updatedAt: "14:35",
+    updatedAt: timeStr,
     metric: params.metric,
     rangeDays: params.rangeDays,
     platform: params.platform,

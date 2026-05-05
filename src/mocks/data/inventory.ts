@@ -5,6 +5,7 @@ import type {
   StockMovement,
   Warehouse,
 } from "@/types/inventory.types";
+import { mockProducts } from "./products";
 
 const movementTypes: MovementType[] = [
   "ORDER_RESERVE",
@@ -22,147 +23,137 @@ export const mockWarehouses: Warehouse[] = [
   {
     id: "wh-001",
     sellerId: "seller-001",
-    name: "Main Warehouse",
-    addressLine1: "123 Nguyen Van Linh",
+    name: "Main Warehouse HCM",
+    addressLine1: "123 Nguyen Van Linh, District 1",
     city: "Ho Chi Minh",
     country: "VN",
     isDefault: true,
     isActive: true,
-    createdAt: "2026-01-01T00:00:00Z",
+    createdAt: "2026-05-05T00:00:00Z",
   },
   {
     id: "wh-002",
     sellerId: "seller-001",
-    name: "Backup Warehouse",
-    addressLine1: "88 Tran Hung Dao",
+    name: "Secondary Warehouse Ha Noi",
+    addressLine1: "88 Tran Hung Dao, Hoan Kiem",
     city: "Ha Noi",
     country: "VN",
     isDefault: false,
     isActive: true,
-    createdAt: "2026-01-01T00:00:00Z",
+    createdAt: "2026-05-05T00:00:00Z",
   },
 ];
 
-export const mockStockLevels: (StockLevel & { avgDailySales?: number; forecastDays?: number; isDiscontinued?: boolean; maxCapacity?: number })[] = Array.from({ length: 12 }, (_, idx) => {
-  const n = idx + 1;
-  const physicalQty = 20 + n;
-  const reservedQty = n % 5;
-  const categories = ['Áo', 'Váy', 'Quần', 'Giày', 'Phụ kiện'];
-  const category = categories[n % categories.length];
-  
-  const skuCodes = ['AT-WHT-L', 'AT-WHT-XL', 'VS-HOA-M', 'QJ-SLM-28', 'GP-SNK-42', 
-                    'AT-BLU-M', 'VS-CHK-L', 'QJ-STR-30', 'GP-SNK-40', 'GP-SNK-44',
-                    'AT-BLK-M', 'GP-SNK-38'];
-  const sku = skuCodes[n - 1];
-  
-  const productNames = [
-    'Áo thun basic trắng',
-    'Váy hoa nổi',
-    'Quần jean slim',
-    'Giày thể thao',
-    'Mũ lưỡi trai',
-    'Áo sơ mi xanh',
-    'Váy ca rô',
-    'Quần kaki trung tính',
-    'Giày da công sở',
-    'Giày thể thao màu trắng',
-    'Áo phông đen',
-    'Giày tây nam',
-  ];
-  const productName = productNames[n - 1];
-  
-  // Tốc độ bán trung bình (units/ngày)
-  const avgDailySales = 0.5 + (n % 5) * 0.8;
-  // Dự báo hết hàng (ngày)
-  const forecastDays = Math.ceil(physicalQty / avgDailySales);
-  // Một số sản phẩm bị đánh dấu ngừng bán
-  const isDiscontinued = n === 11;
-  // Sức chứa tối đa của kho (units)
-  const maxCapacity = 80 + (n % 5) * 40;
-  
-  return {
-    id: `sl-${String(n).padStart(3, "0")}`,
-    sku,
-    variantId: `var-${String(n).padStart(3, "0")}-1`,
-    variantName: `${sku} - Size ${['XS', 'S', 'M', 'L', 'XL'][n % 5]}`,
-    productName,
-    category,
-    productImage: `https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=100&auto=format&fit=crop&text=${sku}`,
-    warehouseId: n % 2 === 0 ? "wh-001" : "wh-002",
-    warehouseName: n % 2 === 0 ? "Main Warehouse" : "Backup Warehouse",
-    physicalQty,
-    reservedQty,
-    availableQty: physicalQty - reservedQty,
-    onOrder: n % 4 === 0 ? 5 + (n % 3) : 0,
-    channelStock: {
-      shopee: Math.max(0, physicalQty - reservedQty - (n % 8)),
-      tiktok: Math.max(0, Math.floor((physicalQty - reservedQty) / 2)),
-      lazada: Math.max(0, Math.floor((physicalQty - reservedQty) / 3)),
-    },
-    minThreshold: 15,
-    maxThreshold: 250,
-    updatedAt: `2026-03-${String((n % 28) + 1).padStart(2, "0")}T06:00:00Z`,
-    avgDailySales,
-    forecastDays,
-    isDiscontinued,
-    maxCapacity,
-  };
+// Generate stock levels for ALL products and their variants
+export const mockStockLevels: (StockLevel & { avgDailySales?: number; forecastDays?: number; isDiscontinued?: boolean; maxCapacity?: number })[] = [];
+
+mockProducts.forEach((product, productIdx) => {
+  product.variants.forEach((variant, variantIdx) => {
+    const variantIndex = productIdx * 2 + variantIdx;
+    const warehouseId = variantIndex % 2 === 0 ? "wh-001" : "wh-002";
+    
+    // Generate realistic stock data
+    const avgDailySales = 0.5 + ((productIdx + 1) % 5) * 0.8;
+    const baseStock = 30 + (variantIndex % 50);
+    const physicalQty = baseStock + (variantIndex % 20);
+    const reservedQty = Math.floor(physicalQty * (0.1 + (variantIndex % 5) * 0.08));
+    
+    const forecastDays = Math.ceil(physicalQty / avgDailySales);
+    const isDiscontinued = (productIdx + 1) % 35 === 0;
+    const maxCapacity = 150 + (variantIndex % 100);
+    
+    mockStockLevels.push({
+      id: `sl-${String(variantIndex + 1).padStart(4, "0")}`,
+      sku: variant.internalSku,
+      variantId: variant.id,
+      variantName: `${product.name} - ${variant.attributesJson ? Object.values(variant.attributesJson).join(" / ") : variant.name}`,
+      productName: product.name,
+      category: product.brand || "Fashion",
+      productImage: variant.mainImageUrl,
+      warehouseId,
+      warehouseName: warehouseId === "wh-001" ? "Main Warehouse HCM" : "Secondary Warehouse Ha Noi",
+      physicalQty,
+      reservedQty,
+      availableQty: physicalQty - reservedQty,
+      onOrder: (variantIndex % 4 === 0) ? (5 + (variantIndex % 3)) : 0,
+      channelStock: {
+        shopee: Math.max(0, Math.floor((physicalQty - reservedQty) * 0.5)),
+        tiktok: Math.max(0, Math.floor((physicalQty - reservedQty) * 0.3)),
+        lazada: Math.max(0, Math.floor((physicalQty - reservedQty) * 0.2)),
+      },
+      minThreshold: 10,
+      maxThreshold: maxCapacity,
+      updatedAt: '2026-05-05T06:00:00Z',
+      avgDailySales,
+      forecastDays,
+      isDiscontinued,
+      maxCapacity,
+    });
+  });
 });
 
-export const mockInventoryAlerts: InventoryAlert[] = Array.from(
-  { length: 12 },
-  (_, idx) => {
-    const n = idx + 1;
-    const out = n % 6 === 0;
-    const low = n % 3 === 0;
+// Generate inventory alerts from stock levels
+export const mockInventoryAlerts: InventoryAlert[] = mockStockLevels
+  .filter((_, idx) => idx % 3 === 0) // Generate alerts for roughly 1/3 of stock levels
+  .map((level, idx) => {
+    const isOutOfStock = level.physicalQty === 0;
+    const isLowStock = !isOutOfStock && level.physicalQty <= (level.minThreshold || 10) * 1.5;
+    const isOverstock = level.physicalQty > (level.maxThreshold || 250) * 0.8;
+    
+    const alertType = isOutOfStock ? "OUT_OF_STOCK" : (isLowStock ? "LOW_STOCK" : (isOverstock ? "OVERSTOCK" : "NORMAL"));
+    const severity = isOutOfStock ? "Critical" : (isLowStock ? "Warning" : (isOverstock ? "Info" : "Info"));
+    
     return {
-      id: `ia-${String(n).padStart(3, "0")}`,
+      id: `ia-${String(idx + 1).padStart(4, "0")}`,
       sellerId: "seller-001",
-      variantId: `var-${String(n).padStart(3, "0")}-1`,
-      warehouseId: n % 2 === 0 ? "wh-001" : "wh-002",
-      productName: `Demo Product ${n}`,
-      internalSku: `SKU-${String(n).padStart(4, "0")}`,
-      alertType: out ? "OUT_OF_STOCK" : low ? "LOW_STOCK" : "OVERSTOCK",
-      severity: out ? "Critical" : low ? "Warning" : "Info",
-      currentPhysicalQty: out ? 0 : 10 + n,
-      currentAvailableQty: out ? 0 : 5 + n,
-      daysUntilStockout: out ? 0 : low ? 2 : 30,
-      suggestedRestockQty: out ? 60 : low ? 30 : 0,
-      message: out
-        ? "Out of stock"
-        : low
-          ? "Low stock warning"
-          : "Overstock detected",
-      forecastResultId: `fr-${String(n).padStart(3, "0")}`,
-      isResolved: n % 4 === 0,
-      resolvedAt: n % 4 === 0 ? "2026-03-28T10:00:00Z" : undefined,
-      notificationSentAt: "2026-03-29T07:00:00Z",
-      createdAt: `2026-03-${String((n % 28) + 1).padStart(2, "0")}T05:00:00Z`,
+      variantId: level.variantId,
+      warehouseId: level.warehouseId,
+      productName: level.productName || "Unknown Product",
+      internalSku: level.sku,
+      alertType: alertType as InventoryAlert['alertType'],
+      severity: severity as InventoryAlert['severity'],
+      currentPhysicalQty: level.physicalQty,
+      currentAvailableQty: level.availableQty,
+      daysUntilStockout: isOutOfStock ? 0 : Math.ceil(level.availableQty / (level.avgDailySales || 1)),
+      suggestedRestockQty: isOutOfStock ? Math.round((level.maxCapacity || 150) * 0.8) : (isLowStock ? Math.round((level.maxCapacity || 150) * 0.5) : 0),
+      message: alertType === "OUT_OF_STOCK" ? "Out of stock" : (alertType === "LOW_STOCK" ? "Low stock warning" : "Overstock detected"),
+      forecastResultId: `fr-${String(idx + 1).padStart(4, "0")}`,
+      isResolved: idx % 4 === 0,
+      resolvedAt: idx % 4 === 0 ? '2026-05-05T10:00:00Z' : undefined,
+      notificationSentAt: '2026-05-05T07:00:00Z',
+      createdAt: '2026-05-05T05:00:00Z',
     };
-  },
-);
+  });
 
+// Generate stock movements
 export const mockStockMovements: StockMovement[] = Array.from(
-  { length: 24 },
+  { length: 60 },
   (_, idx) => {
     const n = idx + 1;
-    const qtyBefore = 100 + n;
-    const delta = n % 2 === 0 ? -(n % 5) - 1 : (n % 7) + 1;
-    const today = new Date();
+    const stockLevel = mockStockLevels[n % mockStockLevels.length];
+    const qtyBefore = 50 + (n * 3) % 100;
+    const movementType = movementTypes[idx % movementTypes.length];
+    const delta = movementType.includes("RELEASE") || movementType === "ORDER_FULFILL" 
+      ? -(n % 10 + 1)
+      : movementType.includes("DAMAGE_LOSS")
+      ? -(n % 5)
+      : (n % 20 + 5);
+
+    const today = new Date("2026-05-05T00:00:00Z");
     const createdAt = new Date(today);
-    createdAt.setHours(today.getHours() - idx, today.getMinutes() - (idx * 5));
+    createdAt.setHours(today.getHours() - (idx % 24), today.getMinutes() - (idx % 60));
 
     return {
       id: n,
-      variantId: `var-${String((n % 12) + 1).padStart(3, "0")}-1`,
-      warehouseId: n % 2 === 0 ? "wh-001" : "wh-002",
-      movementType: movementTypes[idx % movementTypes.length],
+      variantId: stockLevel.variantId,
+      warehouseId: stockLevel.warehouseId,
+      movementType: movementType as StockMovement['movementType'],
       delta,
       qtyBefore,
-      qtyAfter: qtyBefore + delta,
-      refOrderItemId: n % 3 === 0 ? `item-${String((n % 12) + 1).padStart(3, "0")}-1` : undefined,
-      reason: n % 2 === 0 ? "Bán hàng kênh Ecommerce" : "Nhập hàng bổ sung từ NCC",
-      note: `Ghi chú biến động số ${n}`,
+      qtyAfter: Math.max(0, qtyBefore + delta),
+      refOrderItemId: (n % 3 === 0) ? `item-${String((n % 50) + 1).padStart(3, "0")}-01` : undefined,
+      reason: movementType === "IMPORT" ? "Nhập hàng bổ sung từ NCC" : (movementType === "ORDER_FULFILL" ? "Bán hàng kênh Ecommerce" : `Biến động ${movementType}`),
+      note: `Ghi chú biến động ${movementType} cho ${stockLevel.productName}`,
       createdAt: createdAt.toISOString(),
       createdBy: n % 2 === 0 ? "system" : "staff-001",
     };
@@ -172,11 +163,11 @@ export const mockStockMovements: StockMovement[] = Array.from(
 export const mockInventoryAIForecast = {
   model: {
     name: 'LSTM v2.1',
-    updatedAt: '2026-03-28T14:20:00Z',
+    updatedAt: '2026-05-05T14:20:00Z',
     accuracyRate: 89.3,
-    inputSkuCount: 847,
+    inputSkuCount: mockStockLevels.length,
     historyDays: 90,
-    lastRunAt: '2026-03-28T14:28:00Z',
+    lastRunAt: '2026-05-05T14:28:00Z',
     statusText: 'Model đang hoạt động bình thường',
   },
   accuracyMetrics: {
@@ -202,140 +193,59 @@ export const mockInventoryAIForecast = {
       periodLabel: 'Cuối tháng 11',
     },
   ],
-  inboundPlan: [
-    {
-      id: 'plan-001',
-      sku: 'AT-WHT-XL',
-      productName: 'Áo thun basic trắng XL',
-      suggestedQuantity: 150,
-      suggestedOrderDate: '2026-03-18T00:00:00Z',
-      leadTimeDays: 5,
-      priority: 'high',
-    },
-    {
-      id: 'plan-002',
-      sku: 'JEAN-SLM-M',
-      productName: 'Quần Jeans Slimfit M',
-      suggestedQuantity: 80,
-      suggestedOrderDate: '2026-03-19T00:00:00Z',
-      leadTimeDays: 3,
-      priority: 'high',
-    },
-  ],
-  urgentRestocks: [
-    {
-      id: 'urgent-001',
-      productName: 'Áo thun basic trắng XL',
-      sku: 'AT-WHT-XL',
-      confidencePercent: 85,
-      currentStock: 6,
-      stockoutDays: 3,
-      stockoutDate: '2026-03-23',
-      suggestedInboundQty: 150,
-      reasons: ['Bán nhanh hơn 40% so với tuần trước', 'Lễ Giỗ Tổ sắp tới', 'Tồn kho đối thủ thấp'],
-      fillRatePercent: 85,
-    },
-    {
-      id: 'urgent-002',
-      productName: 'Quần Jeans Slimfit M',
-      sku: 'JEAN-SLM-M',
-      confidencePercent: 92,
-      currentStock: 4,
-      stockoutDays: 2,
-      stockoutDate: '2026-03-22',
-      suggestedInboundQty: 80,
-      reasons: ['Đơn hàng Tiktok tăng 27%', 'Tỷ lệ hủy giảm nên nhu cầu thực tăng'],
-      fillRatePercent: 91,
-    },
-    {
-      id: 'urgent-003',
-      productName: 'Giày Sneaker Sport 42',
-      sku: 'SNK-SPT-42',
-      confidencePercent: 78,
-      currentStock: 2,
-      stockoutDays: 1,
-      stockoutDate: '2026-03-21',
-      suggestedInboundQty: 45,
-      reasons: ['Hiệu ứng combo trong live gần đây', 'Kho trung chuyển về chậm 2 ngày'],
-      fillRatePercent: 74,
-    },
-  ],
-  watchlist: [
-    {
-      id: 'watch-001',
-      productName: 'Túi xách Canvas Đen',
-      sku: 'BAG-CV-BLK',
-      currentStock: 42,
-      predictedStockoutDays: 9,
-      predictedInboundQty: 200,
-      confidencePercent: 94,
-    },
-    {
-      id: 'watch-002',
-      productName: 'Mũ lưỡi trai NY Trắng',
-      sku: 'CAP-NY-WHT',
-      currentStock: 15,
-      predictedStockoutDays: 12,
-      predictedInboundQty: 60,
-      confidencePercent: 89,
-    },
-    {
-      id: 'watch-003',
-      productName: 'Thắt lưng da nâu B1',
-      sku: 'BLT-LE-BR',
-      currentStock: 31,
-      predictedStockoutDays: 14,
-      predictedInboundQty: 100,
-      confidencePercent: 81,
-    },
-  ],
-  allForecastRows: [
-    {
-      id: 'row-001',
-      sku: 'AT-WHT-XL',
-      productName: 'Áo thun basic trắng XL',
-      currentStock: 6,
-      avgDailySales: 2.1,
-      forecastDays: 3,
-      suggestedInboundQty: 150,
-      confidencePercent: 85,
-      action: 'URGENT_RESTOCK',
-    },
-    {
-      id: 'row-002',
-      sku: 'BAG-CV-BLK',
-      productName: 'Túi xách Canvas Đen',
-      currentStock: 42,
-      avgDailySales: 4.5,
-      forecastDays: 9,
-      suggestedInboundQty: 200,
-      confidencePercent: 94,
-      action: 'PLAN_RESTOCK',
-    },
-    {
-      id: 'row-003',
-      sku: 'DRS-FLR-S',
-      productName: 'Váy hoa nhí Pastel S',
-      currentStock: 124,
-      avgDailySales: 3.8,
-      forecastDays: 32,
-      suggestedInboundQty: 0,
-      confidencePercent: 91,
-      action: 'HEALTHY',
-    },
-    {
-      id: 'row-004',
-      sku: 'JACK-DNM-XL',
-      productName: 'Áo khoác Denim XL',
-      currentStock: 18,
-      avgDailySales: 1.4,
-      forecastDays: 13,
-      suggestedInboundQty: 50,
-      confidencePercent: 74,
-      action: 'PLAN_RESTOCK',
-    },
-  ],
-  generatedAt: '2026-03-28T14:28:00Z',
+  inboundPlan: mockStockLevels
+    .filter((_, idx) => idx % 8 === 0)
+    .map((level, idx) => ({
+      id: `plan-${String(idx + 1).padStart(3, "0")}`,
+      sku: level.sku,
+      productName: level.productName || "Unknown Product",
+      suggestedQuantity: Math.round((level.maxCapacity || 150) * 0.6),
+      suggestedOrderDate: new Date("2026-05-05T00:00:00Z").toISOString(),
+      leadTimeDays: 3 + (idx % 5),
+      priority: (idx % 3 === 0) ? 'high' : 'normal',
+    })),
+  urgentRestocks: mockStockLevels
+    .filter((level) => level.physicalQty <= level.minThreshold * 2)
+    .slice(0, 5)
+    .map((level, idx) => ({
+      id: `urgent-${String(idx + 1).padStart(3, "0")}`,
+      productName: level.productName,
+      sku: level.sku,
+      confidencePercent: 85 + (idx * 2),
+      currentStock: level.physicalQty,
+      stockoutDays: level.forecastDays,
+      stockoutDate: new Date(Date.now() + (level.forecastDays || 3) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      suggestedInboundQty: Math.round((level.maxCapacity || 150) * 0.7),
+      reasons: ['Bán nhanh hơn dự báo', 'Mùa vụ tăng nhu cầu', 'Tồn kho đối thủ thấp'],
+      fillRatePercent: 85 + (idx * 3),
+    })),
+  watchlist: mockStockLevels
+    .filter((_, idx) => idx % 10 === 0)
+    .map((level, idx) => ({
+      id: `watch-${String(idx + 1).padStart(3, "0")}`,
+      productName: level.productName,
+      sku: level.sku,
+      currentStock: level.physicalQty,
+      predictedStockoutDays: level.forecastDays,
+      predictedInboundQty: Math.round((level.maxCapacity || 150) * 0.6),
+      confidencePercent: 85 + (idx % 15),
+    })),
+  allForecastRows: mockStockLevels
+    .map((level, idx) => ({
+      id: `row-${String(idx + 1).padStart(4, "0")}`,
+      sku: level.sku,
+      productName: level.productName,
+      currentStock: level.physicalQty,
+      avgDailySales: level.avgDailySales,
+      forecastDays: level.forecastDays,
+      suggestedInboundQty: Math.round((level.maxCapacity || 150) * 0.6),
+      confidencePercent: 82 + (idx % 18),
+      platformDemand: {
+        shopee: Math.max(0, Math.round((level.avgDailySales || 1) * 0.5)),
+        tiktok: Math.max(0, Math.round((level.avgDailySales || 1) * 0.3)),
+        lazada: Math.max(0, Math.round((level.avgDailySales || 1) * 0.2)),
+      },
+    })),
 };
 
 export const mockInventoryAIForecastDetails = {
@@ -346,7 +256,7 @@ export const mockInventoryAIForecastDetails = {
     groupTag: 'APPAREL',
     currentStock: 6,
     avgDailySales: 2.1,
-    predictedStockoutDate: '2026-03-23',
+    predictedStockoutDate: '2026-05-05',
     suggestedInboundQty: 150,
     modelName: 'LSTM v2.1',
     modelAccuracyRate: 89.3,
@@ -372,7 +282,7 @@ export const mockInventoryAIForecastDetails = {
     groupTag: 'APPAREL',
     currentStock: 4,
     avgDailySales: 2.5,
-    predictedStockoutDate: '2026-03-22',
+    predictedStockoutDate: '2026-05-05',
     suggestedInboundQty: 80,
     modelName: 'LSTM v2.1',
     modelAccuracyRate: 89.3,
@@ -398,7 +308,7 @@ export const mockInventoryAIForecastDetails = {
     groupTag: 'FOOTWEAR',
     currentStock: 2,
     avgDailySales: 1.9,
-    predictedStockoutDate: '2026-03-21',
+    predictedStockoutDate: '2026-05-05',
     suggestedInboundQty: 45,
     modelName: 'LSTM v2.1',
     modelAccuracyRate: 89.3,

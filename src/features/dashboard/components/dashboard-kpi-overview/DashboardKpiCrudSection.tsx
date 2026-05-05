@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
+import { ChevronDown } from 'lucide-react'
 
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
@@ -30,6 +31,7 @@ export function DashboardKpiCrudSection() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<DashboardKpiCrudRecord | null>(null)
   const [deletingItem, setDeletingItem] = useState<DashboardKpiCrudRecord | null>(null)
+  const [isCollapsed, setIsCollapsed] = useState(true)
 
   const formMode = editingItem ? 'edit' : 'create'
 
@@ -138,52 +140,72 @@ export function DashboardKpiCrudSection() {
   return (
     <section className="space-y-4 rounded-2xl border border-slate-200/80 bg-slate-50/40 p-4 md:p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-1">
+        <div className="space-y-1 flex-1">
           <h3 className="text-base font-extrabold text-slate-900">{MESSAGES.DASHBOARD.KPI_OVERVIEW.SECTION_TITLE}</h3>
           <p className="text-sm text-slate-500">{MESSAGES.DASHBOARD.KPI_OVERVIEW.SECTION_SUBTITLE}</p>
         </div>
 
-        <Button
-          type="button"
-          onClick={handleOpenCreate}
-          isLoading={isProcessing && actionType === 'creating'}
-          loadingText={MESSAGES.DASHBOARD.KPI_OVERVIEW.BUTTON.ADD_LOADING}
-          disabled={isProcessing && actionType !== 'creating'}
-        >
-          {MESSAGES.DASHBOARD.KPI_OVERVIEW.BUTTON.ADD}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            aria-label={isCollapsed ? 'Mở rộng cấu hình KPI' : 'Thu gọn cấu hình KPI'}
+            className="px-3"
+          >
+            <ChevronDown 
+              className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
+              aria-hidden="true"
+            />
+          </Button>
+          
+          <Button
+            type="button"
+            onClick={handleOpenCreate}
+            isLoading={isProcessing && actionType === 'creating'}
+            loadingText={MESSAGES.DASHBOARD.KPI_OVERVIEW.BUTTON.ADD_LOADING}
+            disabled={isProcessing && actionType !== 'creating' || isCollapsed}
+          >
+            {MESSAGES.DASHBOARD.KPI_OVERVIEW.BUTTON.ADD}
+          </Button>
+        </div>
       </div>
 
-      {listContent}
+      {!isCollapsed && listContent}
 
-      <KpiCrudFormDialog
-        key={`${formMode}-${editingItem?.id ?? 'new'}-${isFormOpen ? 'open' : 'closed'}`}
-        open={isFormOpen}
-        onOpenChange={(open) => {
-          setIsFormOpen(open)
-          if (!open) setEditingItem(null)
-        }}
-        mode={formMode}
-        editingItem={editingItem}
-        onSubmit={handleSubmitForm}
-        isSubmitting={submitProcessing}
-      />
+      {!isCollapsed && (
+        <>
+          <KpiCrudFormDialog
+            key={`${formMode}-${editingItem?.id ?? 'new'}-${isFormOpen ? 'open' : 'closed'}`}
+            open={isFormOpen}
+            onOpenChange={(open) => {
+              setIsFormOpen(open)
+              if (!open) setEditingItem(null)
+            }}
+            mode={formMode}
+            editingItem={editingItem}
+            onSubmit={handleSubmitForm}
+            isSubmitting={submitProcessing}
+          />
 
-      <ConfirmDialog
-        open={Boolean(deletingItem)}
-        onOpenChange={(open) => {
-          if (!open) setDeletingItem(null)
-        }}
-        title={MESSAGES.DASHBOARD.KPI_OVERVIEW.CONFIRM.DELETE_TITLE}
-        description={MESSAGES.DASHBOARD.KPI_OVERVIEW.CONFIRM.DELETE_DESC}
-        confirmText={MESSAGES.DASHBOARD.KPI_OVERVIEW.BUTTON.DELETE}
-        onConfirm={async () => {
-          if (!deletingItem) return
-          await handleDelete(deletingItem.id)
-          setDeletingItem(null)
-        }}
-        isConfirming={isProcessing && actionType === 'deleting'}
-      />
+          <ConfirmDialog
+            open={Boolean(deletingItem)}
+            onOpenChange={(open) => {
+              if (!open) setDeletingItem(null)
+            }}
+            title={MESSAGES.DASHBOARD.KPI_OVERVIEW.CONFIRM.DELETE_TITLE}
+            description={MESSAGES.DASHBOARD.KPI_OVERVIEW.CONFIRM.DELETE_DESC}
+            confirmText={MESSAGES.DASHBOARD.KPI_OVERVIEW.BUTTON.DELETE}
+            onConfirm={async () => {
+              if (!deletingItem) return
+              await handleDelete(deletingItem.id)
+              setDeletingItem(null)
+            }}
+            isConfirming={isProcessing && actionType === 'deleting'}
+          />
+        </>
+      )}
     </section>
   )
 }

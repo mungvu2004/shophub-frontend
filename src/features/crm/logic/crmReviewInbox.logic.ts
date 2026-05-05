@@ -24,7 +24,7 @@ export const crmReviewSortOptions: Array<{ id: CRMReviewSort; label: string }> =
 
 const platformStyles: Record<CRMReviewPlatform, string> = {
   shopee: 'bg-orange-50 text-orange-600',
-  tiktok: 'bg-slate-900 text-white',
+  tiktok_shop: 'bg-slate-900 text-white',
   lazada: 'bg-blue-50 text-blue-700',
 }
 
@@ -35,7 +35,7 @@ const sentimentStyles: Record<CRMReviewSentiment, string> = {
 }
 
 export function getPlatformLabel(platform: CRMReviewPlatform) {
-  if (platform === 'tiktok') return 'TikTok'
+  if (platform === 'tiktok_shop') return 'TikTok'
   if (platform === 'lazada') return 'Lazada'
   return 'Shopee'
 }

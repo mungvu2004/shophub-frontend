@@ -10,12 +10,19 @@ import { Button } from '@/components/ui/button'
 import { Plus, Package } from 'lucide-react'
 import type { useInventorySKUStockPage } from '@/features/inventory/hooks/useInventorySKUStockPage'
 import { ThemedPageHeader } from '@/components/shared/ThemedPageHeader'
+import { useProductData } from '@/features/products/hooks/useProductData'
 
 export type InventorySKUStockPageViewProps = {
   model: ReturnType<typeof useInventorySKUStockPage>
 }
 
 export function InventorySKUStockPageView({ model }: InventorySKUStockPageViewProps) {
+  // Centralized product data from store
+  useProductData({
+    autoPreload: false,
+    pageName: 'InventorySKUStockPage',
+  })
+
   const {
     viewMode,
     filters,

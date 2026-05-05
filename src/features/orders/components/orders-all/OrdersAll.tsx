@@ -9,6 +9,7 @@ import { OrdersAllView } from '@/features/orders/components/orders-all/OrdersAll
 import { useOrdersAllData } from '@/features/orders/hooks/useOrdersAllData'
 import { useOrdersAllSelection } from '@/features/orders/hooks/useOrdersAllSelection'
 import { useOrderActions } from '@/features/orders/hooks/useOrderActions'
+import { useProductData } from '@/features/products/hooks/useProductData'
 import {
   buildOrdersAllCsv,
   buildLastDaysDateRange,
@@ -82,6 +83,12 @@ export function OrdersAll() {
     orderCode: string | null
   }>({ isOpen: false, orderId: null, orderCode: null })
 
+  // Centralized product data from store
+  const { getProduct } = useProductData({
+    autoPreload: false,
+    pageName: 'OrdersAllPage',
+  })
+
   const { data, isLoading, isFetching, isError, refetch } = useOrdersAllData({
     search,
     status,
@@ -130,7 +137,7 @@ export function OrdersAll() {
       return
     }
 
-    const csv = buildOrdersAllCsv(orders)
+    const csv = buildOrdersAllCsv(orders, getProduct)
     downloadCsvFile(fileName, csv)
     toast.success(MESSAGES.ORDERS.GENERAL.SUCCESS.EXPORT_CSV.replace('{count}', orders.length.toString()))
   }
@@ -141,7 +148,7 @@ export function OrdersAll() {
       return
     }
 
-    const html = buildOrdersAllPrintHtml(orders)
+    const html = buildOrdersAllPrintHtml(orders, getProduct)
     const printed = openPrintWindowWithHtml(html)
 
     if (printed) {
@@ -201,8 +208,9 @@ export function OrdersAll() {
         sortDirection: sortState.direction,
       },
       selectedCount,
+      getProduct,
     })
-  }, [advancedFilters, data, page, pageSize, platform, search, selectedCount, sortState.columnId, sortState.direction, status])
+  }, [advancedFilters, data, page, pageSize, platform, search, selectedCount, sortState.columnId, sortState.direction, status, getProduct])
 
   if (isLoading && !model) {
     return <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-500">Đang tải dữ liệu đơn hàng...</div>

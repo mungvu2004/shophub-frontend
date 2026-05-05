@@ -6,11 +6,18 @@ import { filterForecastRows, buildInventoryAIForecastViewModel } from '@/feature
 import type { ForecastTableFilter } from '@/features/inventory/logic/inventoryAIForecast.types'
 import { useInventoryAIForecast } from '@/features/inventory/hooks/useInventoryAIForecast'
 import { useForecastParameters } from '@/features/inventory/hooks/inventory-ai-forecast/useForecastParameters'
+import { useProductData } from '@/features/products/hooks/useProductData'
 
 import { InventoryAIForecastDetail } from './InventoryAIForecastDetail'
 import { InventoryAIForecastView } from './InventoryAIForecastView'
 
 export function InventoryAIForecast() {
+  // Centralized product data from store
+  useProductData({
+    autoPreload: false,
+    pageName: 'InventoryAIForecastPage',
+  })
+
   const [selectedFilter, setSelectedFilter] = useState<ForecastTableFilter>('all')
   const [selectedSku, setSelectedSku] = useState<string | null>(null)
   

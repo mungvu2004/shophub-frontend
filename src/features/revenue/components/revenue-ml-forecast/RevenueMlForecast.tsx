@@ -11,11 +11,18 @@ import { ScenarioSimulator } from '@/features/revenue/components/revenue-ml-fore
 import { RevenueMlForecastKpiStrip } from '@/features/revenue/components/revenue-ml-forecast/RevenueMlForecastKpiStrip'
 import { useRevenueMlForecast } from '@/features/revenue/hooks/useRevenueMlForecast'
 import { buildRevenueMlForecastViewModel } from '@/features/revenue/logic/revenueMlForecast.logic'
+import { useProductData } from '@/features/products/hooks/useProductData'
 import type { RevenueMlForecastRangeDays } from '@/types/revenue.types'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export function RevenueMlForecast() {
+  // Centralized product data from store
+  useProductData({
+    autoPreload: false,
+    pageName: 'RevenueMLForecastPage',
+  })
+
   const [selectedDays, setSelectedDays] = useState<RevenueMlForecastRangeDays>(30)
   
   const {

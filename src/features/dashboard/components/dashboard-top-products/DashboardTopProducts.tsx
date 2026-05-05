@@ -6,6 +6,7 @@ import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { DashboardTopProductsSkeleton } from '@/features/dashboard/components/dashboard-top-products/DashboardTopProductsSkeleton'
 import { DashboardTopProductsView } from '@/features/dashboard/components/dashboard-top-products/DashboardTopProductsView'
 import { useDashboardTopProducts } from '@/features/dashboard/hooks/useDashboardTopProducts'
+import { useProductData } from '@/features/products/hooks/useProductData'
 import { buildDashboardTopProductsViewModel } from '@/features/dashboard/logic/dashboardTopProducts.logic'
 import type {
   TopProductsMetricId,
@@ -14,6 +15,12 @@ import type {
 } from '@/features/dashboard/logic/dashboardTopProducts.types'
 
 export function DashboardTopProducts() {
+  // Centralized product data from store
+  useProductData({
+    autoPreload: false,
+    pageName: 'DashboardTopProductsPage',
+  })
+
   const navigate = useNavigate()
   const [selectedMetric, setSelectedMetric] = useState<TopProductsMetricId>('revenue')
   const [selectedRange, setSelectedRange] = useState<TopProductsRangeDays>(30)

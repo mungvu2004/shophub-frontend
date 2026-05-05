@@ -9,6 +9,7 @@ import { CRMCustomerProfileOverviewCard } from '@/features/crm/components/custom
 import { CRMCustomerProfilesSidebar } from '@/features/crm/components/customer-profiles/CRMCustomerProfilesSidebar'
 import { CRMCustomerProfilesTableCard } from '@/features/crm/components/customer-profiles/CRMCustomerProfilesTableCard'
 import { useCRMCustomerProfiles } from '@/features/crm/hooks/useCRMCustomerProfiles'
+import { useProductData } from '@/features/products/hooks/useProductData'
 import {
   buildCRMCustomerProfilesViewModel,
   type CRMCustomerProfileOrderFilter,
@@ -16,6 +17,12 @@ import {
 import { Button } from '@/components/ui/button'
 
 export function CRMCustomerProfilesScreen() {
+  // Centralized product data from store
+  useProductData({
+    autoPreload: false,
+    pageName: 'CRMCustomerProfilesPage',
+  })
+
   const [search, setSearch] = useState('')
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | undefined>()
   const [orderFilter, setOrderFilter] = useState<CRMCustomerProfileOrderFilter>('all')

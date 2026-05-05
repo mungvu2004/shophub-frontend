@@ -3,12 +3,19 @@ import { useCallback, useMemo, useState, startTransition } from 'react'
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { buildCRMSentimentAnalysisViewModel } from '@/features/crm/logic/crmSentimentAnalysis.logic'
 import { useCRMSentimentAnalysis, useCRMSentimentAnalysisActions } from '@/features/crm/hooks/useCRMSentimentAnalysis'
+import { useProductData } from '@/features/products/hooks/useProductData'
 import type { CRMSentimentPlatformFilter } from '@/types/crm.types'
 import { mockProducts } from '@/mocks/data/products'
 
 import { CRMSentimentAnalysisView } from './CRMSentimentAnalysisView'
 
 export function CRMSentimentAnalysis() {
+  // Centralized product data from store
+  useProductData({
+    autoPreload: false,
+    pageName: 'CRMSentimentAnalysisPage',
+  })
+
   const [selectedProductId, setSelectedProductId] = useState<string>(mockProducts[0].id)
 
   const [selectedWeek, setSelectedWeek] = useState<string>('all')

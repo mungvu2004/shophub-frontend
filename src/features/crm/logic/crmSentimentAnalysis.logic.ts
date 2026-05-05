@@ -74,7 +74,7 @@ function buildFallbackPlatformBreakdown(data: CRMSentimentAnalysisResponse) {
       all: 0,
       shopee: 0,
       lazada: 0,
-      tiktok: 0,
+      tiktok_shop: 0,
     },
   )
 
@@ -82,7 +82,7 @@ function buildFallbackPlatformBreakdown(data: CRMSentimentAnalysisResponse) {
     { id: 'all' as const, label: 'Tất cả', value: data.totalReviews || counts.all },
     { id: 'shopee' as const, label: 'Shopee', value: counts.shopee },
     { id: 'lazada' as const, label: 'Lazada', value: counts.lazada },
-    { id: 'tiktok' as const, label: 'TikTok', value: counts.tiktok },
+    { id: 'tiktok_shop' as const, label: 'TikTok', value: counts.tiktok_shop },
   ]
 }
 

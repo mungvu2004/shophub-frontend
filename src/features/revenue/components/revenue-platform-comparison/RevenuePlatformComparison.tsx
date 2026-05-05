@@ -7,8 +7,15 @@ import {
 } from '@/features/revenue/logic/revenuePlatformComparison.logic'
 import { RevenuePlatformComparisonView } from '@/features/revenue/components/revenue-platform-comparison/RevenuePlatformComparisonView'
 import { useUIStore } from '@/stores/uiStore'
+import { useProductData } from '@/features/products/hooks/useProductData'
 
 export function RevenuePlatformComparison() {
+  // Centralized product data from store
+  useProductData({
+    autoPreload: false,
+    pageName: 'RevenuePlatformComparisonPage',
+  })
+
   const selectedDate = useUIStore((state) => state.selectedDate)
 
   const selectedMonth = useMemo(() => {
