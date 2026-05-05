@@ -21,6 +21,7 @@ type CRMCustomerProfileOverviewCardProps = {
   actionType?: 'creating' | 'updating' | 'deleting' | 'status-changing' | null
   onEdit?: () => void
   onDelete?: () => void
+  onChangeStatus?: () => void
 }
 
 export function CRMCustomerProfileOverviewCard({
@@ -29,6 +30,7 @@ export function CRMCustomerProfileOverviewCard({
   actionType,
   onEdit,
   onDelete,
+  onChangeStatus,
 }: CRMCustomerProfileOverviewCardProps) {
   if (!selectedCustomer) {
     return <div className="rounded-[12px] border border-slate-200 bg-white p-8 text-sm text-slate-500">Chưa có khách hàng nào được chọn.</div>
@@ -36,6 +38,7 @@ export function CRMCustomerProfileOverviewCard({
 
   const isDeleting = isProcessing && actionType === 'deleting'
   const isEditing = isProcessing && actionType === 'updating'
+  const isChangingStatus = isProcessing && actionType === 'status-changing'
 
   return (
     <section className="overflow-hidden rounded-[12px] bg-white shadow-[0px_12px_32px_0px_rgba(15,23,42,0.06)]">
@@ -94,6 +97,18 @@ export function CRMCustomerProfileOverviewCard({
               {isEditing ? <Loader2 className="size-4 animate-spin" /> : <PencilLine className="size-4" />}
               {isEditing ? MESSAGES.CRM.CUSTOMER.BUTTON.EDIT_LOADING : MESSAGES.CRM.CUSTOMER.BUTTON.EDIT}
             </Button>
+            {onChangeStatus && (
+              <Button
+                type="button"
+                variant="outline"
+                className="h-9 rounded-lg border-amber-200 px-4 text-amber-700 hover:bg-amber-50"
+                disabled={isProcessing}
+                onClick={onChangeStatus}
+              >
+                {isChangingStatus ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+                {isChangingStatus ? MESSAGES.CRM.CUSTOMER.BUTTON.STATUS_LOADING : MESSAGES.CRM.CUSTOMER.BUTTON.STATUS}
+              </Button>
+            )}
             {onDelete && (
               <Button
                 type="button"

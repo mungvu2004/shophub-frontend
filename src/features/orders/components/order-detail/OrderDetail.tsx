@@ -1,13 +1,39 @@
+import { useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { Skeleton } from '@/components/ui/skeleton'
 import { OrderDetailView } from '@/features/orders/components/order-detail/OrderDetailView'
+import { ACTIONS_REQUIRING_CONFIRM } from '@/features/orders/components/order-detail/OrderDetailView'
 import { useOrderDetailData } from '@/features/orders/hooks/useOrderDetailData'
 import { useOrderDetailQuickActions } from '@/features/orders/hooks/useOrderDetailQuickActions'
 import { buildOrderDetailViewModel } from '@/features/orders/logic/orderDetail.logic'
 import { useProductData } from '@/features/products/hooks/useProductData'
 import type { OrderDetailLocationState } from '@/features/orders/logic/orderDetail.types'
+
+type ConfirmConfig = {
+  title: string
+  description: string
+  confirmText: string
+  variant: 'danger' | 'primary' | 'default'
+}
+
+function getConfirmConfig(actionId: string, orderCode: string): ConfirmConfig {
+  if (actionId === 'confirm-order') {
+    return { title: 'Xác nhận đơn hàng', description: `Bạn có chắc chắn muốn xác nhận đơn ${orderCode}?`, confirmText: 'Xác nhận', variant: 'primary' }
+  }
+  if (actionId === 'ship-order') {
+    return { title: 'Giao cho vận chuyển', description: `Xác nhận bàn giao đơn ${orderCode} cho đơn vị vận chuyển?`, confirmText: 'Bàn giao', variant: 'primary' }
+  }
+  if (actionId === 'cancel-order') {
+    return { title: 'Hủy đơn hàng', description: `Bạn có chắc chắn muốn hủy đơn ${orderCode}? Hành động này không thể hoàn tác.`, confirmText: 'Đồng ý, hủy đơn', variant: 'danger' }
+  }
+  if (actionId === 'refund-order') {
+    return { title: 'Tạo yêu cầu hoàn tiền', description: `Xác nhận tạo yêu cầu hoàn tiền cho đơn ${orderCode}?`, confirmText: 'Hoàn tiền', variant: 'danger' }
+  }
+  return { title: 'Xác nhận', description: 'Bạn có chắc chắn?', confirmText: 'Xác nhận', variant: 'default' }
+}
 
 type OrderDetailProps = {
   orderId?: string
@@ -22,6 +48,8 @@ export function OrderDetail({ orderId, fallbackState: fallbackStateProp, isModal
   const navigate = useNavigate()
   const id = orderId ?? params.id ?? ''
   const resolvedOrderId = id.startsWith('pending-') ? id.replace('pending-', '') : id
+
+  const [pendingActionId, setPendingActionId] = useState<string | null>(null)
 
   // Centralized product data from store
   useProductData({
@@ -121,15 +149,35 @@ export function OrderDetail({ orderId, fallbackState: fallbackStateProp, isModal
   }
 
   const model = buildOrderDetailViewModel(data)
+  const confirmConfig = pendingActionId ? getConfirmConfig(pendingActionId, model.orderCode) : null
 
   return (
-    <OrderDetailView
-      model={model}
-      isLoading={isLoading}
-      isModalPresentation={isModalPresentation}
-      activeActionId={activeActionId}
-      onClose={handleClose}
-      onQuickAction={(actionId) => void handleQuickAction(actionId)}
-    />
+    <>
+      <OrderDetailView
+        model={model}
+        isLoading={isLoading}
+        isModalPresentation={isModalPresentation}
+        activeActionId={activeActionId}
+        onClose={handleClose}
+        onQuickAction={(actionId) => void handleQuickAction(actionId)}
+        onRequestConfirm={setPendingActionId}
+      />
+      {confirmConfig && (
+        <ConfirmDialog
+          open={pendingActionId !== null}
+          onOpenChange={(open) => { if (!open) setPendingActionId(null) }}
+          title={confirmConfig.title}
+          description={confirmConfig.description}
+          confirmText={confirmConfig.confirmText}
+          cancelText="Quay lại"
+          variant={confirmConfig.variant}
+          isConfirming={activeActionId !== null}
+          onConfirm={() => {
+            if (pendingActionId) void handleQuickAction(pendingActionId)
+            setPendingActionId(null)
+          }}
+        />
+      )}
+    </>
   )
 }

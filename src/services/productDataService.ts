@@ -71,7 +71,7 @@ export interface ProductDataDto {
 
   // Metadata
   source: 'products_api' | 'order_item' | 'inventory' | 'revenue' | 'dashboard' | 'crm'
-  source_raw?: Record<string, unknown> // Original data from source for reference
+  source_raw?: unknown // Original data from source for reference
   createdAt?: string
   updatedAt?: string
   lastSyncedAt?: string

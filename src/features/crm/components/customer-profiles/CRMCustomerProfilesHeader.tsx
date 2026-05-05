@@ -1,4 +1,4 @@
-import { Download, Plus, Search, Users } from 'lucide-react'
+import { Download, Loader2, Plus, Search, Users } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,6 +12,7 @@ type CRMCustomerProfilesHeaderProps = {
   onExport: () => void
   onAddCustomer: () => void
   isProcessing?: boolean
+  actionType?: 'creating' | 'updating' | 'deleting' | 'status-changing' | null
 }
 
 export function CRMCustomerProfilesHeader({
@@ -21,13 +22,16 @@ export function CRMCustomerProfilesHeader({
   onExport,
   onAddCustomer,
   isProcessing = false,
+  actionType = null,
 }: CRMCustomerProfilesHeaderProps) {
+  const isCreating = isProcessing && actionType === 'creating'
+
   return (
     <ThemedPageHeader
       title="Hồ sơ Khách hàng"
       subtitle="Quản lý &amp; phân tích khách hàng đa kênh"
       theme="crm"
-      badge={{ text: 'Profiles', icon: <Users className="size-3.5" /> }}
+      badge={{ text: 'Hồ sơ', icon: <Users className="size-3.5" /> }}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center w-full">
         <label className="relative w-full sm:w-[320px]">
@@ -57,8 +61,8 @@ export function CRMCustomerProfilesHeader({
           onClick={onAddCustomer}
           disabled={isProcessing}
         >
-          <Plus className="size-4 mr-2" />
-          {MESSAGES.CRM.CUSTOMER.BUTTON.ADD}
+          {isCreating ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Plus className="mr-2 size-4" />}
+          {isCreating ? MESSAGES.CRM.CUSTOMER.BUTTON.ADD_LOADING : MESSAGES.CRM.CUSTOMER.BUTTON.ADD}
         </Button>
       </div>
     </ThemedPageHeader>

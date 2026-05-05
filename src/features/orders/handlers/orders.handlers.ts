@@ -1,11 +1,35 @@
 import { http, HttpResponse, delay } from 'msw'
 import type { Order } from '@/types/order.types'
 import { mockOrders } from '@/mocks/data/orders'
-import { mockOrdersReturns } from '@/mocks/data/ordersReturns'
+import { mockOrdersReturns, type MockOrdersReturnsItem } from '@/mocks/data/ordersReturns'
 import { mockRevenueOrders } from '@/mocks/data/dashboardRevenueOrders'
 import { ordersPendingActionsHandlers } from './ordersPendingActions.handlers'
 
 const pendingStatuses = new Set(['Pending', 'PendingPayment', 'Confirmed', 'Packed', 'ReadyToShip', 'Shipped'])
+
+function pushReturnEntry(order: Order, kind: MockOrdersReturnsItem['orderKind'], reason: string) {
+  const orderCode = (order as Order & { externalOrderNumber?: string }).externalOrderNumber ?? order.id
+  const alreadyExists = mockOrdersReturns.some((r) => r.orderCode === orderCode && r.orderKind === kind)
+  if (alreadyExists) return
+  const firstItem = order.items?.[0]
+  if (!firstItem) return
+  const entry: MockOrdersReturnsItem = {
+    id: `ret-${kind}-${order.id}`,
+    orderCode,
+    orderKind: kind,
+    platform: order.platform,
+    productId: (firstItem as typeof firstItem & { productId?: string }).productId ?? 'unknown',
+    productName: firstItem.productName,
+    customerName: `${order.buyerFirstName ?? ''} ${order.buyerLastName ?? ''}`.trim(),
+    amount: Math.round(((firstItem as typeof firstItem & { paidPrice?: number; itemPrice?: number }).paidPrice || (firstItem as typeof firstItem & { paidPrice?: number; itemPrice?: number }).itemPrice || 0) * (firstItem.qty || 1)),
+    status: 'processing',
+    happenedAt: new Date().toISOString().replace('Z', '+07:00'),
+    reason,
+    isAbuseFlagged: false,
+    canAutoRefund: false,
+  }
+  mockOrdersReturns.unshift(entry)
+}
 
 function createSuccessResponse<T>(data: T, message = 'Thành công') {
   return {
@@ -225,6 +249,90 @@ export const ordersHandlers = [
     )
   }),
 
+  // POST /api/orders/:id/confirm - Confirm a single order
+  http.post('/api/orders/:id/confirm', async ({ params }) => {
+    await delay(600)
+    const id = params.id as string
+    const order = mockOrders.find((o) => o.id === id)
+
+    if (order) {
+      if (order.status !== 'Pending' && order.status !== 'PendingPayment') {
+        return HttpResponse.json(createErrorResponse('Đơn hàng không ở trạng thái chờ xác nhận', 'INVALID_STATUS'), { status: 422 })
+      }
+      order.status = 'Confirmed'
+      order.updatedAt = new Date().toISOString()
+      order.updatedAt_platform = order.updatedAt
+      for (const item of order.items ?? []) {
+        item.status = 'Confirmed'
+      }
+      return HttpResponse.json(createSuccessResponse({ updated: true, status: order.status }, 'Đã xác nhận đơn hàng thành công'), { status: 200 })
+    }
+
+    return HttpResponse.json(createErrorResponse('Không tìm thấy đơn hàng', 'NOT_FOUND'), { status: 404 })
+  }),
+
+  // POST /api/orders/:id/ship - Mark order as shipped
+  http.post('/api/orders/:id/ship', async ({ params }) => {
+    await delay(600)
+    const id = params.id as string
+    const order = mockOrders.find((o) => o.id === id)
+
+    if (order) {
+      if (order.status !== 'Confirmed' && order.status !== 'Packed' && order.status !== 'ReadyToShip') {
+        return HttpResponse.json(createErrorResponse('Đơn hàng chưa được xác nhận', 'INVALID_STATUS'), { status: 422 })
+      }
+      order.status = 'Shipped'
+      order.updatedAt = new Date().toISOString()
+      order.updatedAt_platform = order.updatedAt
+      for (const item of order.items ?? []) {
+        item.status = 'Shipped'
+      }
+      return HttpResponse.json(createSuccessResponse({ updated: true, status: order.status }, 'Đã bàn giao đơn hàng cho vận chuyển'), { status: 200 })
+    }
+
+    return HttpResponse.json(createErrorResponse('Không tìm thấy đơn hàng', 'NOT_FOUND'), { status: 404 })
+  }),
+
+  // POST /api/orders/:id/cancel - Cancel a single order
+  http.post('/api/orders/:id/cancel', async ({ params }) => {
+    await delay(600)
+    const id = params.id as string
+    const order = mockOrders.find((o) => o.id === id)
+
+    if (order) {
+      order.status = 'Cancelled'
+      order.updatedAt = new Date().toISOString()
+      order.updatedAt_platform = order.updatedAt
+      for (const item of order.items ?? []) {
+        item.status = 'Cancelled'
+      }
+      pushReturnEntry(order, 'cancel', 'Người bán hủy đơn')
+      return HttpResponse.json(createSuccessResponse({ updated: true, status: order.status }, 'Đã hủy đơn hàng thành công'), { status: 200 })
+    }
+
+    return HttpResponse.json(createErrorResponse('Không tìm thấy đơn hàng', 'NOT_FOUND'), { status: 404 })
+  }),
+
+  // POST /api/orders/:id/refund - Refund a single order
+  http.post('/api/orders/:id/refund', async ({ params }) => {
+    await delay(600)
+    const id = params.id as string
+    const order = mockOrders.find((o) => o.id === id)
+
+    if (order) {
+      order.status = 'Refunded'
+      order.updatedAt = new Date().toISOString()
+      order.updatedAt_platform = order.updatedAt
+      for (const item of order.items ?? []) {
+        item.status = 'Refunded'
+      }
+      pushReturnEntry(order, 'return', 'Yêu cầu hoàn tiền từ người bán')
+      return HttpResponse.json(createSuccessResponse({ updated: true, status: order.status }, 'Đã hoàn tiền đơn hàng thành công'), { status: 200 })
+    }
+
+    return HttpResponse.json(createErrorResponse('Không tìm thấy đơn hàng', 'NOT_FOUND'), { status: 404 })
+  }),
+
   // GET /api/orders/:id - Get order by ID
   http.get('/api/orders/:id', async ({ params }) => {
     await delay(500)
@@ -442,6 +550,7 @@ export const ordersHandlers = [
       for (const item of order.items ?? []) {
         item.status = 'Cancelled'
       }
+      pushReturnEntry(order, 'cancel', 'Người bán hủy đơn')
     }
 
     return HttpResponse.json(
@@ -491,6 +600,7 @@ export const ordersHandlers = [
     for (const item of order.items ?? []) {
       item.status = 'Refunded'
     }
+    pushReturnEntry(order, 'return', 'Yêu cầu hoàn tiền từ người bán')
 
     return HttpResponse.json(
       createSuccessResponse({ updated: true, status: order.status }, 'Hoàn tiền thành công'),

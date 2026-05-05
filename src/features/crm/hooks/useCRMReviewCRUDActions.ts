@@ -1,10 +1,17 @@
 import { useCallback, useMemo } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
-import { useCRUDActions, type ActionType } from '@/features/shared/hooks/useCRUDActions'
+import { type ActionType } from '@/features/shared/hooks/useCRUDActions'
 import { crmReviewInboxService } from '@/features/crm/services/crmReviewInboxService'
+import { useCRMEntityActions } from '@/features/crm/hooks/useCRMEntityActions'
 import { MESSAGES } from '@/constants/messages'
 import type { CRMReviewDeleteResponse, CRMReviewFilterStatus, CRMReviewItem, CRMReviewSort } from '@/types/crm.types'
+
+type CRMReviewStatusChangeInput =
+  | { reviewId: string; type: 'mark-read' }
+  | { reviewId: string; type: 'priority'; isPriority: boolean }
+
+type CRMReviewProcessingAction = 'reply' | 'draft' | 'delete' | 'mark-read' | 'priority' | null
 
 interface UseCRMReviewCRUDActionsCallbacks {
   onSuccess?: () => void
@@ -13,8 +20,19 @@ interface UseCRMReviewCRUDActionsCallbacks {
 interface UseCRMReviewCRUDActionsReturn {
   isProcessing: boolean
   actionType: ActionType
-  handleDelete: (reviewId: string) => Promise<void>
+  processingReviewId: string | null
+  processingAction: CRMReviewProcessingAction
+  handleCreate: () => Promise<undefined>
+  handleUpdate: (payload: {
+    reviewId: string
+    content: string
+    tone: 'important' | 'friendly'
+    isDraft: boolean
+  }) => Promise<void | undefined>
+  handleDelete: (reviewId: string) => Promise<CRMReviewDeleteResponse | undefined>
+  handleStatusChange: (payload: CRMReviewStatusChangeInput) => Promise<CRMReviewItem | undefined>
   handleTogglePriority: (reviewId: string, isPriority: boolean) => Promise<CRMReviewItem | undefined>
+  handleMarkRead: (reviewId: string) => Promise<CRMReviewItem | undefined>
   handleReply: (payload: {
     reviewId: string
     content: string
@@ -28,9 +46,6 @@ export function useCRMReviewCRUDActions(
   callbacks?: UseCRMReviewCRUDActionsCallbacks,
 ): UseCRMReviewCRUDActionsReturn {
   const queryClient = useQueryClient()
-  const crudDelete = useCRUDActions<CRMReviewDeleteResponse>()
-  const crudStatus = useCRUDActions<CRMReviewItem>()
-  const crudReply = useCRUDActions<void>()
 
   const invalidateReviews = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: ['crm', 'review-inbox', 'summary'] })
@@ -38,46 +53,56 @@ export function useCRMReviewCRUDActions(
     void queryClient.invalidateQueries({ queryKey: ['crm', 'review-inbox', 'list', filters] })
   }, [queryClient, filters])
 
-  const handleDelete = useCallback(
-    async (reviewId: string) => {
-      await crudDelete.handleDelete(
-        () => crmReviewInboxService.deleteReview(reviewId),
-        {
-          onSuccess: () => {
-            invalidateReviews()
-            callbacks?.onSuccess?.()
-          },
-        },
-        {
-          processing: MESSAGES.CRM.REVIEW.PROCESSING.DELETE,
-          success: MESSAGES.CRM.REVIEW.SUCCESS.DELETE,
-          error: MESSAGES.CRM.REVIEW.ERROR.DELETE,
-        },
-      )
+  const actions = useCRMEntityActions<
+    never,
+    [],
+    void,
+    [{ reviewId: string; content: string; tone: 'important' | 'friendly'; isDraft: boolean }],
+    CRMReviewDeleteResponse,
+    [string],
+    CRMReviewItem,
+    [CRMReviewStatusChangeInput]
+  >({
+    update: {
+      action: (payload) => crmReviewInboxService.saveReply(payload),
+      messages: {
+        processing: MESSAGES.CRM.REVIEW.PROCESSING.REPLY,
+        success: MESSAGES.CRM.REVIEW.SUCCESS.REPLY,
+        error: MESSAGES.CRM.REVIEW.ERROR.REPLY,
+      },
     },
-    [crudDelete, invalidateReviews, callbacks],
-  )
+    delete: {
+      action: (reviewId) => crmReviewInboxService.deleteReview(reviewId),
+      messages: {
+        processing: MESSAGES.CRM.REVIEW.PROCESSING.DELETE,
+        success: MESSAGES.CRM.REVIEW.SUCCESS.DELETE,
+        error: MESSAGES.CRM.REVIEW.ERROR.DELETE,
+      },
+    },
+    statusChange: {
+      action: (payload) => {
+        if (payload.type === 'priority') {
+          return crmReviewInboxService.togglePriority(payload.reviewId, payload.isPriority)
+        }
 
-  const handleTogglePriority = useCallback(
-    async (reviewId: string, isPriority: boolean) => {
-      const result = await crudStatus.handleStatusChange(
-        () => crmReviewInboxService.togglePriority(reviewId, isPriority),
-        {
-          onSuccess: () => {
-            invalidateReviews()
-            callbacks?.onSuccess?.()
-          },
-        },
-        {
-          processing: MESSAGES.CRM.REVIEW.PROCESSING.MARK_READ,
-          success: MESSAGES.CRM.REVIEW.SUCCESS.STATUS_CHANGE,
-          error: MESSAGES.CRM.REVIEW.ERROR.MARK_READ,
-        },
-      )
-      return result
+        return crmReviewInboxService.markRead(payload.reviewId)
+      },
+      messages: {
+        processing: MESSAGES.CRM.REVIEW.PROCESSING.MARK_READ,
+        success: MESSAGES.CRM.REVIEW.SUCCESS.MARK_READ,
+        error: MESSAGES.CRM.REVIEW.ERROR.MARK_READ,
+      },
     },
-    [crudStatus, invalidateReviews, callbacks],
-  )
+    callbacks: {
+      onSuccess: () => {
+        invalidateReviews()
+        callbacks?.onSuccess?.()
+      },
+    },
+  })
+
+  const processingReviewId = null
+  const processingAction: CRMReviewProcessingAction = null
 
   const handleReply = useCallback(
     async (payload: {
@@ -85,45 +110,35 @@ export function useCRMReviewCRUDActions(
       content: string
       tone: 'important' | 'friendly'
       isDraft: boolean
-    }) => {
-      const messages = payload.isDraft
-        ? {
-            processing: MESSAGES.CRM.REVIEW.PROCESSING.DRAFT,
-            success: MESSAGES.CRM.REVIEW.SUCCESS.DRAFT,
-            error: MESSAGES.CRM.REVIEW.ERROR.DRAFT,
-          }
-        : {
-            processing: MESSAGES.CRM.REVIEW.PROCESSING.REPLY,
-            success: MESSAGES.CRM.REVIEW.SUCCESS.REPLY,
-            error: MESSAGES.CRM.REVIEW.ERROR.REPLY,
-          }
-
-      await crudReply.handleUpdate(
-        () => crmReviewInboxService.saveReply(payload),
-        {
-          onSuccess: () => {
-            invalidateReviews()
-            callbacks?.onSuccess?.()
-          },
-        },
-        messages,
-      )
-    },
-    [crudReply, invalidateReviews, callbacks],
+    }) => actions.handleUpdate(payload),
+    [actions],
   )
 
-  const isProcessing = crudDelete.isProcessing || crudStatus.isProcessing || crudReply.isProcessing
-  const actionType: ActionType =
-    crudDelete.actionType ?? crudStatus.actionType ?? crudReply.actionType
+  const handleTogglePriority = useCallback(
+    async (reviewId: string, isPriority: boolean) =>
+      actions.handleStatusChange({ reviewId, type: 'priority', isPriority }),
+    [actions],
+  )
+
+  const handleMarkRead = useCallback(
+    async (reviewId: string) => actions.handleStatusChange({ reviewId, type: 'mark-read' }),
+    [actions],
+  )
 
   return useMemo(
     () => ({
-      isProcessing,
-      actionType,
-      handleDelete,
+      isProcessing: actions.isProcessing,
+      actionType: actions.actionType,
+      processingReviewId,
+      processingAction,
+      handleCreate: actions.handleCreate,
+      handleUpdate: actions.handleUpdate,
+      handleDelete: actions.handleDelete,
+      handleStatusChange: actions.handleStatusChange,
       handleTogglePriority,
+      handleMarkRead,
       handleReply,
     }),
-    [isProcessing, actionType, handleDelete, handleTogglePriority, handleReply],
+    [actions, processingReviewId, processingAction, handleTogglePriority, handleMarkRead, handleReply],
   )
 }

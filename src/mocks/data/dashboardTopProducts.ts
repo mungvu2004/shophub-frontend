@@ -113,7 +113,7 @@ const buildAggregatedProducts = () => {
       const current =
         aggregate.get(key)
         || {
-          id: productId,
+          id: key,
           name,
           sku: (item.externalSkuRef || `SKU-${String(seed).padStart(4, "0")}`).toUpperCase(),
           platform,
@@ -168,7 +168,10 @@ const applyRangeFactor = (rows: DashboardTopProductRecord[], rangeDays: Dashboar
 };
 
 const withMetricOrder = (rows: DashboardTopProductRecord[], metric: DashboardTopProductsMetric) => {
-  const sorted = [...rows].sort((a, b) => toMetricValue(b, metric) - toMetricValue(a, metric));
+  // returnRate: ascending (thấp hơn = tốt hơn); revenue và quantity: descending
+  const sorted = metric === 'returnRate'
+    ? [...rows].sort((a, b) => toMetricValue(a, metric) - toMetricValue(b, metric))
+    : [...rows].sort((a, b) => toMetricValue(b, metric) - toMetricValue(a, metric));
 
   return sorted.map((item, index) => {
     // Giả lập thay đổi thứ hạng: hạng cao thường ổn định, hạng thấp biến động

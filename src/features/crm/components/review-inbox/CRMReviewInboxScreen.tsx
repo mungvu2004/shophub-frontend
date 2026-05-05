@@ -8,7 +8,6 @@ import { CRMReviewList } from '@/features/crm/components/review-inbox/CRMReviewL
 import { CRMWeeklyInsightCard } from '@/features/crm/components/review-inbox/CRMWeeklyInsightCard'
 import {
   useCRMReplyTemplates,
-  useCRMReviewActions,
   useCRMReviewInboxList,
   useCRMReviewInboxSummary,
 } from '@/features/crm/hooks/useCRMReviewInbox'
@@ -26,6 +25,8 @@ export function CRMReviewInboxScreen() {
   const [replyDraftByReviewId, setReplyDraftByReviewId] = useState<Record<string, string>>({})
   const [selectedTone, setSelectedTone] = useState<'important' | 'friendly'>('important')
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
+  const [replyMode, setReplyMode] = useState<'send' | 'draft' | null>(null)
+  const [markReadTargetId, setMarkReadTargetId] = useState<string | null>(null)
 
   const summaryQuery = useCRMReviewInboxSummary()
   const listQuery = useCRMReviewInboxList({ status, sort })
@@ -50,11 +51,16 @@ export function CRMReviewInboxScreen() {
   }, [replyDraftByReviewId, selectedReview, selectedReviewId])
 
   const templatesQuery = useCRMReplyTemplates(selectedReviewId)
-  const { markReadMutation } = useCRMReviewActions({ status, sort })
 
   const reviewCRUD = useCRMReviewCRUDActions(
     { status, sort },
-    { onSuccess: () => setDeleteTargetId(null) },
+    {
+      onSuccess: () => {
+        setDeleteTargetId(null)
+        setMarkReadTargetId(null)
+        setReplyMode(null)
+      },
+    },
   )
 
   const handleTemplateClick = useCallback(
@@ -68,17 +74,34 @@ export function CRMReviewInboxScreen() {
   const handleSaveReply = useCallback(
     async (isDraft: boolean) => {
       if (!selectedReviewId || !replyContent.trim()) return
-      await reviewCRUD.handleReply({
-        reviewId: selectedReviewId,
-        content: replyContent,
-        tone: selectedTone,
-        isDraft,
-      })
-      if (!isDraft) {
-        setReplyDraftByReviewId((prev) => ({ ...prev, [selectedReviewId]: '' }))
+      setReplyMode(isDraft ? 'draft' : 'send')
+      try {
+        await reviewCRUD.handleReply({
+          reviewId: selectedReviewId,
+          content: replyContent,
+          tone: selectedTone,
+          isDraft,
+        })
+        if (!isDraft) {
+          setReplyDraftByReviewId((prev) => ({ ...prev, [selectedReviewId]: '' }))
+        }
+      } finally {
+        setReplyMode(null)
       }
     },
     [selectedReviewId, replyContent, selectedTone, reviewCRUD],
+  )
+
+  const handleMarkRead = useCallback(
+    async (reviewId: string) => {
+      setMarkReadTargetId(reviewId)
+      try {
+        await reviewCRUD.handleMarkRead(reviewId)
+      } finally {
+        setMarkReadTargetId(null)
+      }
+    },
+    [reviewCRUD],
   )
 
   const handleDeleteConfirm = useCallback(async () => {
@@ -87,8 +110,8 @@ export function CRMReviewInboxScreen() {
     if (selectedReviewIdState === deleteTargetId) setSelectedReviewIdState(undefined)
   }, [deleteTargetId, reviewCRUD, selectedReviewIdState])
 
-  const isSending = reviewCRUD.isProcessing && reviewCRUD.actionType === 'updating'
-  const isDraftSaving = isSending
+  const isSending = reviewCRUD.isProcessing && reviewCRUD.actionType === 'updating' && replyMode === 'send'
+  const isDraftSaving = reviewCRUD.isProcessing && reviewCRUD.actionType === 'updating' && replyMode === 'draft'
 
   return (
     <div className="space-y-6 pb-6">
@@ -109,8 +132,9 @@ export function CRMReviewInboxScreen() {
             isLoading={listQuery.isLoading}
             selectedReviewId={selectedReviewId}
             deletingReviewId={reviewCRUD.isProcessing && reviewCRUD.actionType === 'deleting' ? (deleteTargetId ?? undefined) : undefined}
+            markReadingReviewId={reviewCRUD.isProcessing && reviewCRUD.actionType === 'status-changing' ? (markReadTargetId ?? undefined) : undefined}
             onSelect={setSelectedReviewIdState}
-            onMarkRead={(reviewId) => markReadMutation.mutate(reviewId)}
+            onMarkRead={(reviewId) => void handleMarkRead(reviewId)}
             onDelete={(reviewId) => setDeleteTargetId(reviewId)}
           />
         </div>

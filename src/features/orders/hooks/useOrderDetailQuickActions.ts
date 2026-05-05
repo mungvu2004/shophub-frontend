@@ -60,6 +60,19 @@ export function useOrderDetailQuickActions(args: UseOrderDetailQuickActionsArgs)
       return
     }
 
+    if (actionId === 'ship-order') {
+      await crud.handleStatusChange(
+        () => orderDetailService.shipOrder(orderId),
+        { onSuccess: refreshOrderData },
+        {
+          processing: MESSAGES.PROCESSING.STATUS_CHANGE,
+          success: MESSAGES.ORDERS.GENERAL.SUCCESS.SHIP_SUCCESS,
+          error: MESSAGES.ORDERS.GENERAL.ERROR.SHIP_ERROR,
+        },
+      )
+      return
+    }
+
     if (actionId === 'cancel-order') {
       await crud.handleStatusChange(
         () => orderDetailService.cancelOrder(orderId),

@@ -71,8 +71,14 @@ export const crmReviewInboxService = {
     return toItems<CRMReplyTemplate>(response.data)
   },
 
-  async markRead(reviewId: string): Promise<void> {
-    await apiClient.post(`/crm/reviews/${reviewId}/mark-read`)
+  async markRead(reviewId: string): Promise<CRMReviewItem> {
+    const response = await apiClient.post(`/crm/reviews/${reviewId}/mark-read`)
+    const items = toItems<CRMReviewItem>(response.data)
+    if (items.length > 0) return items[0]
+    const candidate = response.data as { data?: CRMReviewItem } & CRMReviewItem
+    if (candidate.data && 'id' in candidate.data) return candidate.data
+    if ('id' in candidate) return candidate as CRMReviewItem
+    throw new Error('Invalid mark read response')
   },
 
   async saveReply(payload: {

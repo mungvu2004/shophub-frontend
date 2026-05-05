@@ -1,10 +1,18 @@
 import { useCallback, useMemo } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
-import { useCRUDActions, type ActionType } from '@/features/shared/hooks/useCRUDActions'
+import { type ActionType } from '@/features/shared/hooks/useCRUDActions'
 import { crmSentimentAnalysisService } from '@/features/crm/services/crmSentimentAnalysisService'
+import { useCRMEntityActions } from '@/features/crm/hooks/useCRMEntityActions'
 import { MESSAGES } from '@/constants/messages'
 import type { CRMSentimentReviewItem } from '@/types/crm.types'
+
+type CRMSentimentRunResult = {
+  productId: string
+  status: 'running' | 'completed'
+}
+
+type CRMSentimentProcessingAction = 'reply' | 'run-analysis' | null
 
 interface UseCRMSentimentActionsCallbacks {
   onSuccess?: () => void
@@ -13,23 +21,68 @@ interface UseCRMSentimentActionsCallbacks {
 interface UseCRMSentimentActionsReturn {
   isProcessing: boolean
   actionType: ActionType
+  processingAction: CRMSentimentProcessingAction
+  processingReviewId: string | null
+  handleCreate: () => Promise<undefined>
+  handleUpdate: (payload: {
+    reviewId: string
+    content: string
+    tone: 'important' | 'friendly'
+    isDraft: boolean
+  }) => Promise<CRMSentimentReviewItem | undefined>
+  handleDelete: () => Promise<undefined>
+  handleStatusChange: (productId: string) => Promise<CRMSentimentRunResult | undefined>
   handleReply: (payload: {
     reviewId: string
     content: string
     tone: 'important' | 'friendly'
     isDraft: boolean
   }) => Promise<CRMSentimentReviewItem | undefined>
+  handleRunAnalysis: (productId: string) => Promise<CRMSentimentRunResult | undefined>
 }
 
 export function useCRMSentimentActions(
   callbacks?: UseCRMSentimentActionsCallbacks,
 ): UseCRMSentimentActionsReturn {
   const queryClient = useQueryClient()
-  const crud = useCRUDActions<CRMSentimentReviewItem>()
 
   const invalidateSentiment = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: ['crm', 'sentiment-analysis'] })
   }, [queryClient])
+
+  const actions = useCRMEntityActions<
+    never,
+    [],
+    CRMSentimentReviewItem,
+    [{ reviewId: string; content: string; tone: 'important' | 'friendly'; isDraft: boolean }],
+    never,
+    [],
+    CRMSentimentRunResult,
+    [string]
+  >({
+    update: {
+      action: (payload) => crmSentimentAnalysisService.sendReply(payload),
+      messages: {
+        processing: MESSAGES.CRM.SENTIMENT.PROCESSING.REPLY,
+        success: MESSAGES.CRM.SENTIMENT.SUCCESS.REPLY,
+        error: MESSAGES.CRM.SENTIMENT.ERROR.REPLY,
+      },
+    },
+    statusChange: {
+      action: (productId) => crmSentimentAnalysisService.runAnalysis(productId),
+      messages: {
+        processing: MESSAGES.CRM.SENTIMENT.PROCESSING.RUN_ANALYSIS,
+        success: MESSAGES.CRM.SENTIMENT.SUCCESS.RUN_ANALYSIS,
+        error: MESSAGES.CRM.SENTIMENT.ERROR.RUN_ANALYSIS,
+      },
+    },
+    callbacks: {
+      onSuccess: () => {
+        invalidateSentiment()
+        callbacks?.onSuccess?.()
+      },
+    },
+  })
 
   const handleReply = useCallback(
     async (payload: {
@@ -37,40 +90,28 @@ export function useCRMSentimentActions(
       content: string
       tone: 'important' | 'friendly'
       isDraft: boolean
-    }) => {
-      const messages = payload.isDraft
-        ? {
-            processing: MESSAGES.CRM.SENTIMENT.PROCESSING.REPLY,
-            success: MESSAGES.CRM.REVIEW.SUCCESS.DRAFT,
-            error: MESSAGES.CRM.REVIEW.ERROR.DRAFT,
-          }
-        : {
-            processing: MESSAGES.CRM.SENTIMENT.PROCESSING.REPLY,
-            success: MESSAGES.CRM.SENTIMENT.SUCCESS.REPLY,
-            error: MESSAGES.CRM.SENTIMENT.ERROR.REPLY,
-          }
+    }) => actions.handleUpdate(payload),
+    [actions],
+  )
 
-      const result = await crud.handleUpdate(
-        () => crmSentimentAnalysisService.sendReply(payload),
-        {
-          onSuccess: () => {
-            invalidateSentiment()
-            callbacks?.onSuccess?.()
-          },
-        },
-        messages,
-      )
-      return result
-    },
-    [crud, invalidateSentiment, callbacks],
+  const handleRunAnalysis = useCallback(
+    async (productId: string) => actions.handleStatusChange(productId),
+    [actions],
   )
 
   return useMemo(
     () => ({
-      isProcessing: crud.isProcessing,
-      actionType: crud.actionType,
+      isProcessing: actions.isProcessing,
+      actionType: actions.actionType,
+      processingAction: null,
+      processingReviewId: null,
+      handleCreate: actions.handleCreate,
+      handleUpdate: actions.handleUpdate,
+      handleDelete: actions.handleDelete,
+      handleStatusChange: actions.handleStatusChange,
       handleReply,
+      handleRunAnalysis,
     }),
-    [crud.isProcessing, crud.actionType, handleReply],
+    [actions, handleReply, handleRunAnalysis],
   )
 }

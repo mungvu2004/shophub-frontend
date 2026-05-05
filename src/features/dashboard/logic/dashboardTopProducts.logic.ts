@@ -35,14 +35,14 @@ const contributionPalette = ['#3525cd', '#7485ff', '#c7d2fe', '#e2e8f0']
 
 export function getTopProductsSubtitle(metric: TopProductsMetricId) {
   if (metric === 'quantity') {
-    return 'Xếp hạng theo số lượng - cập nhật lúc'
+    return 'Xếp hạng theo số lượng'
   }
 
   if (metric === 'returnRate') {
-    return 'Xếp hạng theo tỷ lệ hoàn - cập nhật lúc'
+    return 'Xếp hạng theo tỷ lệ hoàn (thấp nhất)'
   }
 
-  return 'Xếp hạng theo doanh thu - cập nhật lúc'
+  return 'Xếp hạng theo doanh thu'
 }
 
 const toMoney = (value: number) => `${CURRENCY.format(Math.round(Math.max(0, value)))} ₫`

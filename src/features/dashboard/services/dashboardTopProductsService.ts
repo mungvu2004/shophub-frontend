@@ -30,6 +30,10 @@ const toTopProductItem = (value: unknown, index: number): DashboardTopProductIte
     avgPrice: typeof item.avgPrice === 'number' && Number.isFinite(item.avgPrice) ? item.avgPrice : 0,
     returnRate: typeof item.returnRate === 'number' && Number.isFinite(item.returnRate) ? item.returnRate : 0,
     trendPercent: typeof item.trendPercent === 'number' && Number.isFinite(item.trendPercent) ? item.trendPercent : 0,
+    rankChange: typeof item.rankChange === 'number' && Number.isFinite(item.rankChange) ? item.rankChange : undefined,
+    last7DaysSales: Array.isArray(item.last7DaysSales)
+      ? (item.last7DaysSales as unknown[]).map((v) => (typeof v === 'number' && Number.isFinite(v) ? v : 0))
+      : undefined,
   }
 }
 

@@ -5,6 +5,7 @@ import type {
   CRMCustomerProfilesSummary,
   CRMReviewPlatform,
 } from '@/types/crm.types'
+import { MESSAGES } from '@/constants/messages'
 
 export type CRMCustomerProfileOrderFilter = 'all' | 'shopee' | 'tiktok_shop' | 'returns'
 
@@ -55,8 +56,14 @@ function getPlatformBadge(platform: CRMReviewPlatform) {
 }
 
 function getSegmentBadge(label: string, tone: keyof typeof segmentClasses) {
+  const localizedLabelMap = {
+    vip_gold: MESSAGES.CRM.CUSTOMER.STATUS.VIP_GOLD,
+    regular_blue: MESSAGES.CRM.CUSTOMER.STATUS.REGULAR_BLUE,
+    at_risk_red: MESSAGES.CRM.CUSTOMER.STATUS.AT_RISK_RED,
+  } as const
+
   return {
-    label,
+    label: localizedLabelMap[tone] ?? label,
     className: segmentClasses[tone],
   }
 }

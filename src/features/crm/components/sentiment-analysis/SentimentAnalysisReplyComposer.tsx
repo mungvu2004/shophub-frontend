@@ -23,12 +23,6 @@ export function SentimentAnalysisReplyComposer({
   onCancel,
 }: SentimentAnalysisReplyComposerProps) {
   const [draft, setDraft] = useState('')
-  const [prevReviewId, setPrevReviewId] = useState(reviewId)
-
-  if (reviewId !== prevReviewId) {
-    setPrevReviewId(reviewId)
-    setDraft('')
-  }
 
   return (
     <section className="rounded-[18px] border border-indigo-200 bg-indigo-50/70 p-5">

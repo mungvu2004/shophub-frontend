@@ -29,7 +29,7 @@ function DialogOverlay({
     <DialogPrimitive.Backdrop
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-50 bg-secondary-900/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 z-[100] bg-secondary-900/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}
@@ -51,8 +51,8 @@ function DialogContent({
 }) {
   const contentClassName =
     variant === "drawer-right"
-      ? "fixed inset-y-0 right-0 z-50 flex h-dvh w-full max-w-[560px] flex-col gap-0 rounded-none border-l border-slate-200 bg-white p-0 text-sm text-popover-foreground shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] outline-none data-open:animate-in data-open:slide-in-from-right-6 data-closed:animate-out data-closed:slide-out-to-right-6"
-      : "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95"
+      ? "fixed inset-y-0 right-0 z-[100] flex h-dvh w-full max-w-[560px] flex-col gap-0 rounded-none border-l border-slate-200 bg-white p-0 text-sm text-popover-foreground shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] outline-none data-open:animate-in data-open:slide-in-from-right-6 data-closed:animate-out data-closed:slide-out-to-right-6"
+      : "fixed top-1/2 left-1/2 z-[100] grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95"
 
   return (
     <DialogPortal>

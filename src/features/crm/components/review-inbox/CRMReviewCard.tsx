@@ -19,12 +19,21 @@ type CRMReviewCardProps = {
   review: CRMReviewItem
   isSelected: boolean
   isDeleting?: boolean
+  isMarkingRead?: boolean
   onSelect: (reviewId: string) => void
   onMarkRead: (reviewId: string) => void
   onDelete: (reviewId: string) => void
 }
 
-export function CRMReviewCard({ review, isSelected, isDeleting = false, onSelect, onMarkRead, onDelete }: CRMReviewCardProps) {
+export function CRMReviewCard({
+  review,
+  isSelected,
+  isDeleting = false,
+  isMarkingRead = false,
+  onSelect,
+  onMarkRead,
+  onDelete,
+}: CRMReviewCardProps) {
   return (
     <article
       className={cn(
@@ -62,13 +71,13 @@ export function CRMReviewCard({ review, isSelected, isDeleting = false, onSelect
         <Button
           type="button"
           variant="ghost"
-          size="icon-sm"
-          className="shrink-0 text-red-400 hover:bg-red-50 hover:text-red-600"
+          size="sm"
+          className="shrink-0 text-red-500 hover:bg-red-50 hover:text-red-600"
           disabled={isDeleting}
           onClick={() => onDelete(review.id)}
-          title={MESSAGES.CRM.REVIEW.BUTTON.DELETE}
         >
-          {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+          {isDeleting ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Trash2 className="mr-1 h-4 w-4" />}
+          {isDeleting ? MESSAGES.CRM.REVIEW.BUTTON.DELETE_LOADING : MESSAGES.CRM.REVIEW.BUTTON.DELETE}
         </Button>
       </div>
 
@@ -104,9 +113,10 @@ export function CRMReviewCard({ review, isSelected, isDeleting = false, onSelect
           variant="ghost"
           className="h-9 rounded-xl px-4 text-xs font-bold text-slate-500"
           onClick={() => onMarkRead(review.id)}
-          disabled={isDeleting}
+          disabled={isDeleting || isMarkingRead}
         >
-          {MESSAGES.CRM.REVIEW.BUTTON.MARK_READ}
+          {isMarkingRead && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isMarkingRead ? MESSAGES.CRM.REVIEW.BUTTON.MARK_READ_LOADING : MESSAGES.CRM.REVIEW.BUTTON.MARK_READ}
         </Button>
       </div>
     </article>

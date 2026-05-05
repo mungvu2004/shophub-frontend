@@ -9,17 +9,17 @@ const numberFormatter = new Intl.NumberFormat('vi-VN')
 
 const sentimentMeta = {
   positive: {
-    label: 'Positive',
+    label: 'Tích cực',
     toneClass: 'bg-[#d1fae5] text-[#047857]',
     borderClass: 'border-l-[#10b981]',
   },
   neutral: {
-    label: 'Neutral',
+    label: 'Trung lập',
     toneClass: 'bg-[#f1f5f9] text-[#475569]',
     borderClass: 'border-l-[#cbd5e1]',
   },
   negative: {
-    label: 'Negative',
+    label: 'Tiêu cực',
     toneClass: 'bg-[#fee2e2] text-[#b91c1c]',
     borderClass: 'border-l-[#f43f5e]',
   },

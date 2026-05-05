@@ -8,7 +8,7 @@ import { notificationsHandlers } from "./notifications.handlers";
 import { dashboardHandlers } from "./dashboard.handlers";
 import { revenueHandlers } from "./revenue.handlers";
 import { assetsHandlers } from "./assets.handlers";
-import { crmHandlers } from "./crm.handlers";
+import { crmHandlers } from "@/features/crm/handlers/crm.handlers";
 import { settingsHandlers } from "./settings.handlers";
 import { inventoryStockMovementsHandlers } from "./inventoryStockMovements.handlers";
 import { footerHandlers } from './footer.handlers'

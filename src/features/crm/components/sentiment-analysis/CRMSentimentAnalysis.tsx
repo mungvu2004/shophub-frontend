@@ -1,10 +1,12 @@
 import { useCallback, useMemo, useState, startTransition } from 'react'
 
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { DataLoadErrorState } from '@/components/shared/DataLoadErrorState'
 import { buildCRMSentimentAnalysisViewModel } from '@/features/crm/logic/crmSentimentAnalysis.logic'
 import { useCRMSentimentAnalysis } from '@/features/crm/hooks/useCRMSentimentAnalysis'
 import { useCRMSentimentActions } from '@/features/crm/hooks/useCRMSentimentActions'
 import { useProductData } from '@/features/products/hooks/useProductData'
+import { MESSAGES } from '@/constants/messages'
 import type { CRMSentimentPlatformFilter } from '@/types/crm.types'
 
 import { CRMSentimentAnalysisView } from './CRMSentimentAnalysisView'
@@ -22,6 +24,7 @@ export function CRMSentimentAnalysis() {
   const [selectedPlatform, setSelectedPlatform] = useState<CRMSentimentPlatformFilter>('all')
   const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null)
   const [activeReplyReviewId, setActiveReplyReviewId] = useState<string | null>(null)
+  const [runConfirmOpen, setRunConfirmOpen] = useState(false)
 
   const { data, isLoading, isFetching, isError, refetch } = useCRMSentimentAnalysis({
     productId: selectedProductId,
@@ -31,6 +34,12 @@ export function CRMSentimentAnalysis() {
   const sentimentActions = useCRMSentimentActions({
     onSuccess: () => setActiveReplyReviewId(null),
   })
+
+  const analysisStatus = isError
+    ? { variant: 'error' as const, label: MESSAGES.CRM.SENTIMENT.STATUS.ERROR }
+    : sentimentActions.isProcessing && sentimentActions.actionType === 'status-changing'
+      ? { variant: 'running' as const, label: MESSAGES.CRM.SENTIMENT.STATUS.RUNNING }
+      : { variant: 'completed' as const, label: MESSAGES.CRM.SENTIMENT.STATUS.COMPLETED }
 
   const handleSelectProduct = useCallback((id: string) => {
     // Đổi sản phẩm là tác vụ ưu tiên cao nhất
@@ -100,6 +109,11 @@ export function CRMSentimentAnalysis() {
     [activeReplyReview, sentimentActions],
   )
 
+  const handleRunAnalysis = useCallback(async () => {
+    await sentimentActions.handleRunAnalysis(selectedProductId)
+    setRunConfirmOpen(false)
+  }, [selectedProductId, sentimentActions])
+
   if (isLoading && !model) {
     return (
       <div className="space-y-4 pb-8">
@@ -121,25 +135,42 @@ export function CRMSentimentAnalysis() {
   }
 
   return (
-    <CRMSentimentAnalysisView
-      model={model}
-      isRefreshing={isFetching}
-      selectedProductId={selectedProductId}
-      onSelectProduct={handleSelectProduct}
-      selectedWeek={selectedWeek}
-      onSelectWeek={handleSelectWeek}
-      selectedPlatform={selectedPlatform}
-      onSelectPlatform={handleSelectPlatform}
-      selectedReviewId={selectedReviewId}
-      onSelectReview={setSelectedReviewId}
-      onReplyReview={(reviewId) => {
-        setSelectedReviewId(reviewId)
-        setActiveReplyReviewId(reviewId)
-      }}
-      onSubmitReply={handleReplySubmit}
-      onCancelReply={() => setActiveReplyReviewId(null)}
-      isReplyPending={sentimentActions.isProcessing}
-      activeReplyReviewId={activeReplyReviewId}
-    />
+    <>
+      <CRMSentimentAnalysisView
+        model={model}
+        isRefreshing={isFetching}
+        selectedProductId={selectedProductId}
+        onSelectProduct={handleSelectProduct}
+        onRunAnalysis={() => setRunConfirmOpen(true)}
+        isRunningAnalysis={sentimentActions.isProcessing && sentimentActions.actionType === 'status-changing'}
+        analysisStatusVariant={analysisStatus.variant}
+        analysisStatusLabel={analysisStatus.label}
+        selectedWeek={selectedWeek}
+        onSelectWeek={handleSelectWeek}
+        selectedPlatform={selectedPlatform}
+        onSelectPlatform={handleSelectPlatform}
+        selectedReviewId={selectedReviewId}
+        onSelectReview={setSelectedReviewId}
+        onReplyReview={(reviewId) => {
+          setSelectedReviewId(reviewId)
+          setActiveReplyReviewId(reviewId)
+        }}
+        onSubmitReply={handleReplySubmit}
+        onCancelReply={() => setActiveReplyReviewId(null)}
+        isReplyPending={sentimentActions.isProcessing}
+        activeReplyReviewId={activeReplyReviewId}
+      />
+
+      <ConfirmDialog
+        open={runConfirmOpen}
+        onOpenChange={setRunConfirmOpen}
+        title={MESSAGES.CRM.SENTIMENT.CONFIRM.RUN_ANALYSIS_TITLE}
+        description={MESSAGES.CRM.SENTIMENT.CONFIRM.RUN_ANALYSIS_DESC}
+        confirmText={MESSAGES.CRM.SENTIMENT.BUTTON.RUN_ANALYSIS}
+        onConfirm={handleRunAnalysis}
+        isConfirming={sentimentActions.isProcessing && sentimentActions.actionType === 'status-changing'}
+        variant="primary"
+      />
+    </>
   )
 }

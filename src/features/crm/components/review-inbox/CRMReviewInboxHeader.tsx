@@ -13,7 +13,7 @@ export function CRMReviewInboxHeader({ summary }: CRMReviewInboxHeaderProps) {
       title="Hộp thư Review"
       subtitle="Quản lý và phản hồi đánh giá từ đa sàn."
       theme="crm"
-      badge={{ text: 'Reviews', icon: <MessageSquareQuote className="size-3.5" /> }}
+      badge={{ text: 'Đánh giá', icon: <MessageSquareQuote className="size-3.5" /> }}
     >
       <div className="flex flex-wrap items-center gap-4 text-sm text-purple-900 font-medium bg-white/60 p-3 rounded-xl backdrop-blur border border-purple-200/50 shadow-sm w-full lg:w-auto">
         <div className="flex items-center gap-2">

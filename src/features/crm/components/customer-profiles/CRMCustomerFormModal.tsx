@@ -1,14 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import { useState } from 'react'
 
-import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { CRUDModal } from '@/components/shared/CRUDModal'
 import { MESSAGES } from '@/constants/messages'
 import type { CRMCustomerCreatePayload, CRMCustomerProfileDetail, CRMCustomerSegmentKey } from '@/types/crm.types'
 
@@ -64,20 +56,6 @@ export function CRMCustomerFormModal({
     return DEFAULT_FORM
   })
 
-  useEffect(() => {
-    if (open && mode === 'edit' && customer) {
-      setForm({
-        fullName: customer.fullName,
-        maskedPhone: customer.maskedPhone,
-        email: customer.email,
-        segment: (customer.segment.tone ?? 'regular_blue') as CRMCustomerSegmentKey,
-        platformCodes: customer.platformLabels.map((p) => p.id),
-      })
-    } else if (open && mode === 'create') {
-      setForm(DEFAULT_FORM)
-    }
-  }, [open, mode, customer])
-
   const title =
     mode === 'create'
       ? MESSAGES.CRM.CUSTOMER.FORM.CREATE_TITLE
@@ -109,14 +87,17 @@ export function CRMCustomerFormModal({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!isProcessing) onOpenChange(o) }}>
-      <DialogContent className="sm:max-w-[480px]">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>{title}</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
+    <CRUDModal
+      isOpen={open}
+      onClose={() => onOpenChange(false)}
+      title={title}
+      description="Chuẩn hóa biểu mẫu thêm và chỉnh sửa khách hàng theo luồng CRUD dùng chung."
+      onSubmit={handleSubmit}
+      isProcessing={isProcessing}
+      processingText={processingLabel}
+      submitText={submitLabel}
+      cancelText="Hủy"
+    >
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-wide text-slate-600">
                 Họ và tên <span className="text-red-500">*</span>
@@ -205,28 +186,6 @@ export function CRMCustomerFormModal({
                 })}
               </div>
             </div>
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isProcessing}
-            >
-              Hủy
-            </Button>
-            <Button
-              type="submit"
-              disabled={isProcessing || !form.fullName.trim()}
-              className="min-w-[120px]"
-            >
-              {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isProcessing ? processingLabel : submitLabel}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    </CRUDModal>
   )
 }

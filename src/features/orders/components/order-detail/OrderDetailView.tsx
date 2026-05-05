@@ -7,6 +7,8 @@ import { OrderDetailReviewsTab } from '@/features/orders/components/order-detail
 import { OrderDetailTimeline } from '@/features/orders/components/order-detail/OrderDetailTimeline'
 import type { OrderDetailTab, OrderDetailViewModel } from '@/features/orders/logic/orderDetail.types'
 
+export const ACTIONS_REQUIRING_CONFIRM = new Set(['confirm-order', 'ship-order', 'cancel-order', 'refund-order'])
+
 type OrderDetailViewProps = {
   model: OrderDetailViewModel
   isLoading: boolean
@@ -14,6 +16,7 @@ type OrderDetailViewProps = {
   activeActionId: string | null
   onClose: () => void
   onQuickAction: (actionId: string) => void
+  onRequestConfirm: (actionId: string) => void
 }
 
 function statusToneClass(tone: OrderDetailViewModel['statusTone']) {
@@ -29,7 +32,7 @@ function actionButtonClass(tone: 'primary' | 'danger' | 'neutral') {
   return 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
 }
 
-export function OrderDetailView({ model, isLoading, isModalPresentation, activeActionId, onClose, onQuickAction }: OrderDetailViewProps) {
+export function OrderDetailView({ model, isLoading, isModalPresentation, activeActionId, onClose, onQuickAction, onRequestConfirm }: OrderDetailViewProps) {
   const [activeTab, setActiveTab] = useState<OrderDetailTab>('detail')
   const handleClose = onClose
 
@@ -40,6 +43,11 @@ export function OrderDetailView({ model, isLoading, isModalPresentation, activeA
 
     if (actionId === 'view-support') {
       setActiveTab('review')
+    }
+
+    if (ACTIONS_REQUIRING_CONFIRM.has(actionId)) {
+      onRequestConfirm(actionId)
+      return
     }
 
     onQuickAction(actionId)
@@ -70,7 +78,7 @@ export function OrderDetailView({ model, isLoading, isModalPresentation, activeA
     )
   }, [activeTab, model])
 
-  return (
+  const layout = (
     isModalPresentation ? (
       <div className="fixed inset-0 z-50">
         <button type="button" aria-label="close" className="absolute inset-0 bg-slate-900/35" onClick={handleClose} />
@@ -185,4 +193,6 @@ export function OrderDetailView({ model, isLoading, isModalPresentation, activeA
       </div>
     )
   )
+
+  return layout
 }

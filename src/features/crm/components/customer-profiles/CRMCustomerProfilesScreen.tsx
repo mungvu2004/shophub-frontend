@@ -19,7 +19,13 @@ import {
 } from '@/features/crm/logic/crmCustomerProfiles.logic'
 import { Button } from '@/components/ui/button'
 import { MESSAGES } from '@/constants/messages'
-import type { CRMCustomerCreatePayload } from '@/types/crm.types'
+import type { CRMCustomerCreatePayload, CRMCustomerSegmentKey } from '@/types/crm.types'
+
+const NEXT_SEGMENT_MAP: Record<CRMCustomerSegmentKey, CRMCustomerSegmentKey> = {
+  vip_gold: 'regular_blue',
+  regular_blue: 'at_risk_red',
+  at_risk_red: 'vip_gold',
+}
 
 export function CRMCustomerProfilesScreen() {
   useProductData({ autoPreload: false, pageName: 'CRMCustomerProfilesPage' })
@@ -47,7 +53,8 @@ export function CRMCustomerProfilesScreen() {
     },
   })
 
-  if (query.data?.selectedCustomerId && query.data.selectedCustomerId !== selectedCustomerId) {
+  // Only auto-select on initial load (when user hasn't manually chosen a customer yet)
+  if (!selectedCustomerId && query.data?.selectedCustomerId) {
     setSelectedCustomerId(query.data.selectedCustomerId)
   }
 
@@ -95,6 +102,7 @@ export function CRMCustomerProfilesScreen() {
         onExport={() => undefined}
         onAddCustomer={handleOpenCreate}
         isProcessing={customerActions.isProcessing}
+        actionType={customerActions.actionType}
       />
 
       <CRMCustomerProfilesTableCard
@@ -117,6 +125,13 @@ export function CRMCustomerProfilesScreen() {
             isProcessing={customerActions.isProcessing}
             actionType={customerActions.actionType}
             onEdit={handleOpenEdit}
+            onChangeStatus={() => {
+              if (!selectedCustomerId || !query.data?.selectedCustomer) return
+              void customerActions.handleStatusChange(
+                selectedCustomerId,
+                NEXT_SEGMENT_MAP[query.data.selectedCustomer.segment.tone],
+              )
+            }}
             onDelete={() => setDeleteConfirmOpen(true)}
           />
 
@@ -155,6 +170,7 @@ export function CRMCustomerProfilesScreen() {
       </section>
 
       <CRMCustomerFormModal
+        key={`${formState.mode}-${selectedCustomerId ?? 'new'}-${formState.open ? 'open' : 'closed'}`}
         open={formState.open}
         mode={formState.mode}
         customer={formState.mode === 'edit' ? (query.data?.selectedCustomer ?? null) : null}

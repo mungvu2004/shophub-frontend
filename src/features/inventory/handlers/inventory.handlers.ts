@@ -1,5 +1,6 @@
 import { http, HttpResponse, delay } from 'msw'
 import type { StockLevel } from '@/types/inventory.types'
+import type { PlatformCode } from '@/types/platform.types'
 import {
   mockInventoryAIForecast,
   mockInventoryAIForecastDetails,
@@ -246,8 +247,8 @@ export const inventoryHandlers = [
 
     const payload = buildInventoryStockMovementsResponse({
       search: url.searchParams.get('search') ?? undefined,
-    const platform = (platform === 'all' ? undefined : platform as string) ?? undefined,
-      movementGroup: (movementGroup === 'all' ? undefined : movementGroup as string) ?? undefined,
+      platform: (platform === 'all' ? undefined : platform as PlatformCode) ?? undefined,
+      movementGroup: (movementGroup === 'all' ? 'all' : movementGroup as 'inbound' | 'outbound' | 'transfer' | 'order' | 'adjustment' | 'loss') ?? undefined,
       warehouseId: (warehouseId === 'all' ? undefined : warehouseId) ?? undefined,
       page: Number(url.searchParams.get('page') ?? 1),
       pageSize: Number(url.searchParams.get('pageSize') ?? 10),

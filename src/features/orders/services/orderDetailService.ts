@@ -50,6 +50,12 @@ class OrderDetailService {
     return response.data.data
   }
 
+  async shipOrder(id: string) {
+    const normalizedId = this.normalizeOrderId(id)
+    const response = await apiClient.post<ApiResponse<{ updated: boolean; status: string }>>(`/orders/${normalizedId}/ship`)
+    return response.data.data
+  }
+
   async cancelOrder(id: string) {
     const normalizedId = this.normalizeOrderId(id)
     const response = await apiClient.post<ApiResponse<{ updated: boolean; status: string }>>(`/orders/${normalizedId}/cancel`)

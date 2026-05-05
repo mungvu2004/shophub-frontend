@@ -4,12 +4,18 @@ import { cn } from '@/lib/utils'
 import type { CRMSentimentAnalysisViewModel } from '@/features/crm/logic/crmSentimentAnalysis.logic'
 import { ProductSentimentSelector } from './ProductSentimentSelector'
 import { ThemedPageHeader } from '@/components/shared/ThemedPageHeader'
+import { CRMStatusBadge } from '@/features/crm/components/shared/CRMStatusBadge'
+import { MESSAGES } from '@/constants/messages'
 
 type SentimentAnalysisHeaderProps = {
   model: CRMSentimentAnalysisViewModel
   isRefreshing: boolean
   selectedProductId: string
   onSelectProduct: (productId: string) => void
+  onRunAnalysis: () => void
+  isRunningAnalysis: boolean
+  statusVariant: 'running' | 'completed' | 'error'
+  statusLabel: string
 }
 
 function MiniStat({ label, value, tone }: { label: string; value: string | number; tone?: 'indigo' | 'amber' | 'rose' }) {
@@ -35,9 +41,12 @@ function MiniStat({ label, value, tone }: { label: string; value: string | numbe
 
 export function SentimentAnalysisHeader({
   model,
-  isRefreshing,
   selectedProductId,
   onSelectProduct,
+  onRunAnalysis,
+  isRunningAnalysis,
+  statusVariant,
+  statusLabel,
 }: SentimentAnalysisHeaderProps) {
   return (
     <ThemedPageHeader
@@ -47,12 +56,12 @@ export function SentimentAnalysisHeader({
           <p>Phân tích sâu sắc thái độ khách hàng và xu hướng thị trường bằng AI.</p>
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-purple-600">
             <Sparkles className="size-3" />
-            <span>AI Model: Sentiment-X Pro v2</span>
+            <span>Mô hình AI: Sentiment-X Pro v2</span>
           </div>
         </div>
       }
       theme="crm"
-      badge={{ text: 'Customer Insights', icon: <Sparkles className="size-3.5" /> }}
+      badge={{ text: 'Insight CRM', icon: <Sparkles className="size-3.5" /> }}
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         {/* Product Selector Integrated in Header */}
@@ -66,6 +75,8 @@ export function SentimentAnalysisHeader({
           <MiniStat label="SKU" value={model.sku} tone="amber" />
         </div>
 
+        <CRMStatusBadge variant={statusVariant} label={statusLabel} size="md" />
+
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -78,11 +89,12 @@ export function SentimentAnalysisHeader({
 
           <Button
             size="sm"
-            disabled={isRefreshing}
+            disabled={isRunningAnalysis}
             className="h-10 rounded-xl bg-purple-600 px-4 font-bold text-white shadow-lg shadow-purple-100 transition-all hover:bg-purple-700 active:scale-95"
+            onClick={onRunAnalysis}
           >
-            <RefreshCcw className={cn('mr-2 size-4', isRefreshing && 'animate-spin')} />
-            Làm mới
+            <RefreshCcw className={cn('mr-2 size-4', isRunningAnalysis && 'animate-spin')} />
+            {isRunningAnalysis ? MESSAGES.CRM.SENTIMENT.BUTTON.RUN_LOADING : MESSAGES.CRM.SENTIMENT.BUTTON.RUN_ANALYSIS}
           </Button>
         </div>
       </div>

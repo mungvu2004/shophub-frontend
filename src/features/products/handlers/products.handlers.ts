@@ -1,5 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import { mockProducts } from '@/mocks/data/products'
+import { productsCompetitorTrackingMock } from '@/mocks/data/productsCompetitorTracking'
+import { productsDynamicPricingMock } from '@/mocks/data/productsDynamicPricing'
 import type { Product } from '@/types/product.types'
 
 const delay = (ms: number = 800) => new Promise(resolve => setTimeout(resolve, ms))
@@ -18,6 +20,46 @@ const createErrorResponse = (message: string, code?: string) => ({
 })
 
 export const productsHandlers = [
+  // Competitor tracking
+  http.get('/api/products/competitor-tracking', async () => {
+    await delay(600)
+    return HttpResponse.json(productsCompetitorTrackingMock, { status: 200 })
+  }),
+
+  // Dynamic pricing
+  http.get('/api/products/dynamic-pricing', async () => {
+    await delay(600)
+    return HttpResponse.json(productsDynamicPricingMock, { status: 200 })
+  }),
+
+  http.post('/api/products/dynamic-pricing/apply-all', async () => {
+    await delay(1000)
+    return HttpResponse.json(
+      {
+        success: true,
+        appliedCount: productsDynamicPricingMock.totalSuggestions,
+        message: `Đã áp dụng ${productsDynamicPricingMock.totalSuggestions} gợi ý giá AI thành công`,
+      },
+      { status: 200 }
+    )
+  }),
+
+  http.patch('/api/products/dynamic-pricing/rules/:id', async ({ params, request }) => {
+    await delay(600)
+    const body = (await request.json()) as { isActive?: boolean }
+    const ruleId = String(params.id ?? '')
+    const status = body.isActive ? 'active' : 'inactive'
+    return HttpResponse.json(
+      {
+        success: true,
+        ruleId,
+        status,
+        message: `Đã ${status === 'active' ? 'bật' : 'tắt'} quy tắc thành công`,
+      },
+      { status: 200 }
+    )
+  }),
+
   http.get('/api/products', async ({ request }) => {
     await delay(600)
     

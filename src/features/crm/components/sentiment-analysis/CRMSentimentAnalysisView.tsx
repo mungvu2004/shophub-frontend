@@ -14,6 +14,10 @@ type CRMSentimentAnalysisViewProps = {
   isRefreshing: boolean
   selectedProductId: string
   onSelectProduct: (productId: string) => void
+  onRunAnalysis: () => void
+  isRunningAnalysis: boolean
+  analysisStatusVariant: 'running' | 'completed' | 'error'
+  analysisStatusLabel: string
   selectedWeek: string
   onSelectWeek: (weekLabel: string) => void
   selectedPlatform: CRMSentimentPlatformFilter
@@ -32,6 +36,10 @@ export const CRMSentimentAnalysisView = memo(function CRMSentimentAnalysisView({
   isRefreshing,
   selectedProductId,
   onSelectProduct,
+  onRunAnalysis,
+  isRunningAnalysis,
+  analysisStatusVariant,
+  analysisStatusLabel,
   selectedWeek,
   onSelectWeek,
   selectedPlatform,
@@ -54,6 +62,10 @@ export const CRMSentimentAnalysisView = memo(function CRMSentimentAnalysisView({
         isRefreshing={isRefreshing}
         selectedProductId={selectedProductId}
         onSelectProduct={onSelectProduct}
+        onRunAnalysis={onRunAnalysis}
+        isRunningAnalysis={isRunningAnalysis}
+        statusVariant={analysisStatusVariant}
+        statusLabel={analysisStatusLabel}
       />
 
       <div
@@ -91,6 +103,7 @@ export const CRMSentimentAnalysisView = memo(function CRMSentimentAnalysisView({
             <div className="fixed inset-x-0 bottom-6 z-50 flex justify-center px-6 animate-in slide-in-from-bottom-10">
               <div className="w-full max-w-2xl">
                 <SentimentAnalysisReplyComposer
+                  key={activeReplyReview.id}
                   reviewId={activeReplyReview.id}
                   customerName={activeReplyReview.customerName}
                   comment={activeReplyReview.comment}
@@ -135,7 +148,7 @@ export const CRMSentimentAnalysisView = memo(function CRMSentimentAnalysisView({
             {/* Decorative End-of-Sidebar info */}
             <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-6 text-center">
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-300">
-                End of Analysis
+                Kết thúc phân tích
               </p>
             </div>
           </div>

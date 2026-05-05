@@ -113,8 +113,8 @@ export function InboundPlanningSection({ plan }: InboundPlanningSectionProps) {
                 <td className="px-6 py-4">
                    <div className="flex flex-col">
                       <span className="font-mono text-sm font-black text-indigo-600">{item.suggestedQuantity}</span>
-                      <Badge variant={priorityMapping[item.priority].variant} className="w-fit text-[8px] font-black uppercase mt-1 border-none shadow-none h-4">
-                         {priorityMapping[item.priority].label}
+                      <Badge variant={(priorityMapping[item.priority] ?? priorityMapping.medium).variant} className="w-fit text-[8px] font-black uppercase mt-1 border-none shadow-none h-4">
+                         {(priorityMapping[item.priority] ?? priorityMapping.medium).label}
                       </Badge>
                    </div>
                 </td>

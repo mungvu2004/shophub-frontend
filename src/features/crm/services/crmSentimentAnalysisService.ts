@@ -89,4 +89,22 @@ export const crmSentimentAnalysisService = {
 
     return parsed
   },
+
+  async runAnalysis(productId: string): Promise<{ productId: string; status: 'running' | 'completed' }> {
+    const response = await apiClient.post('/crm/sentiment-analysis/run', { productId })
+    const candidate = response.data as {
+      data?: { productId?: string; status?: 'running' | 'completed' }
+      productId?: string
+      status?: 'running' | 'completed'
+    }
+
+    if (candidate.data?.productId && candidate.data.status) {
+      return { productId: candidate.data.productId, status: candidate.data.status }
+    }
+
+    return {
+      productId: candidate.productId ?? productId,
+      status: candidate.status ?? 'completed',
+    }
+  },
 }

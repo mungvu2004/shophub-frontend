@@ -3,7 +3,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -52,7 +51,7 @@ export function ConfirmDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <DialogFooter className="mt-6 flex gap-2 sm:justify-end">
+        <div className="mt-6 flex flex-row items-center justify-end gap-2">
           <Button variant="outline" onClick={handleCancel} disabled={isConfirming}>
             {cancelText}
           </Button>
@@ -64,7 +63,7 @@ export function ConfirmDialog({
           >
             {confirmText}
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   )

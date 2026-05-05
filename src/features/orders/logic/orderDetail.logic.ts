@@ -117,9 +117,14 @@ function resolveStatusInfo(status: NullableOrderStatus): OrderStatusInfo {
 function buildQuickActions(status: NullableOrderStatus, suggestedAction?: string): Array<{ id: string; label: string; tone: 'primary' | 'danger' | 'neutral' }> {
   const actions: Array<{ id: string; label: string; tone: 'primary' | 'danger' | 'neutral' }> = []
 
-  if (status === 'Pending' || status === 'PendingPayment' || status === 'Confirmed' || status === 'Packed' || status === 'ReadyToShip') {
+  if (status === 'Pending' || status === 'PendingPayment') {
     actions.push(
       { id: 'confirm-order', label: 'Xác nhận đơn', tone: 'primary' },
+      { id: 'cancel-order', label: 'Hủy đơn', tone: 'danger' },
+    )
+  } else if (status === 'Confirmed' || status === 'Packed' || status === 'ReadyToShip') {
+    actions.push(
+      { id: 'ship-order', label: 'Giao cho vận chuyển', tone: 'primary' },
       { id: 'cancel-order', label: 'Hủy đơn', tone: 'danger' },
     )
   } else if (status === 'Shipped') {
